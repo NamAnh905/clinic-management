@@ -1,0 +1,286 @@
+$primary-color: #2563eb;
+$text-color: #0f172a;
+$text-muted: #64748b;
+$border-color: #e2e8f0;
+
+:host {
+    display: block;
+    height: 100%;
+}
+
+:host ::ng-deep {
+    /* 1. LOADING OVERLAY */
+    .p-datatable-loading-overlay {
+        background-color: rgba(255, 255, 255, 0.7) !important;
+        transition: opacity 0.2s !important;
+        z-index: 100 !important;
+    }
+
+    .p-datatable-loading-icon {
+        color: $primary-color !important;
+    }
+
+    /* 2. TABLE STRUCTURE */
+    .custom-table {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        overflow: hidden;
+
+        .p-datatable-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+            border-bottom: 1px solid $border-color;
+            position: relative;
+        }
+
+        .p-datatable-thead > tr > th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: #ffffff;
+            color: $text-muted;
+            padding: 1rem;
+            border-bottom: 1px solid $border-color;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+
+        .p-datatable-tbody > tr > td {
+            padding: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .p-datatable-tbody > tr:hover {
+            background-color: #f8fafc !important;
+        }
+
+        /* --- 3. ĐỒNG BỘ PAGINATOR (GIỐNG USER & DOCTOR) --- */
+        .p-paginator.p-component {
+            background: #ffffff !important;
+            border-top: 1px solid #f1f5f9 !important;
+            padding: 1rem 1.5rem !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: flex-start !important;
+            width: 100% !important;
+            gap: 8px !important;
+
+            /* Ẩn nút First/Last mặc định */
+            .p-paginator-first, .p-paginator-last {
+                display: none !important;
+            }
+
+            /* SẮP XẾP THỨ TỰ (ORDER) */
+            .p-paginator-prev { order: 1 !important; }
+            .p-paginator-pages {
+                order: 2 !important;
+                display: flex !important;
+                gap: 4px !important;
+            }
+            .p-paginator-next { order: 3 !important; }
+
+            /* Text báo cáo (Showing 1 to 10...) - Đẩy Dropdown sang phải */
+            .p-paginator-current {
+                order: 4 !important;
+                margin-left: auto !important; /* Lò xo đẩy */
+                margin-right: 15px !important;
+                color: $text-muted !important;
+                font-size: 0.875rem !important;
+                white-space: nowrap !important;
+            }
+
+            /* Dropdown (Show 10) - CHỈNH SỬA IN ĐẬM SỐ */
+            p-dropdown {
+                order: 5 !important;
+                margin-left: 0 !important;
+                background: transparent !important;
+                border: none !important;
+                padding: 0 !important;
+
+                .p-dropdown {
+                    height: 38px;
+                    border-radius: 8px;
+                    border: 1px solid $border-color;
+                    display: flex;
+                    align-items: center;
+                    background: white;
+                    &:hover { border-color: #cbd5e1; }
+
+                    .p-dropdown-label {
+                        padding: 0 0.5rem 0 0.75rem;
+                        font-weight: 600; /* IN ĐẬM SỐ Ở ĐÂY */
+                        color: $text-color; /* MÀU ĐEN ĐẬM */
+                        display: flex;
+                        align-items: center;
+                        &::before {
+                            content: "Show";
+                            margin-right: 4px;
+                            color: $text-muted;
+                            font-weight: 500; /* Chữ Show nhạt hơn */
+                        }
+                    }
+                }
+            }
+
+            /* Style nút Prev/Next/Page */
+            .p-paginator-prev, .p-paginator-next, .p-paginator-page {
+                min-width: 38px;
+                height: 38px;
+                padding: 0 12px !important;
+                border-radius: 8px !important;
+                border: 1px solid $border-color !important;
+                background: white !important;
+                color: #475569 !important;
+                font-weight: 600 !important;
+                display: inline-flex !important;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.2s;
+
+                .p-paginator-icon { display: none !important; }
+
+                &:hover:not(.p-highlight) {
+                    background: #f8fafc !important;
+                    border-color: #cbd5e1 !important;
+                }
+
+                &.p-highlight {
+                    background: $primary-color !important;
+                    border-color: $primary-color !important;
+                    color: white !important;
+                }
+            }
+
+            /* Thêm chữ Prev/Next vào nút */
+            .p-paginator-prev::after { content: "Prev"; }
+            .p-paginator-next::after { content: "Next"; }
+        }
+    }
+
+    /* 4. FORM & DIALOG */
+    .organic-field {
+        position: relative;
+        margin-bottom: 1.5rem;
+
+        /* 1. CHIỀU CAO 50PX & BO GÓC 10PX */
+        $local-height: 45px;
+        $radius: 10px;
+
+        /* --- INPUT TEXT (Mã NV) --- */
+        input[type="text"],
+        input[type="password"],
+        .p-inputtext {
+            width: 100%;
+            height: $local-height !important;
+            padding: 0 16px;
+            border: 1px solid #cbd5e1;
+            border-radius: $radius;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            line-height: normal;
+
+            &:focus {
+                border-color: $primary-color;
+                box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+                outline: none;
+            }
+
+            /* Style cho ô Readonly (Mã nhân viên khi edit) */
+            &:read-only {
+                background-color: #f3f4f6;
+                color: $text-muted;
+                &:focus { box-shadow: none; border-color: #cbd5e1; }
+            }
+        }
+
+        /* --- DROPDOWN (Chọn tài khoản) --- */
+        .p-dropdown {
+            width: 100%;
+            height: $local-height !important;
+            border-radius: $radius;
+            border: 1px solid #cbd5e1;
+            display: flex;
+            align-items: center;
+            background: #fff;
+            padding: 0;
+
+            &:not(.p-disabled).p-focus {
+                border-color: $primary-color;
+                box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+            }
+
+            .p-dropdown-label {
+                background: transparent !important;
+                border: none !important;
+                outline: none !important;
+                box-shadow: none !important;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                padding: 0 16px;
+                color: #0f172a;
+            }
+
+            .p-dropdown-trigger {
+                width: 3rem;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        }
+
+        /* --- CALENDAR (Ngày vào làm) --- */
+        .p-calendar {
+            width: 100%;
+            height: $local-height;
+            display: flex;
+
+            .p-inputtext {
+                height: 100% !important;
+                border-radius: $radius 0 0 $radius !important;
+                border-right: none;
+                flex: 1;
+            }
+
+            .p-datepicker-trigger {
+                width: 3rem;
+                height: 100% !important;
+                border-radius: 0 $radius $radius 0 !important;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        }
+
+        /* --- LABEL (NHÃN) --- */
+        label.always-top {
+            position: absolute;
+            left: 12px;
+
+            /* 👇 QUAN TRỌNG: Top 10px để fix lỗi nhãn bay quá cao */
+            top: 10px !important;
+
+            transform: translateY(-50%);
+            background: #ffffff;
+            padding: 0 6px;
+
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: $primary-color; /* Luôn màu xanh */
+
+            z-index: 20;
+            line-height: 1;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+    }
+
+    .medical-dialog {
+        .p-dialog-header { padding: 1.5rem; border-bottom: 1px solid $border-color; }
+        .p-dialog-content { padding: 2rem 1.5rem; }
+        .p-dialog-footer { padding: 1rem 1.5rem; background: #f8fafc; border-top: 1px solid $border-color; }
+    }
+}

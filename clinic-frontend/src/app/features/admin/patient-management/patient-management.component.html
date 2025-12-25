@@ -1,0 +1,107 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="flex flex-column h-full">
+    <div class="mb-3 flex justify-content-between align-items-center">
+        <h2 class="text-2xl font-bold text-900 m-0">Quản lý Bệnh nhân</h2>
+    </div>
+
+    <div class="surface-card shadow-1 border-round-xl flex flex-column bg-white overflow-hidden" style="height: calc(100vh - 180px);">
+        <div class="p-3 border-bottom-1 surface-border">
+            <span class="p-input-icon-left w-full sm:w-20rem">
+                <i class="pi pi-search"></i>
+                <input pInputText type="text" [(ngModel)]="keyword"
+                       (keyup.enter)="loadPatients()" placeholder="Tìm tên, SĐT bệnh nhân..." class="w-full border-round-2xl" />
+            </span>
+        </div>
+
+        <div class="flex-1 overflow-hidden">
+            <p-table
+              [value]="patients"
+              [lazy]="true"
+              (onLazyLoad)="loadPatients($event)"
+              [totalRecords]="totalRecords"
+              [rows]="size"
+              [loading]="loading"
+              [rowHover]="true"
+              styleClass="p-datatable-sm custom-table h-full"
+
+              [paginator]="true"
+              [rowsPerPageOptions]="[5, 10, 15, 20]"
+              [showCurrentPageReport]="true"
+              currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+              paginatorTemplate="PrevPageLink PageLinks NextPageLink CurrentPageReport RowsPerPageDropdown"
+          >
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 80px">ID</th>
+                        <th style="min-width: 150px">Họ và tên</th>
+                        <th style="min-width: 120px">Số điện thoại</th>
+                        <th style="width: 100px">Giới tính</th>
+                        <th style="min-width: 200px">Bệnh án (Tiền sử)</th> <th style="min-width: 150px">Địa chỉ</th>
+                        <th class="text-center" style="width: 120px">Thao tác</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-p>
+                    <tr>
+                        <td><span class="text-500">#{{p.patientId}}</span></td>
+                        <td><span class="font-medium text-900">{{p.patientName}}</span></td>
+                        <td>{{p.phoneNumber}}</td>
+                        <td>
+                            <p-tag [value]="p.gender === 'MALE' ? 'Nam' : 'Nữ'"
+                                  [severity]="p.gender === 'MALE' ? 'info' : 'danger'"></p-tag>
+                        </td>
+
+                        <td>
+                            <div class="text-500 white-space-nowrap overflow-hidden text-overflow-ellipsis"
+                                style="max-width: 250px;" [pTooltip]="p.medicalHistory">
+                                {{ p.medicalHistory || 'Chưa có dữ liệu' }}
+                            </div>
+                        </td>
+
+                        <td class="text-500">{{p.address}}</td>
+                        <td class="text-center">
+                            <button pButton icon="pi pi-user-edit" class="p-button-text p-button-info p-button-rounded" (click)="editPatient(p)"></button>
+                            <button pButton icon="pi pi-ban" class="p-button-text p-button-danger p-button-rounded" (click)="deletePatient(p)"></button>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+</div>
+
+<p-dialog [(visible)]="patientDialog" [style]="{width: '500px'}" header="Cập nhật thông tin bệnh nhân" [modal]="true" styleClass="p-fluid medical-dialog">
+    <ng-template pTemplate="content">
+        <form [formGroup]="patientForm" class="mt-4 formgrid grid">
+            <div class="field col-12 organic-field">
+                <input pInputText formControlName="fullName" placeholder=" " />
+                <label class="always-top">Họ và tên bệnh nhân <span class="text-red-500">*</span></label>
+            </div>
+            <div class="field col-6 organic-field">
+                <input pInputText formControlName="phoneNumber" placeholder=" " />
+                <label class="always-top">Số điện thoại <span class="text-red-500">*</span></label>
+            </div>
+            <div class="field col-6 organic-field">
+                <p-dropdown [options]="genderOptions" formControlName="gender" optionLabel="label" optionValue="value" appendTo="body"></p-dropdown>
+                <label class="always-top">Giới tính</label>
+            </div>
+            <div class="field col-12 organic-field">
+                <p-calendar formControlName="dateOfBirth" dateFormat="dd/mm/yy" [showIcon]="true" appendTo="body" placeholder=" "></p-calendar>
+                <label class="always-top">Ngày sinh</label>
+            </div>
+            <div class="field col-12 organic-field">
+                <input pInputText formControlName="address" placeholder=" " />
+                <label class="always-top">Địa chỉ liên lạc</label>
+            </div>
+            <div class="field col-12 organic-field">
+                <textarea pInputTextarea formControlName="medicalHistory" rows="3" placeholder=" " style="resize: none"></textarea>
+                <label class="always-top">Tiền sử bệnh án</label>
+            </div>
+        </form>
+    </ng-template>
+    <ng-template pTemplate="footer">
+        <button pButton label="Hủy" icon="pi pi-times" class="p-button-text" (click)="patientDialog = false"></button>
+        <button pButton label="Lưu thay đổi" icon="pi pi-check" class="p-button-primary" (click)="savePatient()"></button>
+    </ng-template>
+</p-dialog>

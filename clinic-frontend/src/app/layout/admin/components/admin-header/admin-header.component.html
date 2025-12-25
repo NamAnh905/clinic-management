@@ -1,0 +1,132 @@
+<p-toast></p-toast> <header class="header-container">
+
+  <div class="breadcrumb-area">
+    <p-breadcrumb [model]="breadcrumbItems" [home]="home"></p-breadcrumb>
+  </div>
+
+  <div class="actions-area">
+    <button class="icon-btn notification mr-3"><i class="pi pi-bell"></i></button>
+
+    <div class="user-profile" (click)="menu.toggle($event)">
+      <div class="text-right mr-2 hidden sm:block">
+          <div class="text-sm font-bold text-900">
+            {{ currentUser?.fullName || 'Đang tải...' }}
+          </div>
+          <div class="text-xs text-500">
+            {{ userRoleName }}
+          </div>
+      </div>
+      <p-avatar
+        [image]="'https://ui-avatars.com/api/?background=2563eb&color=fff&name=' + (currentUser?.fullName || 'User')"
+        shape="circle"
+        size="normal">
+      </p-avatar>
+      <i class="pi pi-angle-down ml-2 text-xs text-500"></i>
+    </div>
+
+    <p-menu #menu [model]="userMenuItems" [popup]="true"></p-menu>
+  </div>
+</header>
+
+<p-dialog
+    [(visible)]="profileDialog"
+    [style]="{ width: '500px' }"
+    header="Thông tin cá nhân"
+    [modal]="true"
+    [draggable]="false"
+    [resizable]="false"
+    styleClass="p-fluid">
+
+    <ng-template pTemplate="content">
+        <form [formGroup]="profileForm" class="mt-2">
+
+            <div class="field mb-3">
+                <label class="font-bold block mb-2">Email</label>
+                <input pInputText formControlName="email" class="bg-gray-100" />
+                <small class="text-500">Email không thể thay đổi.</small>
+            </div>
+
+            <div class="field mb-3">
+                <label class="font-bold block mb-2">Họ và tên <span class="text-red-500">*</span></label>
+                <input pInputText formControlName="fullName" />
+                <small *ngIf="profileForm.get('fullName')?.invalid && profileForm.get('fullName')?.touched" class="p-error">
+                    Họ tên là bắt buộc.
+                </small>
+            </div>
+
+            <div class="formgrid grid">
+                <div class="field col-6">
+                    <label class="font-bold block mb-2">Số điện thoại</label>
+                    <input pInputText formControlName="phoneNumber" />
+                </div>
+                <div class="field col-6">
+                    <label class="font-bold block mb-2">Ngày sinh</label>
+                    <p-calendar formControlName="dateOfBirth" dateFormat="dd/mm/yy" appendTo="body" [showIcon]="true"></p-calendar>
+                </div>
+            </div>
+
+            <div class="field mb-3">
+                <label class="font-bold block mb-2">Giới tính</label>
+                <p-dropdown [options]="genderOptions" formControlName="gender" optionLabel="label" optionValue="value" placeholder="Chọn giới tính"></p-dropdown>
+            </div>
+
+            <div class="field mb-3">
+                <label class="font-bold block mb-2">Địa chỉ</label>
+                <input pInputText formControlName="address" />
+            </div>
+
+        </form>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button pButton label="Hủy" icon="pi pi-times" class="p-button-text" (click)="profileDialog = false"></button>
+        <button pButton label="Cập nhật" icon="pi pi-check" class="p-button-primary" (click)="saveProfile()" [disabled]="profileForm.invalid"></button>
+    </ng-template>
+
+</p-dialog>
+
+<p-dialog
+    [(visible)]="passwordDialog"
+    [style]="{ width: '450px' }"
+    header="Đổi mật khẩu"
+    [modal]="true"
+    [draggable]="false"
+    [resizable]="false"
+    styleClass="p-fluid">
+
+    <ng-template pTemplate="content">
+        <form [formGroup]="passwordForm" class="mt-2">
+
+            <div class="field mb-3">
+                <label class="font-bold block mb-2">Mật khẩu hiện tại</label>
+                <input pInputText type="password" formControlName="currentPassword" placeholder="Nhập mật khẩu cũ" />
+                <small *ngIf="passwordForm.get('currentPassword')?.invalid && passwordForm.get('currentPassword')?.touched" class="p-error">
+                    Vui lòng nhập mật khẩu hiện tại.
+                </small>
+            </div>
+
+            <div class="field mb-3">
+                <label class="font-bold block mb-2">Mật khẩu mới</label>
+                <input pInputText type="password" formControlName="newPassword" placeholder="Tối thiểu 6 ký tự" />
+                <small *ngIf="passwordForm.get('newPassword')?.errors?.['minlength']" class="p-error">
+                    Mật khẩu phải có ít nhất 6 ký tự.
+                </small>
+            </div>
+
+            <div class="field mb-3">
+                <label class="font-bold block mb-2">Xác nhận mật khẩu mới</label>
+                <input pInputText type="password" formControlName="confirmPassword" placeholder="Nhập lại mật khẩu mới" />
+                <small *ngIf="passwordForm.errors?.['mismatch'] && passwordForm.get('confirmPassword')?.touched" class="p-error">
+                    Mật khẩu xác nhận không khớp.
+                </small>
+            </div>
+
+        </form>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button pButton label="Hủy" icon="pi pi-times" class="p-button-text" (click)="passwordDialog = false"></button>
+        <button pButton label="Lưu thay đổi" icon="pi pi-check" class="p-button-primary" (click)="savePassword()" [disabled]="passwordForm.invalid"></button>
+    </ng-template>
+
+</p-dialog>

@@ -1,0 +1,274 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="flex flex-column h-full">
+    <div class="mb-3 flex-none">
+        <h2 class="text-2xl font-bold text-900 m-0">Quản lý Đơn thuốc</h2>
+    </div>
+
+    <div class="surface-card shadow-1 border-round-xl flex flex-column bg-white overflow-hidden"
+         style="height: calc(100vh - 180px);">
+
+        <div class="flex flex-column xl:flex-row justify-content-between align-items-center p-3 border-bottom-1 surface-border flex-none gap-3">
+            <div class="flex flex-column sm:flex-row gap-2 w-full xl:w-auto">
+                <span class="p-input-icon-left w-full sm:w-auto">
+                    <i class="pi pi-search text-500"></i>
+                    <input pInputText type="text"
+                        (input)="onGlobalFilter($event)"
+                        placeholder="Tìm bệnh nhân, chẩn đoán..."
+                        class="w-full sm:w-16rem border-round-2xl pl-5" />
+                </span>
+
+                <p-calendar
+                    [(ngModel)]="rangeDates"
+                    selectionMode="range"
+                    [readonlyInput]="true"
+                    placeholder="Chọn ngày khám"
+                    dateFormat="dd/mm/yy"
+                    [showIcon]="true"
+                    styleClass="w-full sm:w-16rem border-round-2xl"
+                    (onClose)="loadRecords()"> </p-calendar>
+            </div>
+
+            <div class="flex flex-column sm:flex-row gap-2 w-full xl:w-auto">
+                <button pButton icon="pi pi-refresh" class="p-button-outlined p-button-rounded border-round-2xl"
+                        (click)="loadRecords()" pTooltip="Tải lại"></button>
+            </div>
+        </div>
+
+        <div class="flex-1 min-h-0 w-full relative">
+            <p-table #dt
+                [value]="records"
+                [lazy]="true"
+                (onLazyLoad)="loadRecords($event)"
+                [totalRecords]="totalRecords"
+                [rows]="size"
+                [loading]="loading"
+                [rowHover]="true"
+                styleClass="p-datatable-sm custom-table h-full"
+                [paginator]="true"
+                [rowsPerPageOptions]="[10, 15, 20]"
+                [showCurrentPageReport]="true"
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                paginatorTemplate="PrevPageLink PageLinks NextPageLink CurrentPageReport RowsPerPageDropdown">
+
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="min-width: 80px">ID</th>
+                        <th style="min-width: 180px">Bệnh nhân</th>
+                        <th style="width: 150px">Ngày khám</th>
+                        <th style="min-width: 250px">Chẩn đoán</th>
+                        <th class="text-center" style="width: 140px">Thao tác</th>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="body" let-rec>
+                    <tr>
+                        <td><span class="text-500">#{{ rec.recordId }}</span></td>
+                        <td><span class="font-medium text-900">{{ rec.patientName }}</span></td>
+                        <td>
+                            <div class="font-medium text-900">{{ rec.visitDate | date:'dd/MM/yyyy' }}</div>
+                            <div class="text-sm text-primary font-bold">{{ rec.visitDate | date:'HH:mm' }}</div>
+                        </td>
+                        <td>
+                            <div class="white-space-nowrap overflow-hidden text-overflow-ellipsis" style="max-width: 250px" [title]="rec.diagnosis">
+                                {{ rec.diagnosis }}
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <button *ngIf="authService.isAdmin || (authService.isDoctor && rec.doctorId === authService.currentDoctorIdSubject.value)"
+                                    pButton icon="pi pi-briefcase"
+                                    class="p-button-text p-button-success p-button-rounded mr-2"
+                                    pTooltip="Xem/Kê đơn thuốc"
+                                    (click)="openPrescription(rec)">
+                            </button>
+
+                            <i *ngIf="!authService.isAdmin && !(authService.isDoctor && rec.doctorId === authService.currentDoctorIdSubject.value)"
+                                    class="pi pi-lock text-500" pTooltip="Bạn không có quyền xem đơn thuốc này"></i>
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="emptymessage">
+                    <tr><td colspan="5" class="text-center p-4 text-500">Không tìm thấy hồ sơ bệnh án nào.</td></tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+</div>
+
+<p-dialog [(visible)]="presDialog" [style]="{width: '900px'}"
+          [header]="'Quản lý Đơn thuốc - BN: ' + (currentRecord?.patientName || '')"
+          [modal]="true" styleClass="p-fluid" [draggable]="false" [resizable]="false">
+
+    <ng-template pTemplate="content">
+        <div *ngIf="!hasPrescription" class="flex flex-column align-items-center justify-content-center p-6 text-center surface-ground border-round-xl">
+            <ng-container *ngIf="currentInvoiceStatus !== 'PAID'">
+                <i class="pi pi-file-edit text-500 text-6xl mb-3"></i>
+                <span class="text-xl text-900 font-bold mb-2">Chưa có đơn thuốc</span>
+                <p class="text-500 mb-4">Bệnh nhân này chưa được kê đơn cho lần khám này.</p>
+                <button pButton label="Tạo Đơn Thuốc Mới" icon="pi pi-plus"
+                        class="p-button-primary border-round-3xl w-auto px-5 py-3 shadow-2"
+                        (click)="createPrescription()">
+                </button>
+            </ng-container>
+            <div *ngIf="currentInvoiceStatus === 'PAID'">
+                <i class="pi pi-lock text-green-500 text-6xl mb-3"></i>
+                <div class="text-xl font-bold text-900">Đã thanh toán</div>
+                <p class="text-500">Đơn thuốc đã chốt sổ.</p>
+            </div>
+        </div>
+
+        <div *ngIf="hasPrescription && currentPrescription">
+            <div class="flex justify-content-between align-items-center mb-4 p-3 surface-50 border-round-xl border-1 surface-border">
+                <div>
+                    <div class="text-500 text-sm mb-1">Mã đơn thuốc</div>
+                    <div class="font-bold text-xl text-primary">#{{ currentPrescription.prescriptionId }}</div>
+                </div>
+                <div>
+                    <div class="text-500 text-sm mb-1">Ghi chú</div>
+                    <div class="text-900">{{ currentPrescription.note || '---' }}</div>
+                </div>
+                <div class="text-right">
+                    <div class="text-500 text-sm mb-1">Bác sĩ kê</div>
+                    <div class="font-bold text-900">{{ currentPrescription.doctorName || '---' }}</div>
+                </div>
+                <div *ngIf="currentInvoiceStatus === 'PAID'" class="ml-3">
+                    <span class="p-2 border-round bg-green-100 text-green-700 font-bold text-sm">
+                        <i class="pi pi-check-circle mr-1"></i>Đã thanh toán
+                    </span>
+                </div>
+            </div>
+
+            <p-table [value]="currentDetails" [loading]="loadingDetails"
+                     styleClass="p-datatable-sm border-1 surface-border border-round mb-4"
+                     [rowHover]="true">
+                <ng-template pTemplate="header">
+                    <tr class="surface-100">
+                        <th style="width: 50px" class="text-center">STT</th>
+                        <th>Tên thuốc</th>
+                        <th style="width: 120px" class="text-center">Số lượng</th>
+                        <th style="width: 100px">Đơn vị</th>
+                        <th>Cách dùng (Liều lượng)</th>
+                        <th style="width: 50px"></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-item let-i="rowIndex">
+                    <tr>
+                        <td class="text-center">{{i + 1}}</td>
+                        <td class="font-bold text-900">{{item.drugName}}</td>
+                        <td class="text-center">
+                            <span class="text-primary font-bold text-lg">{{item.quantity}}</span>
+                        </td>
+                        <td>{{item.unit}}</td>
+                        <td>{{item.dosage}}</td>
+                        <td>
+                            <button *ngIf="currentInvoiceStatus !== 'PAID'"
+                                    pButton icon="pi pi-trash" class="p-button-text p-button-danger p-button-sm"
+                                    (click)="removeDrug(item.detailId)"></button>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                    <tr><td colspan="6" class="text-center p-4 text-500">Chưa kê thuốc nào.</td></tr>
+                </ng-template>
+            </p-table>
+
+            <div *ngIf="currentInvoiceStatus !== 'PAID'" class="p-3 surface-50 border-round-xl border-1 surface-border">
+                <div class="text-900 font-bold mb-3"><i class="pi pi-plus-circle mr-2"></i>Thêm thuốc vào đơn</div>
+                <form [formGroup]="drugForm" class="formgrid grid">
+                    <div class="field col-5 organic-field mb-0">
+                        <p-dropdown [options]="drugsList" formControlName="drugId"
+                                    placeholder="Chọn thuốc..." appendTo="body"
+                                    [filter]="true" filterBy="label"
+                                    styleClass="w-full"></p-dropdown>
+                    </div>
+                    <div class="field col-2 organic-field mb-0">
+                        <input pInputText type="number" formControlName="quantity" placeholder="SL" min="1" class="text-center">
+                    </div>
+                    <div class="field col-4 organic-field mb-0">
+                        <input pInputText type="text" formControlName="dosage" placeholder="Cách dùng (Sáng/Trưa/Tối)">
+                    </div>
+                    <div class="field col-1 mb-0 flex align-items-center">
+                        <button pButton icon="pi pi-check"
+                                class="p-button-primary w-full"
+                                (click)="addDrug()"
+                                [disabled]="drugForm.invalid"
+                                pTooltip="Lưu thuốc"></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button pButton label="Đóng" icon="pi pi-times" class="p-button-text" (click)="presDialog = false"></button>
+        <button *ngIf="hasPrescription"
+                pButton label="In đơn thuốc"
+                icon="pi pi-print"
+                class="p-button-outlined"
+                (click)="printPrescription()">
+        </button>
+    </ng-template>
+</p-dialog>
+
+<div id="print-section" *ngIf="currentPrescription && currentRecord">
+    <div class="print-container">
+        <div class="header-clinic">
+            <div class="logo">
+                <i class="pi pi-heart-fill" style="font-size: 2.5rem; color: #ef4444;"></i>
+            </div>
+            <div class="info">
+                <h1>PHÒNG KHÁM ĐA KHOA 28CARE</h1>
+                <p>Địa chỉ: Thạch Bàn, Long Biên, Hà Nội</p>
+                <p>Hotline: 0349755252</p>
+            </div>
+        </div>
+
+        <hr class="divider"/>
+
+        <h2 class="title">ĐƠN THUỐC</h2>
+        <div class="meta-id">Mã đơn: #{{ currentPrescription.prescriptionId }}</div>
+
+        <div class="patient-info">
+            <div class="row">
+                <div class="col"><strong>Họ tên:</strong> {{ currentRecord.patientName }}</div>
+                <div class="col"><strong>Ngày khám:</strong> {{ currentRecord.visitDate | date:'dd/MM/yyyy HH:mm' }}</div>
+            </div>
+            <div class="row">
+                <div class="col full"><strong>Chẩn đoán:</strong> {{ currentRecord.diagnosis }}</div>
+            </div>
+             <div class="row">
+                <div class="col full"><strong>Ghi chú/Lời dặn:</strong> {{ currentPrescription.note || 'Không có' }}</div>
+            </div>
+        </div>
+
+        <table class="drug-table">
+            <thead>
+                <tr>
+                    <th style="width: 50px">STT</th>
+                    <th>Tên thuốc / Hàm lượng</th>
+                    <th style="width: 80px">ĐVT</th>
+                    <th style="width: 80px">SL</th>
+                    <th>Cách dùng</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let item of currentDetails; let i = index">
+                    <td class="text-center">{{ i + 1 }}</td>
+                    <td class="fw-bold">{{ item.drugName }}</td>
+                    <td class="text-center">{{ item.unit }}</td>
+                    <td class="text-center fw-bold">{{ item.quantity }}</td>
+                    <td>{{ item.dosage }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="footer-sign">
+            <div class="date">Ngày {{ today | date:'dd' }} tháng {{ today | date:'MM' }} năm {{ today | date:'yyyy' }}</div>
+            <div class="role">Bác sĩ kê đơn</div>
+            <div class="signature-space"></div>
+            <div class="doctor-name">{{ currentPrescription.doctorName }}</div>
+        </div>
+    </div>
+</div>

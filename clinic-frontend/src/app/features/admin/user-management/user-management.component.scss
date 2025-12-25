@@ -1,0 +1,357 @@
+/* --- 1. VARIABLES --- */
+$primary-color: #2563eb;
+$text-color: #0f172a;
+$text-muted: #64748b;
+$border-color: #e2e8f0;
+$field-height: 50px;
+
+/* --- 2. HOST CONFIG --- */
+:host {
+    display: block;
+    height: 100%;
+}
+
+/* --- 3. GLOBAL OVERRIDES (::ng-deep) --- */
+:host ::ng-deep {
+
+    /* --- A. LOADING OVERLAY --- */
+    .p-datatable-loading-overlay {
+        background-color: rgba(255, 255, 255, 0.7);
+        transition: opacity 0.2s;
+    }
+
+    .p-datatable-loading-icon {
+        color: $primary-color;
+    }
+
+    /* --- B. TABLE STRUCTURE --- */
+    .custom-table {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        overflow: hidden;
+
+        .p-datatable-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+            border-bottom: 1px solid $border-color;
+            position: relative;
+        }
+
+        .p-datatable-thead > tr > th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: #ffffff;
+            color: $text-muted;
+            padding: 1rem;
+            border-bottom: 1px solid $border-color;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+
+        .p-datatable-tbody > tr > td {
+            padding: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .p-datatable-tbody > tr:hover {
+            background-color: #f8fafc;
+        }
+
+        /* --- C. PAGINATOR (ĐÃ TỐI ƯU) --- */
+        .p-paginator {
+            background: #ffffff;
+            border-top: 1px solid #f1f5f9;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start; /* Ép về bên trái */
+            width: 100%;
+            gap: 8px;
+
+            /* Ẩn nút First/Last */
+            .p-paginator-first,
+            .p-paginator-last {
+                display: none;
+            }
+
+            /* --- C.1 ORDERING (Sắp xếp vị trí) --- */
+
+            /* 1. Nút Previous */
+            .p-paginator-prev {
+                order: 1;
+            }
+
+            /* 2. Danh sách số trang */
+            .p-paginator-pages {
+                order: 2;
+                display: flex;
+                gap: 4px;
+            }
+
+            /* 3. Nút Next */
+            .p-paginator-next {
+                order: 3;
+            }
+
+            /* 4. Dòng chữ 'Showing...' (Đẩy phần sau sang phải) */
+            .p-paginator-current {
+                order: 4;
+                margin-left: auto; /* Magic line: Đẩy dropdown sang phải */
+                margin-right: 15px;
+                color: $text-muted;
+                font-size: 0.875rem;
+                white-space: nowrap;
+            }
+
+            /* 5. Dropdown chọn số dòng */
+            p-dropdown {
+                order: 5;
+                margin-left: 0;
+
+                .p-dropdown {
+                    height: 38px;
+                    border-radius: 8px;
+                    border: 1px solid $border-color;
+                    display: flex;
+                    align-items: center;
+                    background: white;
+                    transition: border-color 0.2s;
+
+                    &:not(.p-disabled):hover {
+                        border-color: #cbd5e1;
+                    }
+
+                    .p-dropdown-label {
+                        padding: 0 0.5rem 0 0.75rem;
+                        font-weight: 600;
+                        color: $text-color;
+                        display: flex;
+                        align-items: center;
+
+                        &::before {
+                            content: "Show";
+                            margin-right: 4px;
+                            color: $text-muted;
+                            font-weight: 500;
+                        }
+                    }
+                }
+            }
+
+            /* --- C.2 STYLE BUTTONS (Prev/Next/Page) --- */
+            .p-paginator-element {
+                /* Target chung cho các nút điều hướng */
+                &.p-paginator-prev,
+                &.p-paginator-next,
+                &.p-paginator-page {
+                    min-width: 38px;
+                    height: 38px;
+                    padding: 0 12px;
+                    border-radius: 8px;
+                    border: 1px solid $border-color;
+                    background: white;
+                    color: #475569;
+                    font-weight: 600;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    transition: all 0.2s;
+
+                    /* Ẩn icon mặc định của PrimeNG */
+                    .p-paginator-icon {
+                        display: none;
+                    }
+
+                    &:not(.p-highlight):not(.p-disabled):hover {
+                        background: #f8fafc;
+                        border-color: #cbd5e1;
+                    }
+
+                    &.p-highlight {
+                        background: $primary-color;
+                        border-color: $primary-color;
+                        color: white;
+                    }
+                }
+            }
+
+            /* Thêm chữ Prev/Next */
+            .p-paginator-prev::after { content: "Prev"; }
+            .p-paginator-next::after { content: "Next"; }
+        }
+    }
+
+    /* --- D. BADGES --- */
+    .status-badge {
+        display: inline-flex;
+        padding: 4px 12px;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+
+        &.active { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        &.locked { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+    }
+
+    .role-badge {
+        display: inline-flex;
+        padding: 4px 12px;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+
+        &.role-admin { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        &.role-doctor { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+        &.role-receptionist { background: #ffedd5; color: #c2410c; border: 1px solid #fed7aa; }
+        &.role-patient { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+    }
+
+    /* --- E. ORGANIC FORM FIELDS --- */
+    .organic-field {
+      position: relative;
+      margin-bottom: 1.5rem;
+
+      /* Biến cục bộ để dễ chỉnh */
+      $local-height: 45px;
+      $radius: 10px;
+
+      /* 1. INPUT TEXT & PASSWORD (Cơ bản) */
+      /* Target cả thẻ input thường và class của PrimeNG để chắc chắn */
+      input[type="text"],
+      input[type="password"],
+      .p-inputtext {
+          width: 100%;
+          height: $local-height !important; /* Ép cứng chiều cao */
+          padding: 0 16px;
+          border: 1px solid #cbd5e1;
+          border-radius: $radius;
+          font-size: 0.95rem;
+          box-sizing: border-box; /* Quan trọng: Tính viền vào trong chiều cao */
+          line-height: normal; /* Reset line-height để text căn giữa */
+
+          &:focus {
+              border-color: $primary-color;
+              box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+              outline: none;
+          }
+      }
+
+      /* 2. CALENDAR (Ngày sinh) - Cấu trúc phức tạp nhất */
+      .p-calendar {
+          width: 100%;
+          height: $local-height; /* Set chiều cao cho container */
+          display: flex; /* Flex để input và button dính liền nhau */
+
+          /* Ô nhập ngày tháng bên trái */
+          .p-inputtext {
+              height: 100% !important; /* Ăn theo cha */
+              border-top-right-radius: 0 !important;
+              border-bottom-right-radius: 0 !important;
+              border-right: 0 none; /* Bỏ viền phải để liền lạc với nút */
+              width: 100%; /* Chiếm hết chỗ trừ cái nút */
+              flex: 1;
+          }
+
+          /* Nút chọn ngày bên phải */
+          .p-datepicker-trigger {
+              height: 100% !important; /* Ăn theo cha */
+              width: 3rem;
+              border-top-right-radius: $radius !important;
+              border-bottom-right-radius: $radius !important;
+              border-top-left-radius: 0 !important;
+              border-bottom-left-radius: 0 !important;
+
+              /* Chỉnh lại icon cho cân giữa */
+              display: flex;
+              align-items: center;
+              justify-content: center;
+          }
+      }
+
+      /* 3. DROPDOWN (Giới tính, Trạng thái) */
+      .p-dropdown {
+          width: 100%;
+          height: $local-height !important; /* Ép cứng chiều cao */
+          border-radius: $radius;
+          border: 1px solid #cbd5e1;
+          display: flex;
+          align-items: center; /* CĂN GIỮA DỌC - Đây là cái fix lỗi lệch */
+          padding: 0; /* Reset padding của container */
+          background: #fff;
+
+          &:not(.p-disabled).p-focus {
+              border-color: $primary-color;
+              box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+          }
+
+          /* Label hiển thị text đã chọn */
+          .p-dropdown-label {
+              border: none !important;       /* Bỏ viền thừa bên trong */
+              outline: none !important;      /* Bỏ đường focus */
+              box-shadow: none !important;   /* Bỏ bóng đổ */
+              background: transparent !important;
+              display: flex;
+              align-items: center; /* Căn giữa text */
+              height: 100%;
+              padding: 0 16px;
+              margin-top: 0; /* Fix lỗi margin mặc định của 1 số theme */
+          }
+
+          /* Nút mũi tên xổ xuống */
+          .p-dropdown-trigger {
+              height: 100%;
+              width: 3rem;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+          }
+      }
+
+      /* 4. MULTISELECT (Nếu có dùng) */
+      .p-multiselect {
+          width: 100%;
+          height: $local-height !important;
+          border-radius: $radius;
+          border: 1px solid #cbd5e1;
+          display: flex;
+          align-items: center;
+
+          .p-multiselect-label-container {
+              height: 100%;
+              display: flex;
+              align-items: center;
+              .p-multiselect-label {
+                  padding: 0 16px;
+                  margin-top: 0;
+              }
+          }
+
+          .p-multiselect-trigger {
+              height: 100%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+          }
+      }
+
+      /* Floating Label (Giữ nguyên) */
+      label.always-top {
+          position: absolute;
+          left: 12px;
+          top: 0;
+          transform: translateY(-50%);
+          background: #ffffff;
+          padding: 0 6px;
+          font-size: 0.75rem;
+          color: $primary-color;
+          font-weight: 700;
+          z-index: 20;
+          line-height: 1;
+          white-space: nowrap;
+      }
+  }
+}

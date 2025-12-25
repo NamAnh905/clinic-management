@@ -1,0 +1,87 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="flex flex-column h-full">
+    <div class="mb-3 flex-none">
+        <h2 class="text-2xl font-bold text-900 m-0">Quản lý Lễ tân</h2>
+    </div>
+
+    <div class="surface-card shadow-1 border-round-xl flex flex-column bg-white overflow-hidden" style="height: calc(100vh - 180px);">
+        <div class="flex flex-column sm:flex-row justify-content-between align-items-center p-3 border-bottom-1 surface-border flex-none">
+            <span class="p-input-icon-left w-full sm:w-auto">
+                <i class="pi pi-search text-500"></i>
+                <input pInputText type="text" [(ngModel)]="keyword" (keyup.enter)="loadReceptionists()" placeholder="Tìm theo mã NV, tên..." class="w-full sm:w-20rem border-round-2xl pl-5" />
+            </span>
+            <button pButton label="Thêm lễ tân" icon="pi pi-plus" class="p-button-primary border-round-3xl px-4" (click)="openNew()"></button>
+        </div>
+
+        <div class="flex-1 min-h-0 w-full relative">
+            <p-table
+                [value]="receptionists" [lazy]="true" (onLazyLoad)="loadReceptionists($event)"
+                [totalRecords]="totalRecords" [rows]="size" [loading]="loading"
+                [rowHover]="true"
+                styleClass="p-datatable-sm custom-table h-full" [paginator]="true"
+                [rowsPerPageOptions]="[5, 10, 20]" [showCurrentPageReport]="true"
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                paginatorTemplate="PrevPageLink PageLinks NextPageLink CurrentPageReport RowsPerPageDropdown">
+
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="min-width: 100px">Mã NV</th>
+                        <th style="min-width: 180px">Họ và tên</th>
+                        <th style="min-width: 150px">Email</th>
+                        <th style="min-width: 120px">Giới tính</th>
+                        <th style="min-width: 120px">Ngày vào làm</th>
+                        <th class="text-center" style="min-width: 100px">Thao tác</th>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="body" let-staff>
+                    <tr>
+                        <td><b class="text-primary">{{ staff.employeeCode }}</b></td>
+                        <td><span class="font-medium text-900">{{ staff.fullName }}</span></td>
+                        <td>{{ staff.email }}</td>
+                        <td>{{ staff.gender }}</td>
+                        <td>{{ staff.hireDate | date:'dd/MM/yyyy' }}</td>
+                        <td class="text-center">
+                            <button pButton icon="pi pi-pencil" class="p-button-text p-button-info p-button-rounded" (click)="editStaff(staff)"></button>
+                            <button pButton icon="pi pi-trash" class="p-button-text p-button-danger p-button-rounded" (click)="deleteReceptionist(staff.receptionistId)"></button>
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="6" class="text-center p-4 text-500">Không tìm thấy dữ liệu.</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+</div>
+
+<p-dialog [(visible)]="receptionistDialog" [header]="isEditMode ? 'Cập nhật Lễ tân' : 'Thêm Lễ tân mới'" [modal]="true" styleClass="p-fluid medical-dialog" [style]="{width: '450px'}" [draggable]="false" [resizable]="false">
+    <ng-template pTemplate="content">
+        <form [formGroup]="staffForm" class="mt-3">
+            <div class="field col-12 organic-field" *ngIf="!isEditMode">
+                <p-dropdown [options]="availableUsers" formControlName="userId" placeholder=" " [filter]="true" appendTo="body"></p-dropdown>
+                <label class="always-top">Chọn tài khoản người dùng <span class="text-red-500">*</span></label>
+            </div>
+
+            <div class="field col-12 organic-field" *ngIf="isEditMode">
+                <input pInputText formControlName="employeeCode" readonly class="bg-gray-100" />
+                <label class="always-top">Mã nhân viên</label>
+            </div>
+
+            <div class="field col-12 organic-field">
+                <p-calendar formControlName="hireDate" [showIcon]="true" dateFormat="dd/mm/yy" appendTo="body" placeholder=" "></p-calendar>
+                <label class="always-top">Ngày vào làm <span class="text-red-500">*</span></label>
+            </div>
+        </form>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button pButton label="Hủy" icon="pi pi-times" class="p-button-text" (click)="receptionistDialog = false"></button>
+        <button pButton label="Lưu" icon="pi pi-check" class="p-button-primary" (click)="saveStaff()"></button>
+    </ng-template>
+</p-dialog>

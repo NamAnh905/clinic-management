@@ -1,0 +1,81 @@
+/* =========================================
+   1. IMPORT LIBRARY (PrimeNG v17 + Fonts)
+   ========================================= */
+
+/* Import Font Inter từ Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* Import Theme giao diện v17 (Màu xanh Aura Light Blue) */
+@import "primeng/resources/themes/aura-light-blue/theme.css";
+@import "primeng/resources/primeng.css";
+
+/* Import Icons & Layout System */
+@import "primeicons/primeicons.css";
+@import "primeflex/primeflex.css";
+
+/* =========================================
+   2. GLOBAL SETTINGS
+   ========================================= */
+
+:root {
+    /* Khai báo biến dùng chung */
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --primary-color: #0ea5e9; /* Sky Blue */
+    --text-color: #0f172a;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-family);
+    background-color: #f8fafc; /* Màu nền xám xanh nhạt dịu mắt */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* =========================================
+   3. GLOBAL FIXES (Autofill, Inputs, Labels)
+   ========================================= */
+
+/* Fix lỗi Autofill Chrome (Màn hình vàng/xanh) cho TẤT CẢ input trong dự án */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px #ffffff inset !important; /* Ép nền trắng */
+    -webkit-text-fill-color: var(--text-color) !important;   /* Ép màu chữ đen */
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Fix lỗi Label bị đè khi Autofill */
+.organic-field {
+    input:-webkit-autofill + label {
+        top: 0 !important;
+        background: #ffffff;
+        padding: 0 6px;
+        font-size: 0.8rem;
+        color: var(--primary-color);
+        font-weight: 600;
+        z-index: 10;
+    }
+}
+
+/* Class tiện ích: Ép Label luôn nằm trên (Dùng cho Calendar/Dropdown) */
+.always-top {
+    position: absolute;
+    left: 16px;
+    top: 0 !important; /* Luôn nằm trên viền */
+    transform: translateY(-50%);
+    background: #ffffff;
+    padding: 0 6px;
+    font-size: 0.8rem;
+    color: var(--primary-color);
+    font-weight: 600;
+    z-index: 10;
+    pointer-events: none;
+}
+
+/* Khi có lỗi thì đổi màu Label always-top sang đỏ */
+.organic-field.error .always-top {
+    color: #ef4444;
+}

@@ -1,0 +1,105 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="flex flex-column h-full">
+    <div class="mb-3 flex-none">
+        <h2 class="text-2xl font-bold text-900 m-0">Quản lý Bác sĩ</h2>
+    </div>
+
+    <div class="surface-card shadow-1 border-round-xl flex flex-column bg-white overflow-hidden" style="height: calc(100vh - 180px);">
+        <div class="flex flex-column sm:flex-row justify-content-between align-items-center p-3 border-bottom-1 surface-border flex-none">
+            <span class="p-input-icon-left w-full sm:w-auto">
+                <i class="pi pi-search text-500"></i>
+                <input pInputText type="text" [(ngModel)]="keyword" (keyup.enter)="loadDoctors()" placeholder="Tìm theo tên, mã BS..." class="w-full sm:w-22rem border-round-2xl pl-5" />
+            </span>
+            <button pButton label="Thêm bác sĩ" icon="pi pi-plus" class="p-button-primary border-round-3xl px-4" (click)="openNew()"></button>
+        </div>
+
+        <div class="flex-1 min-h-0 w-full relative">
+            <p-table
+                [value]="doctors" [lazy]="true" (onLazyLoad)="loadDoctors($event)"
+                [totalRecords]="totalRecords" [rows]="size" [loading]="loading"
+                [rowHover]="true"
+                styleClass="p-datatable-sm custom-table h-full" [paginator]="true"
+                [rowsPerPageOptions]="[5, 10, 20]" [showCurrentPageReport]="true"
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                paginatorTemplate="PrevPageLink PageLinks NextPageLink CurrentPageReport RowsPerPageDropdown">
+
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="min-width: 100px">Mã BS</th>
+                        <th style="min-width: 180px">Họ và tên</th>
+                        <th style="min-width: 150px">Chuyên khoa</th>
+                        <th style="min-width: 150px">Số giấy phép</th>
+                        <th style="min-width: 120px">SĐT</th>
+                        <th class="text-center" style="min-width: 100px">Thao tác</th>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="body" let-doc>
+                    <tr>
+                        <td><b class="text-primary">{{ doc.employeeCode }}</b></td>
+                        <td><span class="font-medium text-900">{{ doc.fullName }}</span></td>
+                        <td>
+                            <span class="inline-flex align-items-center bg-blue-50 text-blue-700 px-2 py-1 border-round text-sm font-bold border-1 border-blue-200">
+                                {{ doc.specialtyName || 'Chưa cập nhật' }}
+                            </span>
+                        </td>
+                        <td>{{ doc.licenseNumber }}</td>
+                        <td>{{ doc.phoneNumber }}</td>
+                        <td class="text-center">
+                            <button pButton icon="pi pi-pencil" class="p-button-text p-button-info p-button-rounded" (click)="editDoctor(doc)"></button>
+                            <button pButton icon="pi pi-trash"
+                                    class="p-button-text p-button-danger p-button-rounded"
+                                    (click)="deleteDoctor(doc.doctorId)"
+                                    pTooltip="Dừng hoạt động"
+                                    tooltipPosition="top">
+                            </button>
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="emptymessage">
+                    <tr><td colspan="6" class="text-center p-4 text-500">Không tìm thấy bác sĩ nào.</td></tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+</div>
+
+<p-dialog [(visible)]="doctorDialog" [header]="isEditMode ? 'Cập nhật thông tin' : 'Thêm Bác sĩ mới'" [modal]="true" styleClass="p-fluid medical-dialog" [style]="{width: '500px'}" [draggable]="false" [resizable]="false">
+    <ng-template pTemplate="content">
+        <form [formGroup]="doctorForm" class="mt-3">
+
+            <div class="field col-12 organic-field" *ngIf="!isEditMode">
+                <p-dropdown [options]="availableUsers" formControlName="userId" placeholder=" " [filter]="true" appendTo="body"></p-dropdown>
+                <label class="always-top">Chọn tài khoản người dùng <span class="text-red-500">*</span></label>
+            </div>
+
+            <div class="field col-12 organic-field" *ngIf="isEditMode">
+                <input pInputText formControlName="fullName" class="bg-gray-100 font-bold"/>
+                <label class="always-top">Bác sĩ</label>
+            </div>
+
+            <div class="field col-12 organic-field">
+                <p-dropdown
+                    [options]="specialties"
+                    formControlName="specialtyId"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Chọn chuyên khoa"
+                    appendTo="body"
+                    [filter]="true"
+                    [style]="{'width':'100%'}">
+                </p-dropdown>
+                <label class="always-top">Chuyên khoa <span class="text-red-500">*</span></label>
+            </div>
+
+        </form>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button pButton label="Hủy" icon="pi pi-times" class="p-button-text" (click)="doctorDialog = false"></button>
+        <button pButton label="Lưu" icon="pi pi-check" class="p-button-primary" (click)="saveDoctor()"></button>
+    </ng-template>
+</p-dialog>

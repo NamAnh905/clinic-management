@@ -1,0 +1,310 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="flex flex-column h-full">
+
+    <div class="mb-3 flex-none">
+        <h2 class="text-2xl font-bold text-900 m-0">Quản lý Lịch hẹn khám</h2>
+    </div>
+
+    <div class="surface-card shadow-1 border-round-xl flex flex-column bg-white overflow-hidden"
+         style="height: calc(100vh - 180px);">
+
+        <div class="flex flex-column xl:flex-row justify-content-between align-items-center p-3 border-bottom-1 surface-border flex-none gap-3">
+            <div class="flex flex-column sm:flex-row gap-2 w-full xl:w-auto">
+                <span class="p-input-icon-left w-full sm:w-auto">
+                    <i class="pi pi-search text-500"></i>
+                    <input pInputText type="text"
+                        [(ngModel)]="keyword"
+                        (keyup.enter)="loadAppointments()"
+                        placeholder="Tên BN / Bác sĩ..."
+                        class="w-full sm:w-16rem border-round-2xl pl-5" />
+                </span>
+
+                <p-calendar
+                    [(ngModel)]="rangeDates"
+                    selectionMode="range"
+                    [readonlyInput]="true"
+                    placeholder="Chọn khoảng ngày"
+                    dateFormat="dd/mm/yy"
+                    [showIcon]="true"
+                    styleClass="w-full sm:w-16rem border-round-2xl"
+                    (onClose)="loadAppointments()">
+                </p-calendar>
+
+                <p-dropdown
+                    [options]="statusOptions"
+                    [(ngModel)]="selectedStatus"
+                    (onChange)="loadAppointments()"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Trạng thái"
+                    styleClass="w-full sm:w-12rem border-round-2xl"
+                    [showClear]="true">
+                </p-dropdown>
+            </div>
+
+            <div class="flex flex-column sm:flex-row gap-2 w-full xl:w-auto" *ngIf="!isDoctor">
+                <button pButton
+                        label="Xuất Excel"
+                        icon="pi pi-file-excel"
+                        class="p-button-success border-round-3xl px-4 w-full sm:w-auto"
+                        (click)="exportExcel()">
+                </button>
+
+                <button pButton
+                        label="Đặt lịch mới"
+                        icon="pi pi-plus"
+                        class="p-button-primary border-round-3xl px-4 w-full sm:w-auto"
+                        (click)="openNew()">
+                </button>
+            </div>
+        </div>
+
+        <div class="flex-1 min-h-0 w-full relative">
+            <p-table
+                [value]="appointments"
+                [lazy]="true"
+                (onLazyLoad)="loadAppointments($event)"
+                [totalRecords]="totalRecords"
+                [rows]="size"
+                [loading]="loading"
+                [rowHover]="true"
+                styleClass="p-datatable-sm custom-table h-full"
+                [paginator]="true"
+                [rowsPerPageOptions]="[5, 10, 15, 20]"
+                [showCurrentPageReport]="true"
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                paginatorTemplate="PrevPageLink PageLinks NextPageLink CurrentPageReport RowsPerPageDropdown">
+
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="min-width: 50px">ID</th>
+                        <th style="min-width: 180px">Bệnh nhân</th>
+                        <th style="min-width: 180px">Bác sĩ</th>
+                        <th style="min-width: 140px">Thời gian hẹn</th>
+                        <th style="min-width: 200px">Lý do khám</th>
+                        <th style="min-width: 120px" class="text-center">Trạng thái</th>
+                        <th class="text-center" style="min-width: 160px" *ngIf="!isDoctor">Thao tác</th>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="body" let-appt>
+                    <tr>
+                        <td><span class="text-500">#{{ appt.appointmentId }}</span></td>
+
+                        <td><span class="font-medium text-900">{{ appt.patientName }}</span></td>
+
+                        <td><span class="text-700">{{ appt.doctorName }}</span></td>
+
+                        <td>
+                            <div class="font-medium text-900">{{ appt.appointmentTime | date:'dd/MM/yyyy' }}</div>
+                            <div class="text-primary text-sm font-bold">
+                                {{ appt.appointmentTime | date:'HH:mm' }}
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="text-500 white-space-nowrap overflow-hidden text-overflow-ellipsis"
+                                style="max-width: 200px;" [title]="appt.reason">
+                                {{ appt.reason }}
+                            </div>
+                        </td>
+
+                        <td class="text-center">
+                            <p-tag [value]="appt.status" [severity]="getSeverity(appt.status)"></p-tag>
+                        </td>
+
+                        <td class="text-center" *ngIf="!isDoctor">
+                            <button *ngIf="appt.status === 'COMPLETED'"
+                                    pButton icon="pi pi-wallet"
+                                    class="p-button-text p-button-success p-button-rounded mr-1"
+                                    (click)="handlePayment(appt)"
+                                    pTooltip="Thanh toán / Hóa đơn">
+                            </button>
+
+                            <button pButton icon="pi pi-pencil"
+                                    class="p-button-text p-button-info p-button-rounded"
+                                    (click)="editAppointment(appt)"
+                                    pTooltip="Xem/Sửa">
+                            </button>
+
+                            <button *ngIf="appt.status !== 'CANCELLED' && appt.status !== 'COMPLETED'"
+                                    pButton icon="pi pi-times"
+                                    class="p-button-text p-button-danger p-button-rounded"
+                                    (click)="cancelAppointment(appt)"
+                                    pTooltip="Hủy lịch">
+                            </button>
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="7" class="text-center p-4 text-500">Không tìm thấy lịch hẹn nào.</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+</div>
+
+<p-dialog
+    [(visible)]="apptDialog"
+    [style]="{ width: '600px' }"
+    [header]="isEditMode ? 'Cập nhật lịch hẹn' : 'Đặt lịch hẹn mới'"
+    [modal]="true"
+    styleClass="p-fluid medical-dialog"
+    [draggable]="false"
+    [resizable]="false">
+
+    <ng-template pTemplate="content">
+        <form [formGroup]="apptForm" class="mt-3 formgrid grid">
+
+            <div class="field col-12 organic-field">
+                <p-dropdown
+                    [options]="patients"
+                    formControlName="patientId"
+                    optionLabel="label"
+                    optionValue="value"
+                    [filter]="true"
+                    filterBy="label"
+                    [readonly]="isEditMode"
+                    placeholder="Chọn bệnh nhân"
+                    appendTo="body">
+                </p-dropdown>
+                <label class="always-top">Bệnh nhân <span class="text-red-500">*</span></label>
+            </div>
+
+            <div class="field col-12 organic-field" *ngIf="!isDoctor">
+                <p-dropdown
+                    [options]="doctors"
+                    formControlName="doctorId"
+                    optionLabel="label"
+                    optionValue="value"
+                    [filter]="true"
+                    filterBy="label"
+                    placeholder="Chọn bác sĩ"
+                    appendTo="body">
+                </p-dropdown>
+                <label class="always-top">Bác sĩ phụ trách <span class="text-red-500">*</span></label>
+            </div>
+
+            <div class="field col-12" *ngIf="isDoctor">
+                <label class="font-bold text-primary">Bác sĩ phụ trách: {{ currentUser?.fullName }} (Bạn)</label>
+            </div>
+
+            <div class="field col-6 organic-field">
+                <p-calendar formControlName="date" dateFormat="dd/mm/yy" appendTo="body" placeholder=" " [showIcon]="true"></p-calendar>
+                <label class="always-top">Ngày khám <span class="text-red-500">*</span></label>
+            </div>
+
+            <div class="field col-6 organic-field">
+                <p-calendar formControlName="time" [timeOnly]="true" [stepMinute]="15" appendTo="body" placeholder=" " [showIcon]="true" icon="pi pi-clock"></p-calendar>
+                <label class="always-top">Giờ hẹn <span class="text-red-500">*</span></label>
+            </div>
+
+            <div class="field col-12 organic-field">
+                <textarea pInputTextarea formControlName="reason" rows="3" style="resize: none" placeholder=" "></textarea>
+                <label class="always-top">Triệu chứng / Lý do khám <span class="text-red-500">*</span></label>
+            </div>
+
+            <div class="field col-12 organic-field" *ngIf="isEditMode">
+                <p-dropdown
+                    [options]="statusOptions"
+                    formControlName="status"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder=" "
+                    appendTo="body">
+                </p-dropdown>
+                <label class="always-top">Trạng thái</label>
+            </div>
+
+        </form>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button pButton label="Hủy" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
+        <button pButton label="Lưu lịch hẹn" icon="pi pi-check" class="p-button-primary" (click)="saveAppointment()"></button>
+    </ng-template>
+</p-dialog>
+
+<p-dialog [(visible)]="invoiceDialog" [style]="{width: '800px'}"
+          [header]="'Chi tiết Hóa đơn & Thanh toán'"
+          [modal]="true" styleClass="p-fluid medical-dialog" [draggable]="false" [resizable]="false">
+
+    <ng-template pTemplate="content">
+        <div *ngIf="currentInvoice">
+            <div class="flex justify-content-between align-items-center mb-4 p-3 surface-50 border-round-xl border-1 surface-border">
+                <div>
+                    <div class="text-500 text-sm mb-1">Mã Giao Dịch</div>
+                    <div class="font-bold text-xl text-900">{{ currentInvoice.transactionCode || '---' }}</div>
+                </div>
+                <div>
+                    <div class="text-500 text-sm mb-1">Bệnh nhân</div>
+                    <div class="text-900 font-bold text-lg text-primary">{{ currentInvoice.patientName }}</div>
+                </div>
+                <div class="text-right">
+                    <div class="text-500 text-sm mb-1">Trạng thái</div>
+                    <span [class]="'status-badge ' + getStatusClass(currentInvoice.paymentStatus)">
+                        {{ getStatusLabel(currentInvoice.paymentStatus) }}
+                    </span>
+                </div>
+            </div>
+
+            <p-table [value]="invoiceDetails" [loading]="loadingDetails"
+                     styleClass="p-datatable-sm border-1 surface-border border-round mb-4"
+                     [rowHover]="true">
+                <ng-template pTemplate="header">
+                    <tr class="surface-100">
+                        <th style="width: 50px" class="text-center">STT</th>
+                        <th>Nội dung</th>
+                        <th style="width: 100px" class="text-center">Số lượng</th>
+                        <th style="width: 130px" class="text-right">Đơn giá</th>
+                        <th style="width: 130px" class="text-right">Thành tiền</th>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="body" let-item let-i="rowIndex">
+                    <tr>
+                        <td class="text-center">{{i + 1}}</td>
+                        <td>
+                            <div class="font-medium text-900">{{ getItemName(item) }}</div>
+                            <div class="text-xs text-500" *ngIf="item.serviceName">Dịch vụ khám</div>
+                            <div class="text-xs text-500" *ngIf="item.drugName">Thuốc</div>
+                        </td>
+                        <td class="text-center font-bold">{{ item.quantity }}</td>
+                        <td class="text-right">{{ formatCurrency(item.unitPrice) }}</td>
+                        <td class="text-right font-bold text-900">
+                            {{ formatCurrency(item.quantity * item.unitPrice) }}
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="footer">
+                    <tr>
+                        <td colspan="4" class="text-right font-bold text-lg text-900">TỔNG CỘNG:</td>
+                        <td class="text-right font-bold text-xl text-primary">
+                            {{ formatCurrency(currentInvoice.totalAmount) }}
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="emptymessage">
+                    <tr><td colspan="5" class="text-center p-4 text-500">Chưa có chi tiết nào.</td></tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button pButton label="Đóng" icon="pi pi-times" class="p-button-text" (click)="invoiceDialog = false"></button>
+        <button pButton label="In Hóa đơn" icon="pi pi-print" class="p-button-outlined"></button>
+
+        <button *ngIf="currentInvoice?.paymentStatus === 'PENDING'"
+                pButton label="Xác nhận đã thu tiền" icon="pi pi-wallet"
+                class="p-button-success border-round-3xl px-4">
+        </button>
+    </ng-template>
+</p-dialog>

@@ -1,0 +1,81 @@
+$primary-color: #2563eb;
+$border-color: #e2e8f0;
+$text-muted: #64748b;
+$bg-header: #f8fafc;
+$scrollbar-width: 8px;
+
+:host {
+    display: block;
+    height: 100%;
+}
+
+.schedule-layout {
+    background-color: $bg-header;
+    height: 100%;
+    display: flex;
+    overflow: hidden;
+}
+
+/* Sidebar Filter */
+.sidebar-filter {
+    background-color: white;
+    overflow-y: auto;
+    .filter-group {
+        margin-bottom: 1.5rem;
+        label { font-size: 0.875rem; color: #0f172a; margin-bottom: 0.5rem; }
+    }
+}
+
+/* Calendar Inline Custom */
+::ng-deep .custom-inline-calendar {
+    width: 100% !important;
+    .p-datepicker {
+        width: 100% !important; border: 1px solid $border-color; border-radius: 8px; padding: 0;
+        .p-datepicker-header { padding: 0.5rem; border-bottom: 1px solid $border-color; }
+        table { font-size: 0.9rem; margin: 0.5rem 0;
+            th { padding: 0.4rem; color: $text-muted; font-weight: 600; }
+            td { padding: 0.2rem; > span { width: 2rem; height: 2rem; border-radius: 50%; &.p-highlight { background-color: $primary-color; color: white; } } }
+        }
+    }
+}
+
+/* --- GANTT CHART STYLES --- */
+.calendar-wrapper {
+
+    .gantt-header {
+        .time-track-header {
+            overflow: hidden; /* Cố định */
+        }
+    }
+
+    .gantt-body {
+        /* Style cho Scrollbar */
+        &::-webkit-scrollbar { width: $scrollbar-width; height: $scrollbar-width; }
+        &::-webkit-scrollbar-track { background: #f1f5f9; }
+        &::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        &::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .gantt-row {
+            /* Cột tên nhân viên dính chặt bên trái khi scroll ngang */
+            .staff-info {
+                position: sticky;
+                left: 0;
+                z-index: 20;
+                box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+            }
+
+            .timeline-track {
+                /* Vùng chứa các thanh lịch */
+                .gantt-event {
+                    transition: all 0.2s ease;
+                    &:hover {
+                        transform: translateY(-50%) scale(1.02) !important;
+                        z-index: 30 !important;
+                        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                        filter: brightness(0.95);
+                    }
+                }
+            }
+        }
+    }
+}

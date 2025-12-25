@@ -1,0 +1,263 @@
+$primary-color: #2563eb;
+$text-color: #0f172a;
+$text-muted: #64748b;
+$border-color: #e2e8f0;
+
+:host {
+    display: block;
+    height: 100%;
+}
+
+:host ::ng-deep {
+    /* --- 1. HIỆU ỨNG LOADING --- */
+    .p-datatable-loading-overlay {
+        background-color: rgba(255, 255, 255, 0.7) !important;
+        transition: opacity 0.2s !important;
+        z-index: 50 !important;
+    }
+
+    .p-datatable-loading-icon {
+        color: $primary-color !important;
+    }
+
+    /* --- 2. TABLE CHÍNH (Full Height & Sticky Header) --- */
+    .custom-table {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        overflow: hidden;
+
+        .p-datatable-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            border-bottom: 1px solid $border-color;
+            position: relative;
+            min-height: 200px;
+            background: #ffffff;
+        }
+
+        .p-datatable-thead > tr > th {
+            position: sticky; top: 0; z-index: 10;
+            background: #ffffff;
+            color: $text-muted;
+            padding: 1rem;
+            border-bottom: 1px solid $border-color;
+            font-weight: 600;
+        }
+
+        .p-datatable-tbody > tr > td {
+            padding: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+
+        .p-datatable-tbody > tr:hover {
+            background-color: #f8fafc !important;
+        }
+
+        /* --- 3. PHÂN TRANG (PAGINATOR) ĐỒNG BỘ --- */
+        .p-paginator.p-component {
+            background: #ffffff !important;
+            border-top: 1px solid #f1f5f9 !important;
+            padding: 1rem 1.5rem !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: flex-start !important;
+            width: 100% !important;
+            gap: 8px !important;
+
+            /* Ẩn nút First/Last */
+            .p-paginator-first, .p-paginator-last { display: none !important; }
+
+            /* Sắp xếp flex order */
+            .p-paginator-prev { order: 1 !important; }
+            .p-paginator-pages { order: 2 !important; display: flex !important; gap: 4px !important; }
+            .p-paginator-next { order: 3 !important; }
+
+            /* Đẩy Dropdown sang phải bằng margin-left: auto */
+            .p-paginator-current {
+                order: 4 !important;
+                margin-left: auto !important; /* MẤU CHỐT Ở ĐÂY */
+                margin-right: 15px !important;
+                color: $text-muted !important;
+                font-size: 0.875rem !important;
+                white-space: nowrap !important;
+            }
+
+            /* Dropdown chọn số dòng */
+            p-dropdown {
+                order: 5 !important;
+                margin-left: 0 !important;
+                background: transparent !important;
+                border: none !important;
+                padding: 0 !important;
+
+                .p-dropdown {
+                    height: 38px;
+                    border-radius: 8px;
+                    border: 1px solid $border-color;
+                    display: flex; align-items: center;
+                    background: white;
+                    &:hover { border-color: #cbd5e1; }
+
+                    .p-dropdown-label {
+                        padding: 0 0.5rem 0 0.75rem; font-weight: 600; color: $text-color;
+                        display: flex; align-items: center;
+                        &::before { content: "Show"; margin-right: 4px; color: $text-muted; font-weight: 500; }
+                    }
+                }
+            }
+
+            /* Style nút bấm Prev/Next/Page */
+            .p-paginator-prev, .p-paginator-next, .p-paginator-page {
+                min-width: 38px; height: 38px;
+                padding: 0 12px !important;
+                border-radius: 8px !important;
+                border: 1px solid $border-color !important;
+                background: white !important;
+                color: #475569 !important; font-weight: 600 !important;
+                display: inline-flex !important; align-items: center; justify-content: center;
+
+                .p-paginator-icon { display: none !important; } /* Ẩn icon mặc định */
+
+                &:hover:not(.p-highlight) {
+                    background: #f8fafc !important;
+                    border-color: #cbd5e1 !important;
+                }
+                &.p-highlight {
+                    background: $primary-color !important;
+                    color: white !important;
+                    border-color: $primary-color !important;
+                }
+            }
+
+            /* Thêm chữ Prev/Next */
+            .p-paginator-prev::after { content: "Prev"; }
+            .p-paginator-next::after { content: "Next"; }
+        }
+    }
+
+    /* --- 4. STYLE RIÊNG CHO INVOICE STATUS --- */
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 700;
+
+        &.status-paid { background: #dcfce7; color: #166534; } /* Xanh lá */
+        &.status-pending { background: #ffedd5; color: #9a3412; } /* Cam */
+        &.status-failed { background: #fee2e2; color: #991b1b; } /* Đỏ */
+    }
+
+    /* --- 5. STYLE RIÊNG CHO BẢNG CHI TIẾT TRONG DIALOG --- */
+    .p-dialog .p-datatable-sm {
+        .p-datatable-thead > tr > th {
+            background: #f8fafc;
+            color: $text-color;
+            font-size: 0.9rem;
+            padding: 0.75rem;
+        }
+        .p-datatable-tbody > tr > td {
+            padding: 0.75rem;
+            font-size: 0.95rem;
+        }
+    }
+
+    /* Mặc định ẩn mẫu in trên giao diện web */
+    #print-section {
+        display: none;
+    }
+
+    @media print {
+      /* 1. Các thiết lập cơ bản để ẩn giao diện web và hiện vùng in */
+      body * { visibility: hidden; }
+      .p-dialog-mask, .p-toast, .p-confirm-dialog { display: none !important; }
+      #print-section, #print-section * { visibility: visible; }
+
+      /* 2. Định vị vùng in phủ kín khổ giấy */
+      #print-section {
+          display: block !important;
+          position: fixed; top: 0; left: 0;
+          width: 100vw; height: 100vh;
+          background-color: #ffffff !important;
+          z-index: 99999;
+          padding: 0;
+      }
+
+      /* --- GIAO DIỆN BÊN TRONG TỜ ĐƠN THUỐC (ĐÃ TỐI ƯU KHOẢNG CÁCH) --- */
+      .print-container {
+          width: 100%; max-width: 100%; margin: 0;
+          padding: 15px 30px; /* [GIẢM] Padding tổng thể của tờ giấy */
+          font-family: 'Times New Roman', Times, serif; color: #000;
+      }
+
+      /* --- HEADER --- */
+      .header-clinic {
+          display: flex; align-items: center; gap: 15px;
+          margin-bottom: 10px; /* [GIẢM] Khoảng cách dưới header */
+          border-bottom: 2px solid #000; /* Giữ lại gạch chân này */
+          padding-bottom: 10px; /* [GIẢM] Padding dưới header */
+
+          .logo { width: 70px; text-align: center; }
+          .info {
+              h1 { font-size: 18px; margin: 0 0 3px 0; text-transform: uppercase; color: #dc2626; font-weight: bold; }
+              p { margin: 1px 0; font-size: 13px; color: #333; }
+          }
+      }
+
+      /* [QUAN TRỌNG] Ẩn thẻ HR thừa đi để chỉ còn 1 dòng gạch */
+      hr.divider {
+          display: none !important;
+      }
+
+      /* --- TIÊU ĐỀ & THÔNG TIN BỆNH NHÂN --- */
+      .title {
+          text-align: center; font-size: 24px; font-weight: bold;
+          margin-top: 15px; /* [GIẢM] */
+          margin-bottom: 5px;
+          text-transform: uppercase;
+      }
+      .meta-id { text-align: center; font-size: 13px; font-style: italic; margin-bottom: 15px; /* [GIẢM] MÃ ĐƠN SÁT LÊN */ }
+
+      .patient-info {
+          margin-bottom: 20px; /* [GIẢM] Khoảng cách đến bảng thuốc */
+          font-size: 14px;
+          line-height: 1.4; /* [GIẢM] Chiều cao dòng chữ cho gọn */
+
+          .row { display: flex; margin-bottom: 6px; /* [GIẢM] Khoảng cách giữa các dòng thông tin */ }
+          .col { flex: 1; } .col.full { flex: 100%; }
+          strong { margin-right: 5px; }
+      }
+
+      /* --- BẢNG THUỐC (LÀM GỌN LẠI) --- */
+      .drug-table {
+          width: 100%; border-collapse: collapse;
+          margin-bottom: 25px; /* [GIẢM] Khoảng cách đến phần chữ ký */
+          font-size: 14px; /* [GIẢM] Cỡ chữ trong bảng nhỏ lại chút */
+
+          th, td {
+              border: 1px solid #000;
+              padding: 6px 8px; /* [QUAN TRỌNG] Giảm padding trong ô để bảng co lại */
+          }
+          th {
+              background-color: #f3f4f6 !important; text-align: center; font-weight: bold;
+              -webkit-print-color-adjust: exact; print-color-adjust: exact;
+          }
+          .text-center { text-align: center; } .fw-bold { font-weight: bold; }
+      }
+
+      /* --- CHỮ KÝ --- */
+      .footer-sign {
+          display: flex; flex-direction: column; align-items: flex-end;
+          margin-top: 10px; margin-right: 10px;
+
+          .date { font-style: italic; font-size: 14px; margin-bottom: 5px; }
+          .role {
+              font-weight: bold; font-size: 15px; text-align: center; width: 200px;
+              margin-bottom: 60px; /* [GIẢM] Khoảng trống để ký tên */
+          }
+          .doctor-name { font-weight: bold; font-size: 16px; text-transform: uppercase; text-align: center; width: 200px; }
+      }
+  }
+}
+

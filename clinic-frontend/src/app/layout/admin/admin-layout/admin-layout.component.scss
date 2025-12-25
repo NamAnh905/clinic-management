@@ -1,0 +1,53 @@
+/* --- CẤU TRÚC FIXED LAYOUT --- */
+
+/* 1. Khung bao ngoài cùng: Chiếm trọn màn hình, KHÓA cuộn của trình duyệt */
+.layout-wrapper {
+    display: flex;
+    height: 100vh;      /* Chiều cao bằng đúng màn hình thiết bị */
+    overflow: hidden;   /* Cắt bỏ mọi thứ tràn ra ngoài (để không xuất hiện 2 thanh cuộn) */
+    background-color: #f8fafc; /* Màu nền xám nhạt chủ đạo */
+}
+
+/* 2. Sidebar: Cố định chiều cao full, không co giãn */
+.layout-sidebar {
+    flex: 0 0 auto;     /* Không cho phép co giãn */
+    height: 100%;
+    z-index: 200;       /* Nằm trên các thành phần khác nếu cần */
+    background: #ffffff;
+}
+
+/* 3. Khu vực chính (Chứa Header + Content) */
+.layout-main {
+    flex: 1;            /* Chiếm toàn bộ phần rộng còn lại */
+    display: flex;
+    flex-direction: column; /* Xếp dọc: Header trên, Content dưới */
+    min-width: 0;       /* Fix lỗi flexbox bị tràn content */
+    height: 100%;       /* Full chiều cao */
+    transition: margin-left 0.3s; /* Hiệu ứng mượt nếu cần */
+}
+
+/* 4. Header: Cố định, không co giãn */
+.layout-header {
+    flex: 0 0 auto;     /* Giữ nguyên chiều cao của Header, không bị ép nhỏ lại */
+    z-index: 100;
+    width: 100%;
+    background-color: #f8fafc; /* Trùng màu nền để che content khi cuộn qua */
+}
+
+/* 5. Nội dung: Phần duy nhất ĐƯỢC PHÉP CUỘN */
+.layout-content {
+    flex: 1;
+    display: flex;              /* Biến thành Flexbox */
+    flex-direction: column;     /* Xếp dọc */
+    overflow: hidden;           /* QUAN TRỌNG: Tắt cuộn ở layout cha */
+    padding: 1.5rem 2rem 2rem 2rem; /* Padding xung quanh */
+    height: 100%;               /* Ép chiều cao full */
+}
+
+/* Đảm bảo Router Outlet truyền full height xuống component con */
+router-outlet + * {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}

@@ -1,0 +1,52 @@
+<aside class="sidebar-container" [class.collapsed]="!layoutService.sidebarOpen()">
+
+  <div class="logo-area">
+      <div class="logo-icon" *ngIf="layoutService.sidebarOpen()">
+          <img src="assets/icons/logo_real.png" alt="28Care Logo">
+      </div>
+
+      <button class="toggle-btn" (click)="layoutService.toggleSidebar()">
+          <i class="pi pi-bars"></i>
+      </button>
+  </div>
+
+  <div class="menu-section">
+    <ul class="nav-list">
+      <li *ngFor="let item of menuItems">
+
+        <a *ngIf="!item.children" [routerLink]="item.routerLink" routerLinkActive="active"
+          class="nav-link" [title]="!layoutService.sidebarOpen() ? item.label : ''">
+          <i [class]="item.icon" class="layout-menuitem-icon"></i>
+          <span *ngIf="layoutService.sidebarOpen()" class="layout-menuitem-text">{{ item.label }}</span>
+        </a>
+
+        <ng-container *ngIf="item.children">
+          <div class="nav-link parent-link"
+              (click)="toggleSubMenu(item)"
+              [class.active-parent]="isParentActive(item)"
+              [title]="!layoutService.sidebarOpen() ? item.label : ''">
+
+            <i [class]="item.icon" class="layout-menuitem-icon"></i>
+            <span *ngIf="layoutService.sidebarOpen()" class="layout-menuitem-text">{{ item.label }}</span>
+
+            <i *ngIf="layoutService.sidebarOpen()"
+              class="pi pi-chevron-down layout-menuitem-toggler"
+              [class.rotated]="item.isOpen"></i>
+          </div>
+
+          <div class="submenu-wrapper" [class.expanded]="item.isOpen && layoutService.sidebarOpen()">
+            <ul class="sub-nav-list">
+              <li *ngFor="let child of item.children">
+                <a [routerLink]="child.routerLink" routerLinkActive="active-sub" class="sub-link">
+                  <i [class]="child.icon" class="layout-menuitem-icon sub-icon"></i>
+                  <span>{{ child.label }}</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </ng-container>
+
+      </li>
+    </ul>
+  </div>
+</aside>

@@ -1,0 +1,54 @@
+.header-container {
+  height: 70px; /* Thấp hơn một chút cho gọn */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2rem;
+  background: transparent;
+}
+
+/* Breadcrumb trong suốt, bỏ nền xám mặc định của PrimeNG */
+:host ::ng-deep .p-breadcrumb {
+    background: transparent;
+    border: none;
+    padding: 0;
+
+    .p-menuitem-text {
+        font-size: 0.9rem;
+        color: #64748b;
+    }
+    .p-menuitem-home {
+        color: #64748b;
+    }
+}
+
+.actions-area {
+  display: flex;
+  align-items: center;
+}
+
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #e2e8f0;
+  background: white;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover { color: #2563eb; border-color: #2563eb; }
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 8px;
+  transition: background 0.2s;
+
+  &:hover { background: rgba(0,0,0,0.03); }
+}

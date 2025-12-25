@@ -1,0 +1,343 @@
+/* --- 1. Cấu hình màu sắc & Font (Sans-Serif) --- */
+$primary-color: #0ea5e9; /* Sky Blue 500 */
+$primary-dark: #0284c7;  /* Sky Blue 600 */
+$primary-light: #e0f2fe; /* Sky Blue 100 */
+$text-color: #0f172a;    /* Slate 900 */
+$text-muted: #64748b;    /* Slate 500 */
+$error-color: #ef4444;
+
+/* Import Font Inter (Nếu chưa có trong index.html thì dùng system font cũng đẹp) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:host {
+    display: block;
+    min-height: 100vh;
+    /* Áp dụng Font không chân cho toàn bộ component */
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.medical-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%); /* Màu nền phẳng hơn, bớt rực */
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Giữ lại các khối trôi nổi nhưng làm mờ đi cho tinh tế */
+.floating-shape {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(40px); /* Blur mạnh hơn để mềm mại */
+    opacity: 0.6;
+}
+.shape-1 { top: 10%; left: 10%; width: 150px; height: 150px; background: rgba($primary-color, 0.1); }
+.shape-2 { top: 60%; left: 80%; width: 200px; height: 200px; background: rgba($primary-dark, 0.1); }
+.shape-3 { top: 80%; left: 15%; width: 100px; height: 100px; background: rgba(#38bdf8, 0.15); }
+
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+/* --- 2. Thẻ Card (Đã giảm Shadow) --- */
+.wellness-card {
+    width: 100%;
+    max-width: 440px;
+    background: #ffffff;
+    /* Border nhẹ thay vì Shadow đậm */
+    border: 1px solid #e2e8f0;
+    border-radius: 24px;
+    padding: 40px;
+    position: relative;
+    overflow: hidden;
+    /* Shadow cực nhẹ (gần như phẳng) */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+/* Đường viền màu trên cùng */
+.organic-border {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: $primary-color;
+}
+
+.mindful-header {
+    text-align: center;
+    margin-bottom: 30px;
+
+    h1 {
+        color: $text-color;
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin: 15px 0 5px;
+        letter-spacing: -0.5px;
+    }
+    p {
+        color: $text-muted;
+        font-size: 0.95rem;
+        font-weight: 400;
+    }
+}
+
+/* Logo (Phẳng hóa) */
+.zen-logo {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $primary-color;
+    background: rgba($primary-color, 0.08); /* Nền nhẹ thay vì trắng + shadow */
+    border-radius: 50%;
+    /* Bỏ shadow */
+    box-shadow: none;
+
+    svg { width: 32px; height: 32px; }
+}
+
+/* --- 3. Form Inputs (Giữ Autofill Fix) --- */
+.organic-field {
+    position: relative;
+    margin-bottom: 24px;
+
+    input {
+        width: 100%;
+        padding: 16px 50px 16px 20px;
+        border: 1px solid #cbd5e1;
+        border-radius: 12px;
+        background: transparent;
+        font-size: 0.95rem;
+        color: $text-color; /* Dùng biến SCSS cho đồng bộ */
+        transition: all 0.2s ease;
+        outline: none;
+
+        /* --- FIX AUTOFILL CHROME --- */
+        &:-webkit-autofill,
+        &:-webkit-autofill:hover,
+        &:-webkit-autofill:focus,
+        &:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px #ffffff inset !important;
+            -webkit-text-fill-color: $text-color !important;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+
+        /* Đoạn này giữ lại để đảm bảo Autofill không kéo label xuống */
+        &:-webkit-autofill + label {
+            top: 0 !important;
+            z-index: 10;
+        }
+
+        /* --- FOCUS STATE --- */
+        &:focus {
+            border-color: $primary-color;
+            box-shadow: 0 0 0 1px $primary-color;
+        }
+
+        /* ĐÃ XÓA: Đoạn logic "Floating Label" (input:focus + label...)
+           vì bên dưới ta đã ép nó nằm trên cùng rồi, để lại chỉ thừa code. */
+    }
+
+    /* --- LABEL (LUÔN NẰM TRÊN) --- */
+    label {
+        position: absolute;
+        left: 16px;
+
+        /* QUAN TRỌNG NHẤT: Ép dính lên trên viền */
+        top: 0 !important;
+        transform: translateY(-50%);
+
+        background: #ffffff;
+        padding: 0 6px;
+        font-size: 0.8rem;
+
+        /* Sửa var(--primary-color) thành $primary-color cho đồng bộ với file SCSS */
+        color: $primary-color;
+        font-weight: 600;
+        z-index: 10;
+        pointer-events: none;
+        transition: all 0.2s ease;
+    }
+
+    /* --- ERROR STATE --- */
+    &.error label {
+        color: $error-color;
+    }
+
+    &.error input {
+        border-color: $error-color;
+        background: #fff;
+    }
+}
+
+.gentle-error {
+    display: block;
+    color: $error-color;
+    font-size: 0.8rem;
+    margin-top: 6px;
+    margin-left: 4px;
+}
+
+.nature-toggle, .growth-indicator {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: $text-muted;
+    z-index: 5;
+    padding: 0;
+    display: flex;
+
+    i { font-size: 1.1rem; }
+    &:hover { color: $text-color; }
+}
+
+.leaf-sprout { color: #10b981; /* Green success */ }
+
+/* Options */
+.mindful-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    font-size: 0.9rem;
+}
+
+.zen-checkbox {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+
+    input { display: none; }
+
+    .checkbox-leaf {
+        width: 18px;
+        height: 18px;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 4px; /* Vuông vắn hơn */
+        margin-right: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.2s;
+    }
+
+    input:checked + .checkbox-leaf {
+        background: $primary-color;
+        border-color: $primary-color;
+    }
+}
+
+.healing-link {
+    color: $primary-dark;
+    text-decoration: none;
+    font-weight: 500;
+    &:hover { text-decoration: underline; }
+}
+
+/* --- 4. Button (Phẳng hoàn toàn) --- */
+.harmony-button {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    background: $primary-color;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: background-color 0.2s;
+    /* BỎ SHADOW */
+    box-shadow: none;
+
+    &:hover {
+        background-color: $primary-dark;
+        transform: none; /* Không nảy lên nữa */
+    }
+
+    &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    &.loading {
+        background-color: $primary-dark;
+    }
+}
+
+/* Loading dots */
+.growing-circle {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: white;
+    border-radius: 50%;
+    margin: 0 3px;
+    animation: bounce 1.4s infinite ease-in-out both;
+}
+.circle-1 { animation-delay: -0.32s; }
+.circle-2 { animation-delay: -0.16s; }
+@keyframes bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1); }
+}
+
+/* Social & Footer */
+.natural-social {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 24px 0;
+
+    .earth-social {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        background: #fff;
+        cursor: pointer;
+        transition: 0.2s;
+        font-weight: 500;
+        font-size: 0.9rem;
+        color: $text-color;
+
+        &:hover {
+            background: #f8fafc;
+            border-color: $primary-color;
+        }
+    }
+}
+
+.nurture-signup {
+    text-align: center;
+    color: $text-muted;
+    font-size: 0.9rem;
+
+    .growth-link {
+        color: $primary-dark;
+        font-weight: 600;
+        text-decoration: none;
+        margin-left: 5px;
+        &:hover { text-decoration: underline; }
+    }
+}

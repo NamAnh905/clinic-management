@@ -1,0 +1,209 @@
+/* admin-sidebar.component.scss */
+
+$primary-color: #2563eb;
+$text-color: #334155;
+$text-muted: #64748b;
+$hover-bg: #f8fafc;
+
+.sidebar-container {
+  width: 260px;
+  height: 100vh;
+  background: #ffffff;
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 1rem;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+
+  &.collapsed {
+    width: 80px;
+    padding: 1.5rem 0.5rem;
+
+    .logo-area { justify-content: center; }
+    .brand-name, .submenu-wrapper, .layout-menuitem-toggler { display: none !important; }
+
+    .nav-link {
+        justify-content: center;
+        padding: 0.8rem;
+        .layout-menuitem-icon { margin-right: 0; font-size: 1.4rem; }
+        .layout-menuitem-text { display: none; }
+    }
+  }
+}
+
+.logo-area {
+  // 1. Tăng chiều cao thanh header lên 100px (để chứa vừa cái logo to)
+  height: 100px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between; // Logo trái - Icon phải
+  padding: 0 20px;
+  border-bottom: 1px solid #e5e7eb;
+
+  .logo-icon {
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+
+    img {
+      // 2. Tăng kích thước logo lên 1.5 lần (Khoảng 85px là đẹp)
+      height: 85px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1)); // Thêm bóng đổ cho logo nổi bật hơn
+    }
+  }
+
+  .toggle-btn {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i {
+      font-size: 1.6rem; // Tăng icon menu lên một xíu cho cân đối với logo to
+    }
+
+    &:hover {
+      background: #f1f5f9;
+      color: #2563eb;
+      border-radius: 8px;
+    }
+  }
+}
+
+.nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* --- STYLE MENU CHA --- */
+.nav-link {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    color: $text-color;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    cursor: pointer;
+    user-select: none;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+
+    /* Icon bên trái */
+    .layout-menuitem-icon {
+        margin-right: 10px;
+        font-size: 1.1rem;
+        color: $text-muted;
+        min-width: 20px; /* Cố định chiều rộng để thẳng hàng */
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    .layout-menuitem-text {
+        /* Đảm bảo text hiển thị ... nếu quá dài */
+        text-overflow: ellipsis;
+        overflow: hidden;
+        flex-grow: 1; /* Để text chiếm hết khoảng trống */
+    }
+
+    /* Mũi tên bên phải (Quan trọng) */
+    .layout-menuitem-toggler {
+        margin-left: auto; /* Đẩy sát lề phải */
+        font-size: 0.8rem;
+        transition: transform 0.3s; /* Xoay mượt */
+        color: $text-muted;
+        flex-shrink: 0;
+    }
+
+    /* Xoay mũi tên khi mở */
+    .layout-menuitem-toggler.rotated {
+        transform: rotate(-180deg);
+    }
+
+    &:hover {
+      background-color: $hover-bg;
+      color: #0f172a;
+      .layout-menuitem-icon, .layout-menuitem-toggler { color: #0f172a; }
+    }
+
+    &.active, &.active-parent {
+      background-color: #eff6ff;
+      color: $primary-color;
+      font-weight: 600;
+      .layout-menuitem-icon { color: $primary-color; }
+    }
+}
+
+/* --- ANIMATION TRƯỢT MƯỢT (Grid Trick) --- */
+.submenu-wrapper {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.3s ease-out; /* Tốc độ mượt */
+
+    &.expanded {
+        grid-template-rows: 1fr;
+    }
+
+    .sub-nav-list {
+        overflow: hidden;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+}
+
+/* --- STYLE MENU CON --- */
+.sub-nav-list {
+    .sub-link {
+        display: flex;
+        align-items: center;
+        /* Thụt lề: padding trái lớn để tạo cấp bậc */
+        padding: 0.65rem 1rem 0.65rem 2.2rem;
+        text-decoration: none;
+        color: $text-muted;
+        font-size: 0.95rem;
+        border-radius: 10px;
+        margin-bottom: 2px;
+        transition: all 0.2s;
+
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        /* Icon con nhỏ hơn icon cha */
+        .sub-icon {
+            margin-right: 10px;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        span:last-child {
+             text-overflow: ellipsis;
+             overflow: hidden;
+        }
+
+        &:hover {
+            color: $text-color;
+            .sub-icon { color: $text-color; }
+        }
+
+        &.active-sub {
+            color: $primary-color;
+            font-weight: 600;
+            .sub-icon { color: $primary-color; }
+        }
+    }
+}

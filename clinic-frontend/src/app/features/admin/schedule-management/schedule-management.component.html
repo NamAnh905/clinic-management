@@ -1,0 +1,166 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="schedule-layout flex h-full">
+
+    <div class="sidebar-filter flex-none surface-card shadow-1 p-3 flex flex-column gap-4 border-right-1 surface-border"
+         style="width: 300px;">
+
+        <div class="filter-group" *ngIf="isAdmin || isReceptionist">
+            <label class="font-bold block mb-2 text-900">Xem lịch của</label>
+            <p-dropdown [options]="viewOptions" [(ngModel)]="viewMode" optionLabel="label" optionValue="value"
+                (onChange)="loadSchedules()" styleClass="w-full" appendTo="body">
+            </p-dropdown>
+        </div>
+
+        <div class="filter-group">
+            <label class="font-bold block mb-2 text-900">Chọn ngày</label>
+            <p-calendar [(ngModel)]="currentDate" [inline]="true" (onSelect)="loadSchedules()" styleClass="w-full custom-inline-calendar"></p-calendar>
+        </div>
+
+        <div class="filter-group" *ngIf="viewMode === 'DOCTOR'">
+            <label class="font-bold block mb-2 text-900">Chuyên khoa</label>
+            <p-dropdown [options]="specialties" [(ngModel)]="selectedSpecialtyId" optionLabel="label" optionValue="value"
+                placeholder="Tất cả chuyên khoa" [showClear]="true" styleClass="w-full" (onChange)="loadSchedules()">
+            </p-dropdown>
+        </div>
+    </div>
+
+    <div class="calendar-wrapper flex-1 flex flex-column min-w-0 bg-white relative">
+
+        <div class="header-toolbar p-3 border-bottom-1 surface-border flex justify-content-between align-items-center bg-white flex-none">
+            <div class="flex align-items-center">
+                <h2 class="text-2xl font-bold m-0 uppercase text-primary" style="letter-spacing: 0.5px;">
+                    Lịch làm việc ngày {{ currentDate | date:'dd/MM/yyyy' }}
+                </h2>
+                <div class="ml-3 px-3 py-1 border-round-2xl bg-blue-50 text-primary font-bold text-sm">
+                    {{ viewMode === 'DOCTOR' ? 'Bác sĩ' : 'Lễ tân' }}
+                </div>
+            </div>
+            <button pButton label="Thêm ca trực" icon="pi pi-plus" class="p-button-primary" (click)="openNew()" *ngIf="isAdmin"></button>
+        </div>
+
+        <div class="gantt-header flex border-bottom-1 surface-border bg-gray-50 flex-none" style="height: 50px;">
+            <div class="staff-col-header border-right-1 surface-border flex align-items-center px-3 font-bold text-700"
+                 style="width: 250px; flex: none;">
+                Nhân sự
+            </div>
+            <div class="time-track-header flex-1 flex relative">
+                <div *ngFor="let h of timeSlots" class="flex-1 border-right-1 surface-border text-center flex align-items-center justify-content-center text-sm text-500 font-medium">
+                    {{ h }}:00
+                </div>
+            </div>
+        </div>
+
+        <div class="gantt-body flex-1 overflow-y-auto">
+
+            <div *ngFor="let staff of displayedStaff" class="gantt-row flex border-bottom-1 surface-border hover:surface-hover transition-colors" style="height: 60px;">
+
+                <div class="staff-info border-right-1 surface-border flex align-items-center px-3 gap-2 bg-white sticky left-0 z-2"
+                     style="width: 250px; flex: none;">
+                    <div class="w-2rem h-2rem border-circle bg-blue-100 text-blue-600 flex align-items-center justify-content-center font-bold text-sm">
+                        {{ staff.avatar }}
+                    </div>
+                    <div class="overflow-hidden">
+                        <div class="font-bold text-sm text-900 white-space-nowrap text-overflow-ellipsis">{{ staff.label }}</div>
+                        <div class="text-xs text-500">ID: {{ staff.value }}</div>
+                    </div>
+                </div>
+
+                <div class="timeline-track flex-1 relative bg-white">
+                    <div class="grid-lines absolute top-0 left-0 w-full h-full flex pointer-events-none">
+                        <div *ngFor="let h of timeSlots" class="flex-1 border-right-1 surface-border"></div>
+                    </div>
+
+                    <ng-container *ngFor="let s of getEventsForStaff(staff.value)">
+                        <div class="gantt-event shadow-1"
+                             [ngStyle]="calculateGanttStyle(s)"
+                             (click)="(isAdmin || s.doctorId === currentDoctorId) ? openEdit(s) : null"
+                             pTooltip="{{s.startTime}} - {{s.endTime}} ({{s.specialty}})"
+                             tooltipPosition="top">
+
+                            <span class="font-bold mr-1">{{ s.startTime.toString().slice(0,5) }}</span>
+                            - {{ s.endTime.toString().slice(0,5) }}
+                        </div>
+                    </ng-container>
+                </div>
+            </div>
+
+            <div *ngIf="displayedStaff.length === 0" class="p-5 text-center text-500">
+                Không tìm thấy nhân viên nào cho bộ lọc này.
+            </div>
+        </div>
+    </div>
+</div>
+
+<p-dialog [(visible)]="scheduleDialog" [style]="{width: '450px'}"
+          [header]="isEditMode ? 'Cập nhật lịch làm việc' : 'Thêm ca trực mới'"
+          [modal]="true" styleClass="p-fluid"
+          *ngIf="isAdmin">
+    <ng-template pTemplate="content">
+        <form [formGroup]="scheduleForm" class="mt-2">
+            <div class="field mb-3 flex gap-4" *ngIf="!isEditMode && isAdmin">
+                <div class="flex align-items-center">
+                    <p-radioButton name="targetType" value="DOCTOR" [(ngModel)]="targetType" [ngModelOptions]="{standalone: true}" inputId="typeDoc" (onClick)="onTargetTypeChange()"></p-radioButton>
+                    <label for="typeDoc" class="ml-2 font-bold cursor-pointer">Bác sĩ</label>
+                </div>
+                <div class="flex align-items-center">
+                    <p-radioButton name="targetType" value="RECEPTIONIST" [(ngModel)]="targetType" [ngModelOptions]="{standalone: true}" inputId="typeRec" (onClick)="onTargetTypeChange()"></p-radioButton>
+                    <label for="typeRec" class="ml-2 font-bold cursor-pointer">Lễ tân</label>
+                </div>
+            </div>
+
+            <ng-container *ngIf="targetType === 'DOCTOR'">
+                <div class="field mb-3" *ngIf="!isEditMode">
+                    <label class="text-primary font-bold text-sm">Lọc theo Khoa</label>
+                    <p-dropdown [options]="specialties" [(ngModel)]="dialogSpecialtyId" [ngModelOptions]="{standalone: true}"
+                                optionLabel="label" optionValue="value" placeholder="Tất cả"
+                                (onChange)="onDialogSpecialtyChange()" styleClass="w-full"></p-dropdown>
+                </div>
+                <div class="field mb-3">
+                    <label class="font-bold">Chọn Bác sĩ <span class="text-red-500">*</span></label>
+                    <p-dropdown [options]="dialogDoctors" formControlName="doctorId"
+                                optionLabel="label" optionValue="value" placeholder="Chọn bác sĩ"
+                                [filter]="true" filterBy="label" appendTo="body"></p-dropdown>
+                </div>
+            </ng-container>
+
+            <ng-container *ngIf="targetType === 'RECEPTIONIST'">
+                <div class="field mb-3">
+                    <label class="font-bold">Chọn Lễ tân <span class="text-red-500">*</span></label>
+                    <p-dropdown [options]="receptionists" formControlName="doctorId"
+                                optionLabel="label" optionValue="value" placeholder="Chọn lễ tân"
+                                [filter]="true" filterBy="label" appendTo="body"></p-dropdown>
+                </div>
+            </ng-container>
+
+            <div class="field mb-3">
+                <label class="font-bold">Ngày làm việc <span class="text-red-500">*</span></label>
+                <p-calendar formControlName="workDate" dateFormat="dd/mm/yy" [showIcon]="true" appendTo="body"></p-calendar>
+            </div>
+
+            <div class="formgrid grid">
+                <div class="field col-6">
+                    <label class="font-bold">Giờ bắt đầu <span class="text-red-500">*</span></label>
+                    <p-calendar formControlName="startTime" [timeOnly]="true" [stepMinute]="30" dataType="date" appendTo="body"></p-calendar>
+                </div>
+                <div class="field col-6">
+                    <label class="font-bold">Giờ kết thúc <span class="text-red-500">*</span></label>
+                    <p-calendar formControlName="endTime" [timeOnly]="true" [stepMinute]="30" dataType="date" appendTo="body"></p-calendar>
+                </div>
+            </div>
+        </form>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <div class="flex justify-content-between align-items-center w-full">
+            <div>
+                <button *ngIf="isEditMode" pButton label="Xóa lịch" icon="pi pi-trash" class="p-button-danger p-button-outlined" (click)="deleteSchedule()"></button>
+            </div>
+            <div class="flex gap-2">
+                 <button pButton label="Hủy" icon="pi pi-times" class="p-button-text" (click)="scheduleDialog = false"></button>
+                 <button pButton label="Lưu" icon="pi pi-check" class="p-button-primary" (click)="saveSchedule()"></button>
+            </div>
+        </div>
+    </ng-template>
+</p-dialog>

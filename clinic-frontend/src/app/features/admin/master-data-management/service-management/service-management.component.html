@@ -1,0 +1,95 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="flex flex-column h-full">
+    <div class="mb-3 flex-none">
+        <h2 class="text-2xl font-bold text-900 m-0">Quản lý Dịch vụ</h2>
+    </div>
+
+    <div class="surface-card shadow-1 border-round-xl flex flex-column bg-white overflow-hidden" style="height: calc(100vh - 180px);">
+        <div class="flex flex-column sm:flex-row justify-content-between align-items-center p-3 border-bottom-1 surface-border flex-none">
+            <span class="p-input-icon-left w-full sm:w-auto">
+                <i class="pi pi-search text-500"></i>
+                <input pInputText type="text" [(ngModel)]="keyword" (keyup.enter)="loadServices()" placeholder="Tìm tên dịch vụ..." class="w-full sm:w-22rem border-round-2xl pl-5" />
+            </span>
+            <button pButton label="Thêm dịch vụ" icon="pi pi-plus" class="p-button-primary border-round-3xl px-4" (click)="openNew()"></button>
+        </div>
+
+        <div class="flex-1 min-h-0 w-full relative">
+            <p-table
+                [value]="services"
+                [lazy]="true"
+                (onLazyLoad)="loadServices($event)"
+                [totalRecords]="totalRecords"
+                [rows]="size"
+                [loading]="loading"
+                [rowHover]="true"
+                styleClass="p-datatable-sm custom-table h-full"
+
+                [paginator]="true"
+                [rowsPerPageOptions]="[5, 10, 15, 20]"
+                [showCurrentPageReport]="true"
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                paginatorTemplate="PrevPageLink PageLinks NextPageLink CurrentPageReport RowsPerPageDropdown">
+
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="min-width: 50px">ID</th>
+                        <th style="min-width: 200px">Tên dịch vụ</th>
+                        <th style="min-width: 150px">Loại dịch vụ</th>
+                        <th style="min-width: 150px">Đơn giá</th>
+                        <th class="text-center" style="min-width: 100px">Thao tác</th>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="body" let-sv>
+                    <tr>
+                        <td><span class="text-500 font-medium">#{{ sv.serviceId }}</span></td>
+                        <td><span class="font-medium text-900">{{ sv.name }}</span></td>
+                        <td>
+                            <p-tag [value]="getServiceTypeLabel(sv.type)" [severity]="getSeverity(sv.type)" styleClass="text-sm"></p-tag>
+                        </td>
+                        <td class="font-bold text-primary">{{ sv.price | currency:'VND':'symbol':'1.0-0' }}</td>
+                        <td class="text-center">
+                            <button pButton icon="pi pi-pencil" class="p-button-text p-button-info p-button-rounded" (click)="editService(sv)" pTooltip="Sửa"></button>
+                            <button pButton icon="pi pi-trash" class="p-button-text p-button-danger p-button-rounded" (click)="deleteService(sv.serviceId)" pTooltip="Xóa"></button>
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="emptymessage">
+                    <tr><td colspan="5" class="text-center p-4 text-500">Không tìm thấy dịch vụ nào.</td></tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+</div>
+
+<p-dialog [(visible)]="serviceDialog" [header]="isEditMode ? 'Cập nhật dịch vụ' : 'Thêm dịch vụ mới'" [modal]="true" styleClass="p-fluid medical-dialog" [style]="{width: '450px'}" [draggable]="false" [resizable]="false">
+    <ng-template pTemplate="content">
+        <form [formGroup]="serviceForm" class="mt-3">
+
+            <div class="field mb-3 organic-field">
+                <input pInputText formControlName="name" placeholder=" " />
+                <label class="always-top">Tên dịch vụ <span class="text-red-500">*</span></label>
+                <small class="p-error block mt-1" *ngIf="submitted && serviceForm.get('name')?.invalid">Vui lòng nhập tên dịch vụ.</small>
+            </div>
+
+            <div class="field mb-3 organic-field">
+                <p-dropdown [options]="serviceTypes" formControlName="type" optionLabel="label" optionValue="value" placeholder="Chọn loại dịch vụ" appendTo="body"></p-dropdown>
+                <label class="always-top">Loại dịch vụ <span class="text-red-500">*</span></label>
+            </div>
+
+            <div class="field mb-3 organic-field">
+                <p-inputNumber formControlName="price" mode="currency" currency="VND" locale="vi-VN" [min]="0" placeholder="0"></p-inputNumber>
+                <label class="always-top">Đơn giá <span class="text-red-500">*</span></label>
+            </div>
+
+        </form>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button pButton label="Hủy" icon="pi pi-times" class="p-button-text" (click)="serviceDialog = false"></button>
+        <button pButton label="Lưu" icon="pi pi-check" class="p-button-primary" (click)="saveService()"></button>
+    </ng-template>
+</p-dialog>

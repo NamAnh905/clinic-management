@@ -1,0 +1,184 @@
+$primary-color: #2563eb;
+$text-color: #0f172a;
+$text-muted: #64748b;
+$border-color: #e2e8f0;
+
+:host {
+    display: block;
+    height: 100%;
+}
+
+:host ::ng-deep {
+    /* --- 1. HIỆU ỨNG LOADING --- */
+    .p-datatable-loading-overlay {
+        background-color: rgba(255, 255, 255, 0.7) !important;
+        transition: opacity 0.2s !important;
+        z-index: 50 !important;
+    }
+
+    .p-datatable-loading-icon {
+        color: $primary-color !important;
+    }
+
+    /* --- 2. CẤU TRÚC BẢNG (CUSTOM TABLE) --- */
+    .custom-table {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        overflow: hidden;
+
+        .p-datatable-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            border-bottom: 1px solid $border-color;
+            position: relative;
+        }
+
+        .p-datatable-thead > tr > th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: #ffffff;
+            color: $text-muted;
+            padding: 1rem;
+            border-bottom: 1px solid $border-color;
+            font-weight: 600;
+        }
+
+        .p-datatable-tbody > tr > td {
+            padding: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+
+        .p-datatable-tbody > tr:hover {
+            background-color: #f8fafc !important;
+        }
+    }
+
+    /* --- 3. PHÂN TRANG (PAGINATOR) GIỐNG USER-MANAGEMENT --- */
+    .p-paginator.p-component {
+        background: #ffffff !important;
+        border-top: 1px solid #f1f5f9 !important;
+        padding: 1rem 1.5rem !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        width: 100% !important;
+        gap: 8px !important;
+
+        /* Ẩn nút First và Last */
+        .p-paginator-first, .p-paginator-last { display: none !important; }
+
+        /* Sắp xếp thứ tự các thành phần bằng order */
+        .p-paginator-prev { order: 1 !important; }
+        .p-paginator-pages { order: 2 !important; display: flex !important; gap: 4px !important; }
+        .p-paginator-next { order: 3 !important; }
+
+        /* Đẩy phần báo cáo số lượng sang phải */
+        .p-paginator-current {
+            order: 4 !important;
+            margin-left: auto !important;
+            margin-right: 15px !important;
+            color: $text-muted !important;
+            font-size: 0.875rem !important;
+        }
+
+        /* Tùy biến Dropdown số dòng */
+        p-dropdown {
+            order: 5 !important;
+            .p-dropdown {
+                height: 38px;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                border: 1px solid $border-color;
+                .p-dropdown-label {
+                    padding: 0 0.5rem 0 0.75rem;
+                    font-weight: 600;
+                    color: $text-color;
+                    &::before {
+                        content: "Show";
+                        margin-right: 4px;
+                        color: $text-muted;
+                        font-weight: 500;
+                    }
+                }
+            }
+        }
+
+        /* Tùy biến nút Prev/Next thành chữ thay vì Icon */
+        .p-paginator-prev, .p-paginator-next, .p-paginator-page {
+            min-width: 38px;  // Giữ độ rộng tối thiểu cho các nút số (VD: số 1)
+            height: 38px;
+
+            // ---> THÊM DÒNG NÀY ĐỂ NỚI RỘNG NÚT <---
+            padding: 0 0.875rem !important;
+
+            border-radius: 8px !important;
+            border: 1px solid $border-color !important;
+            color: #475569 !important;
+            font-weight: 600 !important;
+            transition: all 0.2s;
+
+            &:hover:not(.p-highlight) { background: #f8fafc !important; }
+            &.p-highlight {
+                background: $primary-color !important;
+                color: white !important;
+                border-color: $primary-color !important;
+            }
+        }
+
+        .p-paginator-prev::after { content: "Prev"; }
+        .p-paginator-next::after { content: "Next"; }
+        .p-paginator-icon { display: none !important; }
+    }
+
+    /* --- 4. FORM NHẬP LIỆU (ORGANIC FIELDS) --- */
+    .organic-field {
+        position: relative;
+        margin-bottom: 1.5rem;
+
+        input, textarea, .p-dropdown, .p-calendar { width: 100%; }
+
+        .p-inputtext {
+            padding: 14px 16px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            border: 1px solid $border-color;
+            &:focus {
+                border-color: $primary-color;
+                box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+            }
+        }
+
+        label.always-top {
+            position: absolute;
+            left: 12px;
+            top: 0 !important;
+            transform: translateY(-50%);
+            background: #ffffff;
+            padding: 0 6px;
+            font-size: 0.75rem;
+            color: $primary-color;
+            font-weight: 700;
+            z-index: 10;
+        }
+    }
+
+    /* --- 5. MEDICAL DIALOG STYLE --- */
+    .medical-dialog {
+        .p-dialog-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid $border-color;
+        }
+        .p-dialog-content {
+            padding: 2rem 1.5rem;
+        }
+        .p-dialog-footer {
+            padding: 1rem 1.5rem;
+            background: #f8fafc;
+            border-top: 1px solid $border-color;
+        }
+    }
+}

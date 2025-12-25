@@ -23,3 +23,11 @@ Dự án được tổ chức theo mô hình Monorepo:
 1.  Di chuyển vào thư mục frontend: `cd frontend`
 2.  Cài đặt thư viện: `npm install`
 3.  Chạy ứng dụng: `npm start`
+
+## Tài khoản Demo (Mật khẩu: 123456)
+| Role | Email |
+| :--- | :--- |
+| **Admin** | `admin@clinic.com` |
+| **Bác sĩ** | `doctor@clinic.com` |
+| **Lễ tân** | `receptionist@clinic.com` |
+| **Bệnh nhân** | `patient@clinic.com` |

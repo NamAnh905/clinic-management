@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 public class SEUpdationRequest {
     Long serviceId;
     String name;
+    String image;
     BigDecimal price;
     ServiceType type;
 }

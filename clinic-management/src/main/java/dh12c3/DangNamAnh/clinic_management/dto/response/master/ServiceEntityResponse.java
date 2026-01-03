@@ -26,4 +26,6 @@ public class ServiceEntityResponse {
 
     @ExcelColumn(name = "Giá")
     BigDecimal price;
+
+    String image;
 }

@@ -1,5 +1,6 @@
 package dh12c3.DangNamAnh.clinic_management.mapper.user;
 
+import dh12c3.DangNamAnh.clinic_management.dto.request.appointment.PublicAppointmentRequest;
 import dh12c3.DangNamAnh.clinic_management.dto.request.user.UserCreationRequest;
 import dh12c3.DangNamAnh.clinic_management.dto.request.user.UserUpdateRequest;
 import dh12c3.DangNamAnh.clinic_management.dto.response.PageResponse;
@@ -11,6 +12,12 @@ import org.springframework.data.domain.Page;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
     User toUser(UserCreationRequest request);
+
+    @Mapping(target = "userId", ignore = true)
+    @Mapping(target = "roles", ignore = true)
+    @Mapping(target = "isActive", constant = "true")
+    @Mapping(target = "gender", ignore = true)
+    User toUserFromPublic(PublicAppointmentRequest request);
 
     @Mapping(target = "isActive", source = "active")
     UserResponse toUserResponse(User user);

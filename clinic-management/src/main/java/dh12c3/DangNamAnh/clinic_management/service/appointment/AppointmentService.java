@@ -3,18 +3,26 @@ package dh12c3.DangNamAnh.clinic_management.service.appointment;
 import dh12c3.DangNamAnh.clinic_management.component.SecurityUtils;
 import dh12c3.DangNamAnh.clinic_management.dto.request.appointment.AppointmentCreationRequest;
 import dh12c3.DangNamAnh.clinic_management.dto.request.appointment.AppointmentUpdationRequest;
+import dh12c3.DangNamAnh.clinic_management.dto.request.appointment.CancelAppointmentRequest;
+import dh12c3.DangNamAnh.clinic_management.dto.request.appointment.PublicAppointmentRequest;
 import dh12c3.DangNamAnh.clinic_management.dto.response.PageResponse;
 import dh12c3.DangNamAnh.clinic_management.dto.response.appointment.AppointmentResponse;
 import dh12c3.DangNamAnh.clinic_management.entity.appointment.Appointment;
 import dh12c3.DangNamAnh.clinic_management.entity.patient.Patient;
 import dh12c3.DangNamAnh.clinic_management.entity.staff.Doctor;
+import dh12c3.DangNamAnh.clinic_management.entity.user.Role;
+import dh12c3.DangNamAnh.clinic_management.entity.user.User;
 import dh12c3.DangNamAnh.clinic_management.enums.AppointmentStatus;
+import dh12c3.DangNamAnh.clinic_management.enums.Gender;
 import dh12c3.DangNamAnh.clinic_management.exception.AppException;
 import dh12c3.DangNamAnh.clinic_management.exception.ErrorCode;
 import dh12c3.DangNamAnh.clinic_management.mapper.appointment.AppointmentMapper;
+import dh12c3.DangNamAnh.clinic_management.mapper.user.UserMapper;
 import dh12c3.DangNamAnh.clinic_management.repository.appoinment.AppointmentRepository;
 import dh12c3.DangNamAnh.clinic_management.repository.patient.PatientRepository;
 import dh12c3.DangNamAnh.clinic_management.repository.staff.DoctorRepository;
+import dh12c3.DangNamAnh.clinic_management.repository.user.RoleRepository;
+import dh12c3.DangNamAnh.clinic_management.repository.user.UserRepository;
 import dh12c3.DangNamAnh.clinic_management.service.ExcelExportService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +31,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +40,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -43,9 +52,15 @@ public class AppointmentService {
     AppointmentMapper appointmentMapper;
     DoctorRepository doctorRepository;
     PatientRepository patientRepository;
+    UserRepository userRepository;
+    UserMapper userMapper;
+    RoleRepository roleRepository;
+    PasswordEncoder passwordEncoder;
     ExcelExportService excelExportService;
 
     SecurityUtils securityUtils;
+
+    int APPOINTMENT_DURATION = 30;
 
     @Transactional
     public AppointmentResponse create(AppointmentCreationRequest request){
@@ -71,7 +86,6 @@ public class AppointmentService {
             }
         }
 
-        int APPOINTMENT_DURATION = 30;
         LocalDateTime startTime = request.getAppointmentTime();
         LocalDateTime endTime = startTime.plusMinutes(APPOINTMENT_DURATION);
 
@@ -81,21 +95,6 @@ public class AppointmentService {
         }
 
         LocalDate bookingDate = request.getAppointmentTime().toLocalDate();
-        LocalTime bookingTime = request.getAppointmentTime().toLocalTime();
-
-        boolean isValidTime = schedules.stream()
-                .anyMatch(schedule -> {
-                    boolean isDateMatch = schedule.getWorkDate().equals(bookingDate);
-
-                    boolean isTimeMatch = !bookingTime.isBefore(schedule.getStartTime()) &&
-                            bookingTime.isBefore(schedule.getEndTime());
-
-                    return isDateMatch && isTimeMatch;
-                });
-
-        if (!isValidTime) {
-            throw new AppException(ErrorCode.DOCTOR_HAS_NO_WORKING_SCHEDULE);
-        }
 
         boolean isValidSchedule = schedules.stream()
                 .anyMatch(schedule -> {
@@ -135,6 +134,63 @@ public class AppointmentService {
         appointment.setDoctor(doctor);
         appointment.setPatient(patient);
         appointment.setStatus(AppointmentStatus.PENDING);
+
+        Appointment saved = appointmentRepository.save(appointment);
+        return appointmentMapper.toAppointmentResponse(saved);
+    }
+
+    @Transactional
+    public AppointmentResponse createPublicAppointment(PublicAppointmentRequest request) {
+        Doctor doctor = doctorRepository.findById(request.getDoctorId())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        if (appointmentRepository.existsByDoctor_DoctorIdAndAppointmentTimeAndStatusNot(
+                request.getDoctorId(), request.getAppointmentTime(), AppointmentStatus.CANCELLED)) {
+            throw new AppException(ErrorCode.APPOINTMENT_ALREADY_BOOKED);
+        }
+
+        Patient patient;
+        var existingUser = userRepository.findByPhoneNumber(request.getPhoneNumber());
+
+        if (existingUser.isPresent()) {
+            patient = patientRepository.findByUser_UserId(existingUser.get().getUserId())
+                    .orElseGet(() -> {
+                        Patient p = new Patient();
+                        p.setUser(existingUser.get());
+                        return patientRepository.save(p);
+                    });
+        } else {
+            User newUser = userMapper.toUserFromPublic(request);
+            if (request.getEmail() == null || request.getEmail().isEmpty()) {
+                newUser.setEmail(request.getPhoneNumber() + "@guest.clinic.local");
+            } else {
+                newUser.setEmail(request.getEmail());
+            }
+            newUser.setPasswordHash(passwordEncoder.encode(UUID.randomUUID().toString()));
+            try {
+                newUser.setGender(Gender.valueOf(request.getGender()));
+            } catch (Exception e) {
+                newUser.setGender(Gender.OTHER);
+            }
+
+            Role patientRole = roleRepository.findById("PATIENT").orElse(null);
+            if(patientRole != null) newUser.setRoles(Set.of(patientRole));
+
+            userRepository.save(newUser);
+
+            patient = new Patient();
+            patient.setUser(newUser);
+            patientRepository.save(patient);
+        }
+
+        Appointment appointment = new Appointment();
+        appointment.setDoctor(doctor);
+        appointment.setPatient(patient);
+        appointment.setAppointmentTime(request.getAppointmentTime());
+        appointment.setEndTime(request.getAppointmentTime().plusMinutes(APPOINTMENT_DURATION));
+        appointment.setStatus(AppointmentStatus.PENDING);
+        appointment.setReason(request.getReason());
+        appointment.setDeleted(false);
 
         Appointment saved = appointmentRepository.save(appointment);
         return appointmentMapper.toAppointmentResponse(saved);
@@ -262,5 +318,51 @@ public class AppointmentService {
                 .toList();
 
         return excelExportService.exportToExcel(responses, "Danh sách lịch hẹn");
+    }
+
+    public List<String> getAvailableTimeSlots(Long doctorId, LocalDate date) {
+        var doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        var schedules = doctor.getWorkingSchedules().stream()
+                .filter(s -> s.getWorkDate().equals(date) && !s.isDeleted())
+                .findFirst()
+                .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_HAS_NO_WORKING_SCHEDULE));
+
+        List<LocalTime> allSlots = new ArrayList<>();
+        LocalTime current = schedules.getStartTime();
+        while (current.isBefore(schedules.getEndTime())) {
+            allSlots.add(current);
+            current = current.plusMinutes(APPOINTMENT_DURATION);
+        }
+
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+
+        List<Appointment> bookedApps = appointmentRepository.findBookedAppointments(doctorId, startOfDay, endOfDay);
+        List<LocalTime> bookedTimes = bookedApps.stream()
+                .map(a -> a.getAppointmentTime().toLocalTime())
+                .toList();
+        allSlots.removeAll(bookedTimes);
+        return allSlots.stream().map(LocalTime::toString).toList();
+    }
+
+    @Transactional
+    public void cancelPublicAppointment(CancelAppointmentRequest request) {
+        Appointment appointment = appointmentRepository.findById(request.getAppointmentId())
+                .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
+
+        String patientPhone = appointment.getPatient().getUser().getPhoneNumber();
+        if (!patientPhone.equals(request.getPhoneNumber())) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+
+        if (appointment.getStatus() != AppointmentStatus.PENDING &&
+                appointment.getStatus() != AppointmentStatus.CONFIRMED) {
+            throw new AppException(ErrorCode.STATUS_CHANGE_NOT_ALLOWED);
+        }
+
+        appointment.setStatus(AppointmentStatus.CANCELLED);
+        appointmentRepository.save(appointment);
     }
 }

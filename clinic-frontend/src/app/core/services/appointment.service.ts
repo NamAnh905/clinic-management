@@ -5,7 +5,10 @@ import { environment } from '../../../environments/environment';
 import { ApiResponse, PageResponse } from '../../models/core.model';
 import {
   AppointmentResponse,
-  AppointmentCreationRequest, AppointmentUpdationRequest
+  AppointmentCreationRequest,
+  AppointmentUpdationRequest,
+  PublicAppointmentRequest,
+  CancelAppointmentRequest
 } from '../../models/appointment.model';
 import { AppointmentStatus } from '../../models/core.model';
 
@@ -52,6 +55,22 @@ export class AppointmentService {
 
   updateAppointment(id: number, request: AppointmentUpdationRequest): Observable<ApiResponse<AppointmentResponse>> {
     return this.http.put<ApiResponse<AppointmentResponse>>(`${this.baseUrl}/${id}`, request);
+  }
+
+  getAvailableSlots(doctorId: number, date: string): Observable<ApiResponse<string[]>> {
+    const params = new HttpParams()
+      .set('doctorId', doctorId)
+      .set('date', date);
+
+    return this.http.get<ApiResponse<string[]>>(`${this.baseUrl}/public/available-slots`, { params });
+  }
+
+  bookPublicAppointment(request: PublicAppointmentRequest): Observable<ApiResponse<AppointmentResponse>> {
+    return this.http.post<ApiResponse<AppointmentResponse>>(`${this.baseUrl}/public/booking`, request);
+  }
+
+  cancelPublicAppointment(request: CancelAppointmentRequest): Observable<ApiResponse<string>> {
+    return this.http.post<ApiResponse<string>>(`${this.baseUrl}/public/cancel`, request);
   }
 
   exportAppointments(): Observable<Blob> {

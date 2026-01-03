@@ -57,13 +57,15 @@
             <div *ngFor="let staff of displayedStaff" class="gantt-row flex border-bottom-1 surface-border hover:surface-hover transition-colors" style="height: 60px;">
 
                 <div class="staff-info border-right-1 surface-border flex align-items-center px-3 gap-2 bg-white sticky left-0 z-2"
-                     style="width: 250px; flex: none;">
-                    <div class="w-2rem h-2rem border-circle bg-blue-100 text-blue-600 flex align-items-center justify-content-center font-bold text-sm">
-                        {{ staff.avatar }}
-                    </div>
-                    <div class="overflow-hidden">
-                        <div class="font-bold text-sm text-900 white-space-nowrap text-overflow-ellipsis">{{ staff.label }}</div>
-                        <div class="text-xs text-500">ID: {{ staff.value }}</div>
+                    style="width: 250px; flex: none;">
+                    <div class="overflow-hidden flex flex-column justify-content-center h-full">
+                        <div class="font-bold text-sm text-900 white-space-nowrap text-overflow-ellipsis">
+                            {{ staff.label }}
+                        </div>
+                        <div class="text-xs text-primary mt-1 font-medium"
+                            *ngIf="viewMode === 'DOCTOR' && staff.specialtyId">
+                            {{ getSpecialtyName(staff.specialtyId) }}
+                        </div>
                     </div>
                 </div>
 

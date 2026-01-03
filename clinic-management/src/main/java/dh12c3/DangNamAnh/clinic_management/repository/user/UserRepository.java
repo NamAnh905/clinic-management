@@ -21,4 +21,6 @@ public interface UserRepository extends JpaRepository<User,Long>, JpaSpecificati
     @Override
     @EntityGraph(attributePaths = "roles")
     Page<User> findAll(@Nullable Specification<User> spec,@NonNull Pageable pageable);
+
+    Optional<User> findByPhoneNumber(String phoneNumber);
 }

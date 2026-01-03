@@ -47,7 +47,7 @@ public class DoctorController {
                 .build();
     }
 
-    @PreAuthorize("hasAuthority('FULL_ACCESS') or hasAuthority('READ_DOCTOR')")
+//    @PreAuthorize("hasAuthority('FULL_ACCESS') or hasAuthority('READ_DOCTOR')")
     @GetMapping
     public ApiResponse<PageResponse<DoctorResponse>> getAllDoctors(@RequestParam(required = false) String keyword,
                                                                        @RequestParam(required = false) Long specialtyId,

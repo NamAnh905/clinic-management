@@ -1,0 +1,228 @@
+@use "sass:color";
+
+// --- VARIABLES ---
+$purple-gradient: linear-gradient(135deg, #6200ea 0%, #9046fe 100%);
+$primary-green: #00cba9;
+$text-dark: #2c3e50;
+$text-light: #636e72;
+$card-radius: 20px;
+
+.service-page-wrapper {
+  background-color: #f8faff; /* Nền xanh nhạt */
+  min-height: 100vh;
+  padding-bottom: 60px;
+}
+
+// --- 1. HERO SECTION (BANNER) ---
+// (Copy y hệt từ specialty-list để đồng bộ)
+.hero-section {
+  position: relative;
+  background: $purple-gradient;
+  padding: 80px 0 140px;
+  color: white;
+  margin-bottom: 40px;
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .hero-content {
+    max-width: 600px;
+
+    h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 20px;
+    }
+
+    p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      margin-bottom: 30px;
+      line-height: 1.6;
+    }
+
+    .btn-hero {
+      background: $primary-green;
+      color: white;
+      border: none;
+      padding: 12px 35px;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0, 203, 169, 0.4);
+      transition: transform 0.2s;
+
+      &:hover {
+        transform: translateY(-2px);
+        background: #00b395;
+      }
+    }
+  }
+
+  .wave-bottom {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    overflow: hidden;
+    line-height: 0;
+
+    svg {
+      position: relative;
+      display: block;
+      width: calc(100% + 1.3px);
+      height: 80px;
+    }
+  }
+}
+
+// --- 2. GRID & CONTENT ---
+.container.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.section-title {
+  text-align: center;
+  margin-bottom: 40px;
+  h2 { font-size: 1.8rem; color: $text-dark; font-weight: 700; }
+}
+
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 30px;
+}
+
+// --- 3. SERVICE CARD ---
+.service-card {
+  background: white;
+  border-radius: $card-radius;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 1px solid transparent;
+
+  &:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(74, 0, 224, 0.15);
+    border-color: rgba(142, 45, 226, 0.3);
+
+    // Hiện nút đặt lịch khi hover
+    .card-hover-action {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    // Zoom ảnh
+    .card-img img {
+      transform: scale(1.05);
+    }
+  }
+
+  .card-img {
+    height: 180px;
+    width: 100%;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s;
+    }
+  }
+
+  .card-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+
+    .service-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: $text-dark;
+      margin-bottom: 5px;
+
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .service-type {
+      font-size: 0.9rem;
+      color: #b2bec3;
+      margin-bottom: 15px;
+      font-weight: 500;
+    }
+
+    .price-tag {
+      margin-top: auto;
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #2d3436;
+    }
+  }
+
+  // Hover Overlay Button
+  .card-hover-action {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.3s;
+
+    .btn-book {
+      background: linear-gradient(to right, #8e2de2, #4a00e0);
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 25px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 5px 15px rgba(74, 0, 224, 0.4);
+      transform: translateY(20px);
+      transition: 0.3s;
+
+      &:hover {
+        transform: translateY(0);
+      }
+    }
+  }
+
+  &:hover .card-hover-action .btn-book {
+    transform: translateY(0);
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 50px;
+  color: $text-light;
+  font-style: italic;
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 60px 0 80px;
+    text-align: center;
+    .hero-content h1 { font-size: 1.8rem; }
+  }
+}

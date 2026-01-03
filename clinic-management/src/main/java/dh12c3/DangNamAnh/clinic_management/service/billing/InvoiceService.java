@@ -29,6 +29,8 @@ import dh12c3.DangNamAnh.clinic_management.repository.master.ServiceEntityReposi
 import dh12c3.DangNamAnh.clinic_management.repository.medical.PresDetailRepository;
 import dh12c3.DangNamAnh.clinic_management.repository.medical.PrescriptionRepository;
 import dh12c3.DangNamAnh.clinic_management.repository.patient.PatientRepository;
+import dh12c3.DangNamAnh.clinic_management.service.VnPayService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -42,6 +44,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -60,6 +63,7 @@ public class InvoiceService {
     PrescriptionRepository prescriptionRepository;
     PresDetailRepository  presDetailRepository;
     DrugRepository drugRepository;
+    VnPayService vnPayService;
 
     SecurityUtils securityUtils;
 
@@ -144,22 +148,7 @@ public class InvoiceService {
         PaymentStatus newStatus = request.getPaymentStatus();
 
         if (newStatus == PaymentStatus.PAID && oldStatus != PaymentStatus.PAID) {
-            Set<InvoiceDetail> details = invoice.getInvoiceDetails();
-            if (details != null) {
-                for (InvoiceDetail detail : details) {
-                    if (detail.getDrug() != null) {
-                        Drug drug = detail.getDrug();
-                        int quantityToDeduct = detail.getQuantity();
-
-                        if (drug.getStockQuantity() < quantityToDeduct) {
-                            throw new AppException(ErrorCode.DRUG_OOS);
-                        }
-
-                        drug.setStockQuantity(drug.getStockQuantity() - quantityToDeduct);
-                        drugRepository.save(drug);
-                    }
-                }
-            }
+            updateDrugStock(invoice);
         }
 
         invoiceMapper.update(request, invoice);
@@ -231,26 +220,87 @@ public class InvoiceService {
 
     @Transactional
     public void delete(Long invoiceId) {
-        // 1. Tìm hóa đơn
         Invoice invoice = invoiceRepository.findById(invoiceId)
                 .orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_FOUND));
 
-        // 2. Validate
         if (invoice.getPaymentStatus() == PaymentStatus.PAID) {
             throw new AppException(ErrorCode.CANNOT_DELETE_PAID_INVOICE);
         }
 
-        // 3. [QUAN TRỌNG NHẤT] Cắt đứt quan hệ với Appointment
-        // Vì Appointment trỏ ngược về Invoice, nên cần set null để Hibernate không bị lỗi
         Appointment appointment = invoice.getAppointment();
         if (appointment != null) {
             appointment.setInvoice(null);
-            // Không cần gọi save(appointment) nếu đang trong @Transactional,
-            // nhưng để chắc ăn bạn có thể thêm: appointmentRepository.save(appointment);
+        }
+        invoiceRepository.delete(invoice);
+    }
+
+    // --- 1. HÀM TẠO URL THANH TOÁN (Logic nghiệp vụ) ---
+    public String createVnPayUrl(Long invoiceId, HttpServletRequest request) {
+        // Lấy hóa đơn từ DB
+        Invoice invoice = invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_FOUND));
+
+        // Kiểm tra logic nghiệp vụ
+        if (invoice.getPaymentStatus() == PaymentStatus.PAID) {
+            throw new AppException(ErrorCode.INVOICE_ALREADY_PAID);
         }
 
-        // 4. Tiến hành xóa Invoice
-        // Lúc này các InvoiceDetail sẽ tự động xóa theo (do CascadeType.ALL ở Entity)
-        invoiceRepository.delete(invoice);
+        // Gọi VnPayService để lấy String URL (chỉ xử lý chuỗi)
+        return vnPayService.createPaymentUrl(
+                invoice.getTotalAmount().longValue(),
+                invoice.getTransactionCode(),
+                request
+        );
+    }
+
+    // --- 2. HÀM XỬ LÝ KẾT QUẢ TRẢ VỀ (Logic nghiệp vụ + Trừ kho) ---
+    @Transactional
+    public InvoiceResponse processVnPayCallback(Map<String, String> queryParams) {
+        // Validate chữ ký (Security check)
+        if (!vnPayService.validateCallback(queryParams)) {
+            throw new AppException(ErrorCode.INVALID_SIGNATURE);
+        }
+
+        String vnp_ResponseCode = queryParams.get("vnp_ResponseCode");
+        String transactionCode = queryParams.get("vnp_TxnRef");
+
+        // Tìm hóa đơn
+        Invoice invoice = invoiceRepository.findByTransactionCode(transactionCode)
+                .orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_FOUND));
+
+        // Nếu thanh toán thành công (00)
+        if ("00".equals(vnp_ResponseCode)) {
+            if (invoice.getPaymentStatus() != PaymentStatus.PAID) {
+                invoice.setPaymentStatus(PaymentStatus.PAID);
+                invoice.setPaymentMethod(PaymentMethod.VNPAY);
+
+                // Logic trừ kho thuốc (Copy từ hàm update xuống để tái sử dụng)
+                updateDrugStock(invoice);
+
+                return invoiceMapper.toInvoiceResponse(invoiceRepository.save(invoice));
+            }
+        } else {
+            // Xử lý khi thất bại (nếu cần)
+            throw new AppException(ErrorCode.PAYMENT_FAILED);
+        }
+        return invoiceMapper.toInvoiceResponse(invoice);
+    }
+
+    // Hàm phụ trợ trừ kho (được tách ra từ logic update cũ để code gọn hơn)
+    private void updateDrugStock(Invoice invoice) {
+        Set<InvoiceDetail> details = invoice.getInvoiceDetails();
+        if (details != null) {
+            for (InvoiceDetail detail : details) {
+                if (detail.getDrug() != null) {
+                    Drug drug = detail.getDrug();
+                    int quantityToDeduct = detail.getQuantity();
+                    if (drug.getStockQuantity() < quantityToDeduct) {
+                        throw new AppException(ErrorCode.DRUG_OOS);
+                    }
+                    drug.setStockQuantity(drug.getStockQuantity() - quantityToDeduct);
+                    drugRepository.save(drug);
+                }
+            }
+        }
     }
 }

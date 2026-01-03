@@ -2,6 +2,8 @@ package dh12c3.DangNamAnh.clinic_management.controller.appointment;
 
 import dh12c3.DangNamAnh.clinic_management.dto.request.appointment.AppointmentCreationRequest;
 import dh12c3.DangNamAnh.clinic_management.dto.request.appointment.AppointmentUpdationRequest;
+import dh12c3.DangNamAnh.clinic_management.dto.request.appointment.CancelAppointmentRequest;
+import dh12c3.DangNamAnh.clinic_management.dto.request.appointment.PublicAppointmentRequest;
 import dh12c3.DangNamAnh.clinic_management.dto.response.ApiResponse;
 import dh12c3.DangNamAnh.clinic_management.dto.response.PageResponse;
 import dh12c3.DangNamAnh.clinic_management.dto.response.appointment.AppointmentResponse;
@@ -22,7 +24,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @Builder
@@ -38,6 +42,33 @@ public class AppointmentController {
     public ApiResponse<AppointmentResponse> create(@RequestBody @Valid AppointmentCreationRequest request){
         return ApiResponse.<AppointmentResponse>builder()
                 .result(appointmentService.create(request))
+                .build();
+    }
+
+    @GetMapping("/public/available-slots")
+    public ApiResponse<List<String>> getAvailableSlots(
+            @RequestParam Long doctorId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+    ) {
+        return ApiResponse.<List<String>>builder()
+                .result(appointmentService.getAvailableTimeSlots(doctorId, date))
+                .build();
+    }
+
+    // 2. Đặt lịch (Khách vãng lai)
+    @PostMapping("/public/booking")
+    public ApiResponse<AppointmentResponse> publicBooking(@RequestBody @Valid PublicAppointmentRequest request) {
+        return ApiResponse.<AppointmentResponse>builder()
+                .result(appointmentService.createPublicAppointment(request))
+                .build();
+    }
+
+    // 3. Hủy lịch (Khách vãng lai)
+    @PostMapping("/public/cancel")
+    public ApiResponse<String> publicCancel(@RequestBody CancelAppointmentRequest request) {
+        appointmentService.cancelPublicAppointment(request);
+        return ApiResponse.<String>builder()
+                .result("Hủy lịch hẹn thành công")
                 .build();
     }
 

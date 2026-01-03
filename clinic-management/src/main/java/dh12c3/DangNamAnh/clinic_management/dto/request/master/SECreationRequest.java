@@ -25,4 +25,6 @@ public class SECreationRequest {
 
     @NotNull(message = "Service type cannot be empty.")
     ServiceType type;
+
+    String image;
 }

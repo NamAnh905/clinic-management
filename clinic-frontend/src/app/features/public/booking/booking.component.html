@@ -1,0 +1,261 @@
+<p-toast position="top-right"></p-toast>
+
+<div class="booking-bg"></div>
+
+<div class="booking-wrapper">
+
+  <div class="central-card">
+      <div class="card-header">
+          <div class="header-content">
+              <h2 class="text-2xl font-bold text-gray-800 m-0 flex align-items-center gap-2">
+                  <i class="pi pi-sparkles text-primary"></i>
+                  <span *ngIf="viewMode === 'CLINIC'">Chọn Cơ Sở Y Tế</span>
+                  <span *ngIf="viewMode === 'SERVICE'">Dịch Vụ Nổi Bật</span>
+                  <span *ngIf="viewMode === 'DOCTOR_LIST'">Đội Ngũ Bác Sĩ</span>
+              </h2>
+          </div>
+          <div class="progress-track">
+              <div class="progress-fill" [style.width.%]="progress"></div>
+          </div>
+      </div>
+
+      <div class="card-body custom-scrollbar">
+
+          <div *ngIf="viewMode === 'CLINIC'" class="fade-in-up p-2">
+             <div class="clinic-ticket cursor-pointer" (click)="selectFacility()">
+                 <div class="ticket-left">
+                      <div class="clinic-badge">Được đề xuất</div>
+                      <h3 class="text-2xl font-bold text-blue-900 mb-2">Phòng khám Đa khoa 28Care</h3>
+
+                      <div class="info-row">
+                          <i class="pi pi-map-marker text-red-500"></i>
+                          <span>29 Liễu Giai, Ba Đình, Hà Nội</span>
+                      </div>
+                      <div class="info-row">
+                          <i class="pi pi-clock text-green-500"></i>
+                          <span>07:00 - 20:00 (Tất cả các ngày)</span>
+                      </div>
+                      <div class="info-row">
+                          <i class="pi pi-star-fill text-yellow-500"></i>
+                          <span>4.9/5 (2.5k đánh giá)</span>
+                      </div>
+
+                      <button class="btn-select mt-4">
+                          Chọn Cơ Sở Này <i class="pi pi-arrow-right ml-2"></i>
+                      </button>
+                 </div>
+                 <div class="ticket-right">
+                      <img src="assets/images/clinic1.jpg" alt="Clinic" class="clinic-img">
+                      <div class="overlay"></div>
+                 </div>
+             </div>
+          </div>
+
+          <div *ngIf="viewMode === 'SERVICE'" class="grid fade-in-up">
+            <div class="col-12 md:col-6 lg:col-4 p-3" *ngFor="let service of services">
+              <div class="service-glass-card" (click)="selectService(service)">
+                <div class="card-img-top">
+                    <img *ngIf="service.image" [src]="service.image" class="img-fit">
+                    <div *ngIf="!service.image" class="placeholder-icon">
+                        <i class="pi pi-briefcase"></i>
+                    </div>
+                </div>
+                <div class="card-content">
+                  <h4 class="s-name">{{ service.name }}</h4>
+                  <div class="s-price-tag">
+                      <span class="label">Giá từ</span>
+                      <span class="price">{{ service.price | number }}đ</span>
+                  </div>
+                </div>
+                <div class="hover-action">Chọn dịch vụ</div>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="viewMode === 'DOCTOR_LIST'" class="grid fade-in-up">
+              <div class="col-12 md:col-6 lg:col-4 p-3" *ngFor="let doc of doctors">
+                  <div class="doctor-profile-card" (click)="selectDoctor(doc)">
+                      <div class="doc-header">
+                          <div class="avatar-circle">
+                              <img [src]="doc.image || 'assets/default-avatar.png'" alt="Doctor">
+                          </div>
+                          <div class="status-badge"><span class="dot"></span>Sẵn sàng</div>
+                      </div>
+
+                      <div class="doc-body text-center">
+                          <h4 class="d-name">BS. {{doc.fullName}}</h4>
+                          <p class="d-spec">{{doc.specialtyName}}</p>
+
+                          <div class="d-stats flex justify-content-center gap-3 mt-3">
+                              <div class="stat">
+                                  <b>10+</b>
+                                  <span>Năm KN</span>
+                              </div>
+                              <div class="stat">
+                                  <b>5k+</b>
+                                  <span>Bệnh nhân</span>
+                              </div>
+                          </div>
+                      </div>
+
+                      <div class="doc-footer">
+                          <button class="btn-book-doc">Đặt lịch ngay</button>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+</div>
+
+<p-dialog
+    [(visible)]="showModeDialog"
+    [modal]="true"
+    [style]="{width: '600px'}"
+    [draggable]="false"
+    [resizable]="false"
+    [dismissableMask]="true"
+    styleClass="booking-mode-dialog"
+    [showHeader]="true">
+
+    <ng-template pTemplate="header">
+        <div class="w-full text-center">
+            <span class="text-2xl font-bold text-gray-800">Đặt lịch khám</span>
+        </div>
+    </ng-template>
+
+    <div class="mode-selection-content p-2">
+        <p class="text-center text-500 mb-5 text-lg">Bạn muốn đặt lịch theo cách nào?</p>
+
+        <div class="grid formgrid">
+            <div class="col-12 md:col-6 p-2">
+                <div class="mode-card card-time" (click)="confirmMode('TIME')">
+                    <div class="icon-box"><i class="pi pi-clock"></i></div>
+                    <div class="content">
+                        <h3>Theo Thời Gian</h3>
+                        <p>Xem lịch trống và chọn giờ khám phù hợp.</p>
+                    </div>
+                    <div class="hover-indicator"><i class="pi pi-arrow-right"></i></div>
+                </div>
+            </div>
+            <div class="col-12 md:col-6 p-2">
+                <div class="mode-card card-doctor" (click)="confirmMode('DOCTOR')">
+                    <div class="icon-box"><i class="pi pi-user-plus"></i></div>
+                    <div class="content">
+                        <h3>Theo Bác Sĩ</h3>
+                        <p>Tìm kiếm và đặt lịch với chuyên gia.</p>
+                    </div>
+                    <div class="hover-indicator"><i class="pi pi-arrow-right"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</p-dialog>
+
+<p-dialog [(visible)]="showTimeDialog" [modal]="true" [style]="{width: '500px'}"
+          styleClass="custom-dialog-modern" [draggable]="false" [resizable]="false" [showHeader]="false">
+
+    <div class="modern-dialog-header bg-blue-50 p-4 border-round-top-2xl flex justify-content-between align-items-center">
+        <div>
+            <div class="text-sm text-blue-600 font-bold uppercase tracking-wider mb-1">Bước chọn giờ</div>
+            <div class="text-xl font-bold text-gray-800">{{ selectedDoctor ? 'Lịch: ' + selectedDoctor.fullName : 'Chọn thời gian' }}</div>
+        </div>
+        <button pButton icon="pi pi-times"
+                class="p-button-text p-button-rounded text-gray-500"
+                (click)="closeTimeDialog()">
+        </button>
+    </div>
+
+    <div class="p-4">
+         <div class="flex justify-content-center mb-4">
+             <p-calendar [(ngModel)]="selectedDate" [inline]="true" [showWeek]="false" [minDate]="currentDate"
+                         (onSelect)="onDateSelect()" styleClass="clean-calendar"></p-calendar>
+         </div>
+
+         <div class="separator-text mb-3">Giờ trống trong ngày</div>
+
+         <div class="flex flex-wrap gap-2 justify-content-center" *ngIf="availableSlots.length > 0; else noSlot">
+             <button *ngFor="let t of availableSlots"
+                     class="modern-time-slot"
+                     [class.selected]="selectedTime === t"
+                     (click)="selectTime(t)">
+                 {{t}}
+             </button>
+         </div>
+
+         <ng-template #noSlot>
+             <div class="empty-state">
+                 <i class="pi pi-calendar-times"></i>
+                 <p>Bác sĩ đã kín lịch hôm nay.</p>
+             </div>
+         </ng-template>
+    </div>
+</p-dialog>
+
+<p-dialog [(visible)]="showInfoDialog" [modal]="true" [style]="{width: '700px'}"
+          styleClass="custom-dialog-modern" [draggable]="false" [resizable]="false" [showHeader]="false">
+
+    <div class="modern-dialog-header bg-primary-50 p-4 border-round-top-2xl flex align-items-center gap-3">
+        <div class="icon-circle bg-white text-primary shadow-1">
+            <i class="pi pi-file-edit text-xl"></i>
+        </div>
+        <div>
+            <div class="text-xl font-bold text-gray-800">Xác nhận thông tin</div>
+            <div class="text-sm text-gray-600">Vui lòng kiểm tra kỹ trước khi đặt</div>
+        </div>
+    </div>
+
+    <form [formGroup]="infoForm" class="p-4">
+         <div class="summary-card mb-4">
+             <div class="summary-row">
+                 <div class="s-label"><i class="pi pi-calendar mr-2"></i>Ngày khám:</div>
+                 <div class="s-value">{{ selectedDate | date:'dd/MM/yyyy' }}</div>
+             </div>
+             <div class="summary-row">
+                 <div class="s-label"><i class="pi pi-clock mr-2"></i>Giờ khám:</div>
+                 <div class="s-value highlight">{{ selectedTime }}</div>
+             </div>
+             <div class="summary-row" *ngIf="selectedDoctor">
+                 <div class="s-label"><i class="pi pi-user-edit mr-2"></i>Bác sĩ:</div>
+                 <div class="s-value">{{ selectedDoctor.fullName }}</div>
+             </div>
+         </div>
+
+         <div class="formgrid grid p-fluid">
+            <div class="field col-12 md:col-6">
+                <label class="input-label">Họ và tên <span class="text-red-500">*</span></label>
+                <input pInputText formControlName="fullName" class="modern-input" placeholder="Nhập họ tên đầy đủ">
+                <small class="text-red-500" *ngIf="infoForm.get('fullName')?.invalid && infoForm.get('fullName')?.touched">
+                    Bắt buộc nhập
+                </small>
+            </div>
+
+            <div class="field col-12 md:col-6">
+                <label class="input-label">Số điện thoại <span class="text-red-500">*</span></label>
+                <input pInputText formControlName="phoneNumber" class="modern-input" placeholder="Nhập số điện thoại">
+                <small class="text-red-500" *ngIf="infoForm.get('phoneNumber')?.invalid && infoForm.get('phoneNumber')?.touched">
+                    SĐT không hợp lệ
+                </small>
+            </div>
+
+            <div class="field col-12">
+                <label class="input-label">Lý do khám <span class="text-red-500">*</span></label>
+                <textarea pInputTextarea formControlName="reason" rows="3" class="modern-input"
+                          placeholder="Mô tả triệu chứng (VD: Đau đầu, sốt...)"></textarea>
+                <small class="text-red-500" *ngIf="infoForm.get('reason')?.invalid && infoForm.get('reason')?.touched">
+                    Vui lòng nhập lý do
+                </small>
+            </div>
+         </div>
+
+         <div class="flex justify-content-end gap-3 mt-4">
+            <button pButton type="button" label="Quay lại" class="p-button-text p-button-secondary"
+                    (click)="showInfoDialog = false; showTimeDialog = true"></button>
+
+            <button pButton type="button" label="Xác nhận đặt lịch" icon="pi pi-check"
+                    class="p-button-rounded font-bold px-4 shadow-2"
+                    (click)="confirmBooking()">
+            </button>
+         </div>
+    </form>
+</p-dialog>

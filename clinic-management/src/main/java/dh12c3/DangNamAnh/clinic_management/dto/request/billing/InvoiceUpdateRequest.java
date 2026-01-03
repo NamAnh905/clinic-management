@@ -14,9 +14,9 @@ import java.util.List;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class InvoiceUpdateRequest {
-    BigDecimal totalAmount;
+//    BigDecimal totalAmount;
     PaymentStatus paymentStatus;
     PaymentMethod paymentMethod;
-    String transactionCode;
+//    String transactionCode;
     List<Long> serviceIds;
 }

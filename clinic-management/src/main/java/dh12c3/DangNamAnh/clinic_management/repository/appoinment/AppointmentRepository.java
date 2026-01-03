@@ -84,4 +84,29 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             @Param("endTime") LocalDateTime endTime,
             @Param("statuses") List<AppointmentStatus> statuses
     );
+
+    @Query("""
+        SELECT a 
+        FROM Appointment a 
+        WHERE a.doctor.doctorId = :doctorId 
+        AND a.appointmentTime >= :startTime 
+        AND a.appointmentTime < :endTime
+        AND a.status != 'CANCELLED'
+    """)
+    List<Appointment> findBookedAppointments(
+            @Param("doctorId") Long doctorId,
+            @Param("startTime") LocalDateTime startTime,
+            @Param("endTime") LocalDateTime endTime
+    );
+
+    boolean existsByDoctor_DoctorIdAndAppointmentTimeAndStatusNot(
+            Long doctorId,
+            LocalDateTime appointmentTime,
+            AppointmentStatus status
+    );
+
+    List<Appointment> findByStatusInAndAppointmentTimeBefore(
+            List<AppointmentStatus> statuses,
+            LocalDateTime time
+    );
 }

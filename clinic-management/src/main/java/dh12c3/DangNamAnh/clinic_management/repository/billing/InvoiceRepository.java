@@ -1,5 +1,6 @@
 package dh12c3.DangNamAnh.clinic_management.repository.billing;
 
+import dh12c3.DangNamAnh.clinic_management.dto.response.dashboard.ChartDataResponse;
 import dh12c3.DangNamAnh.clinic_management.entity.billing.Invoice;
 import dh12c3.DangNamAnh.clinic_management.enums.PaymentMethod;
 import dh12c3.DangNamAnh.clinic_management.enums.PaymentStatus;
@@ -56,6 +57,8 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
     Page<Invoice> findByAppointment_Patient_PatientId(Long patientId, Pageable pageable);
 
+    Optional<Invoice> findByTransactionCode(String transactionCode);
+
     Optional<Invoice> findByAppointment_AppointmentId(Long appointmentId);
 
     boolean existsByAppointment_AppointmentId(Long appointmentId);
@@ -70,4 +73,36 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate
     );
+
+    @Query("""
+            SELECT COUNT(i)
+            FROM Invoice i
+            WHERE i.paymentStatus = 'PAID'
+            AND i.createdAt BETWEEN :startDate AND :endDate
+    """)
+    Long countPaidInvoicesBetween(@Param("startDate") LocalDateTime startDate,
+                                  @Param("endDate") LocalDateTime endDate);
+
+    @Query(value = """
+        SELECT DATE(created_at) as stat_date, SUM(total_amount) as total
+        FROM invoices
+        WHERE payment_status = 'PAID'
+        AND created_at BETWEEN :startDate AND :endDate
+        GROUP BY DATE(created_at)
+        ORDER BY DATE(created_at) ASC
+    """, nativeQuery = true)
+    List<Object[]> getRevenueOverTimeNative(@Param("startDate") LocalDateTime startDate,
+                                            @Param("endDate") LocalDateTime endDate);
+
+    @Query("""
+        SELECT new dh12c3.DangNamAnh.clinic_management.dto.response.dashboard.ChartDataResponse(
+            i.appointment.doctor.user.fullName,
+            SUM(i.totalAmount)
+        )
+        FROM Invoice i
+        WHERE i.paymentStatus = 'PAID' AND i.createdAt BETWEEN :startDate AND :endDate
+        GROUP BY i.appointment.doctor.user.fullName
+        ORDER BY SUM(i.totalAmount) DESC
+    """)
+    List<dh12c3.DangNamAnh.clinic_management.dto.response.dashboard.ChartDataResponse> getTopDoctors(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 }

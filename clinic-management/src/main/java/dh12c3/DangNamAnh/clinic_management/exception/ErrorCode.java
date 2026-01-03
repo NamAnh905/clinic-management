@@ -67,6 +67,9 @@ public enum ErrorCode {
     INVOICE_ALREADY_EXISTS(5102, "This appointment has already been invoiced.", HttpStatus.CONFLICT),
     CANNOT_CREATE_INVOICE(5103, "Cannot create invoice for an incomplete appointment.", HttpStatus.BAD_REQUEST),
     CANNOT_DELETE_PAID_INVOICE(5104, "Cannot delete a paid invoice.", HttpStatus.BAD_REQUEST),
+    INVOICE_ALREADY_PAID(5105, "Invoice has already been paid", HttpStatus.BAD_REQUEST),
+    INVALID_SIGNATURE(5106, "Invalid payment signature", HttpStatus.BAD_REQUEST),
+    PAYMENT_FAILED(5107, "Payment transaction failed or was canceled", HttpStatus.BAD_REQUEST),
     ;
 
     private final int code;

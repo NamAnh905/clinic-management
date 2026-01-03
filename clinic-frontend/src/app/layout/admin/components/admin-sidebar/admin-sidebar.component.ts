@@ -27,6 +27,13 @@ export class AdminSidebarComponent implements OnInit {
 
   // Danh sách menu gốc với cấu hình Role
   allMenuItems: MenuItem[] = [
+    {
+      label: 'Quản lý doanh thu',
+      icon: 'pi pi-chart-line',
+      routerLink: '/admin/revenue',
+      roles: ['ADMIN']
+    },
+
     // --- NHÓM 1: TIẾP ĐÓN & ĐIỀU PHỐI (Dùng nhiều nhất) ---
     {
       label: 'Lịch hẹn',

@@ -39,6 +39,9 @@ public class User {
     @Column(length = 255)
     String address;
 
+    @Column(length = 500)
+    String image;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     Gender gender;

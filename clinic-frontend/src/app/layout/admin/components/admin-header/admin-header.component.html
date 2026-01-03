@@ -40,6 +40,21 @@
     <ng-template pTemplate="content">
         <form [formGroup]="profileForm" class="mt-2">
 
+            <div class="flex justify-content-center mb-5">
+                <div class="relative">
+                    <img [src]="uploadedImageUrl || 'assets/default-avatar.png'"
+                         class="border-circle w-8rem h-8rem shadow-2 fit-cover"
+                         style="object-fit: cover; background-color: #f1f5f9;">
+
+                    <label for="headerAvatarUpload"
+                           class="absolute bottom-0 right-0 bg-primary border-circle w-3rem h-3rem flex align-items-center justify-content-center cursor-pointer hover:bg-primary-600 transition-duration-200 shadow-2 border-2 border-white">
+                        <i class="pi pi-camera text-xl" *ngIf="!isUploading"></i>
+                        <i class="pi pi-spin pi-spinner text-xl" *ngIf="isUploading"></i>
+                    </label>
+                    <input type="file" id="headerAvatarUpload" (change)="onFileSelected($event)" accept="image/*" hidden>
+                </div>
+            </div>
+
             <div class="field mb-3">
                 <label class="font-bold block mb-2">Email</label>
                 <input pInputText formControlName="email" class="bg-gray-100" />

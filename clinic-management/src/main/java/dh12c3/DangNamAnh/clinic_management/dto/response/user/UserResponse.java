@@ -36,6 +36,8 @@ public class UserResponse {
     @ExcelColumn(name = "Địa chỉ")
     String address;
 
+    String image;
+
     Set<RoleResponse> roles;
 
     @ExcelColumn(name = "Trạng thái hoạt động")

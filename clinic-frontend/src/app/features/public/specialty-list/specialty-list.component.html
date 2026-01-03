@@ -1,0 +1,56 @@
+<div class="specialty-page-wrapper">
+
+  <div class="hero-section">
+    <div class="container">
+      <div class="hero-content">
+        <h1>Hệ thống Chuyên khoa<br>Toàn diện & Chuyên sâu</h1>
+        <p>Kết nối với đội ngũ bác sĩ ưu tú từ các bệnh viện hàng đầu. Đặt lịch khám nhanh chóng, không phải chờ đợi.</p>
+        <button class="btn-hero" (click)="scrollDown()">Khám phá ngay</button>
+      </div>
+    </div>
+
+    <div class="wave-bottom">
+      <svg viewBox="0 0 1440 320" preserveAspectRatio="none">
+        <path fill="#ffffff" fill-opacity="1" d="M0,64L48,80C96,96,192,128,288,128C384,128,480,96,576,90.7C672,85,768,107,864,122.7C960,139,1056,149,1152,133.3C1248,117,1344,75,1392,53.3L1440,32L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+      </svg>
+    </div>
+  </div>
+
+  <div class="container main-content" id="main-content">
+
+    <div class="search-container shadow-2">
+      <div class="search-box">
+        <input type="text"
+               placeholder="Tìm kiếm chuyên khoa (VD: Nhi, Tim mạch...)"
+               [(ngModel)]="keyword"
+               (keyup.enter)="onSearch()">
+        <i class="fa-solid fa-magnifying-glass search-icon" (click)="onSearch()"></i>
+      </div>
+    </div>
+
+    <div class="specialty-grid" *ngIf="specialties.length > 0; else noData">
+      <div class="spec-card" *ngFor="let item of specialties">
+        <div class="card-header-bg">
+           <svg viewBox="0 0 1440 320" preserveAspectRatio="none">
+            <path fill="#ffffff" fill-opacity="1" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,224C672,245,768,267,864,250.7C960,235,1056,181,1152,165.3C1248,149,1344,171,1392,181.3L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+          </svg>
+        </div>
+        <div class="icon-wrapper">
+          <i class="fa-solid" [ngClass]="getIcon(item.name)"></i>
+        </div>
+        <div class="card-body">
+          <h3>{{ item.name }}</h3>
+          <p class="desc">{{ item.description || 'Chuyên khoa mũi nhọn với đội ngũ bác sĩ giàu kinh nghiệm.' }}</p>
+        </div>
+        <a [routerLink]="['/doctors']" [queryParams]="{specialtyId: item.specialtyId}" class="overlay-link"></a>
+      </div>
+    </div>
+
+    <ng-template #noData>
+      <div class="no-result">
+        <img src="https://cdn-icons-png.flaticon.com/512/7466/7466073.png" width="80" style="opacity: 0.5">
+        <p>Không tìm thấy chuyên khoa nào phù hợp.</p>
+      </div>
+    </ng-template>
+  </div>
+</div>

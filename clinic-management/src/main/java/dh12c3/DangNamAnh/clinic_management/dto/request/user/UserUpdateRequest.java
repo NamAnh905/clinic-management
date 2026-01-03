@@ -20,6 +20,7 @@ public class UserUpdateRequest {
     Gender gender;
     LocalDate dateOfBirth;
     String address;
+    String image;
     List<String> roles;
     Boolean isActive;
 }

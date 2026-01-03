@@ -1,0 +1,39 @@
+<div class="payment-return-container flex flex-column align-items-center justify-content-center surface-ground">
+    <p-toast></p-toast>
+
+    <div *ngIf="loading" class="text-center fadein animation-duration-500">
+        <p-progressSpinner ariaLabel="loading" styleClass="w-4rem h-4rem"></p-progressSpinner>
+        <h3 class="text-700 mt-4">Đang xử lý kết quả thanh toán...</h3>
+        <p class="text-500">Vui lòng không tắt trình duyệt.</p>
+    </div>
+
+    <div *ngIf="!loading && success" class="text-center fadein animation-duration-500">
+        <div class="icon-circle bg-green-100 text-green-500 mb-4">
+            <i class="pi pi-check text-6xl"></i>
+        </div>
+        <h2 class="text-900 font-bold mb-2">Thanh toán Thành công!</h2>
+        <p class="text-600 mb-5">Hóa đơn của bạn đã được thanh toán và cập nhật vào hệ thống.</p>
+
+        <button pButton
+                label="Quay về danh sách Hóa đơn"
+                icon="pi pi-arrow-left"
+                class="p-button-success p-button-rounded px-4 py-2 shadow-2"
+                (click)="goBack()">
+        </button>
+    </div>
+
+    <div *ngIf="!loading && !success" class="text-center fadein animation-duration-500">
+        <div class="icon-circle bg-red-100 text-red-500 mb-4">
+            <i class="pi pi-times text-6xl"></i>
+        </div>
+        <h2 class="text-900 font-bold mb-2">Thanh toán Thất bại!</h2>
+        <p class="text-600 mb-5 max-w-20rem mx-auto">{{ errorMessage }}</p>
+
+        <button pButton
+                label="Thử lại / Quay về"
+                icon="pi pi-refresh"
+                class="p-button-secondary p-button-rounded px-4 py-2 shadow-2"
+                (click)="goBack()">
+        </button>
+    </div>
+</div>

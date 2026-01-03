@@ -26,6 +26,9 @@ public class ServiceEntity {
     @Column(nullable = false, unique = true, length = 100)
     String name;
 
+    @Column(length = 500)
+    String image;
+
     @Column(nullable = false, precision = 15, scale = 2)
     BigDecimal price;
 

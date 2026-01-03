@@ -1,0 +1,256 @@
+@use "sass:color";
+$primary-color: #007bff;
+$text-dark: #2d3436;
+$bg-light: #f8f9fa;
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+/* --- Top Bar --- */
+.top-bar {
+  background-color: $bg-light;
+  font-size: 13px;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+  color: #636e72;
+
+  .container {
+    display: flex;
+    justify-content: space-between;
+  }
+  .divider { margin: 0 10px; color: #ccc; }
+  a { color: inherit; text-decoration: none; margin-left: 15px; }
+}
+
+/* --- Main Header --- */
+.main-header {
+  background: #fff;
+  height: 80px;
+
+  display: flex;
+  align-items: center;
+
+  /* --- [FIXED HEADER] --- */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 900;
+
+  box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+
+  .header-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  /* Logo */
+  .brand-logo {
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+
+      img {
+          height: 55px;
+          width: auto;
+          object-fit: contain;
+      }
+  }
+
+  /* Menu */
+  .nav-menu ul {
+    display: flex;
+    list-style: none;
+    gap: 30px;
+    margin: 0;
+    padding: 0;
+
+    a {
+      text-decoration: none;
+      color: $text-dark;
+      font-weight: 600;
+      font-size: 16px;
+      transition: color 0.3s;
+
+      &:hover, &.active {
+        color: $primary-color;
+      }
+    }
+  }
+
+  /* Actions */
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    .auth-buttons {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+
+      .btn-login {
+        text-decoration: none;
+        color: $text-dark;
+        font-weight: 600;
+        cursor: pointer;
+        &:hover { color: $primary-color; }
+      }
+
+      .btn-booking {
+        background: $primary-color;
+        color: #fff;
+        padding: 10px 24px;
+        border-radius: 30px;
+        text-decoration: none;
+        font-weight: 600;
+        box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+        transition: transform 0.2s;
+
+        &:hover {
+          transform: translateY(-2px);
+          background: color.adjust($primary-color, $lightness: -5%);
+        }
+      }
+    }
+
+    /* --- User Profile Dropdown (Avatar + Badge + Fix méo) --- */
+    .user-profile {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      margin-left: 15px;
+
+      background: transparent;
+      border: none;
+      padding: 0;
+
+      /* [QUAN TRỌNG] Chống bị méo hình (bè ngang) */
+      flex-shrink: 0;
+
+      /* Hiệu ứng zoom nhẹ khi hover */
+      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+      &:hover {
+        transform: scale(1.1); /* Zoom to hơn chút cho sướng mắt */
+      }
+
+      /* 1. Style cho Avatar */
+      ::ng-deep .p-avatar {
+          width: 45px !important;
+          height: 45px !important;
+
+          /* Bo tròn tuyệt đối */
+          border-radius: 50%;
+          overflow: hidden;
+
+          /* Viền trắng mỏng tách biệt nền */
+          border: 2px solid #fff;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+
+          /* Chống méo khung avatar */
+          flex-shrink: 0;
+
+          /* Fix lỗi răng cưa/mờ biên trên một số trình duyệt */
+          -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
+          transform: translateZ(0);
+
+          img {
+              width: 100%;
+              height: 100%;
+              object-fit: cover; /* Ảnh luôn lấp đầy, không bị méo mặt */
+          }
+      }
+
+      /* 2. Style cho Badge Mũi tên (Đè lên Avatar) */
+      .avatar-badge {
+        position: absolute;
+        bottom: -2px;   /* Căn chớm ra ngoài xíu */
+        right: -2px;
+
+        width: 18px;
+        height: 18px;
+        background-color: #2d3436;
+        border-radius: 50%;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border: 2px solid #ffffff;
+        z-index: 10;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+
+        i {
+          font-size: 8px;
+          color: #fff;
+          font-weight: 800;
+        }
+      }
+    }
+  }
+}
+
+/* --- AVATAR UPLOAD STYLE (Trong Dialog Profile) --- */
+.avatar-upload-container {
+  position: relative;
+
+  /* Tăng kích thước to rõ */
+  width: 150px;
+  height: 150px;
+
+  margin: 0 auto;
+  flex-shrink: 0;
+
+  .avatar-preview {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+
+    /* Chống méo ảnh */
+    object-fit: cover;
+
+    border: 4px solid #f8f9fa;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  }
+
+  .upload-btn {
+    position: absolute;
+    bottom: 5px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    background-color: $primary-color;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 3px solid white;
+    transition: 0.2s;
+    font-size: 1.2rem;
+
+    &:hover {
+      transform: scale(1.1);
+      background-color: color.adjust($primary-color, $lightness: -10%);
+    }
+  }
+}
+
+/* --- Style bảng lịch sử (Dialog Lịch sử) --- */
+::ng-deep .p-dialog-content {
+    .p-datatable .p-datatable-thead > tr > th {
+        background-color: #f8f9fa;
+        color: #495057;
+        font-weight: 600;
+    }
+}

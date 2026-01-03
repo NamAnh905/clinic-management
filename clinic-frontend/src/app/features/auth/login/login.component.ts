@@ -98,7 +98,7 @@ export class LoginComponent {
           if (roles.includes('ADMIN') || roles.includes('DOCTOR') || roles.includes('RECEPTIONIST')) {
             this.router.navigate(['/admin']);
           } else {
-            this.router.navigate(['/home']);
+            this.router.navigate(['']);
           }
         }, 1000);
       },

@@ -1,0 +1,273 @@
+@use "sass:color";
+
+$purple-light: #7c4dff;
+$purple-dark: #651fff;
+// Thêm biến gradient mới cho đồng bộ banner
+$purple-gradient-banner: linear-gradient(135deg, #6200ea 0%, #9046fe 100%);
+$primary-green: #00cba9; // Dùng màu xanh ngọc cho nút banner
+$bg-color: #f9faff;
+$text-dark: #333;
+$text-light: #666;
+
+.doctor-page-wrapper {
+  background-color: white;
+  min-height: 100vh;
+  padding-bottom: 50px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+// --- MỚI: HERO SECTION (BANNER) ---
+.hero-section {
+  position: relative;
+  background: $purple-gradient-banner;
+  padding: 80px 0 140px; /* Padding đáy lớn để chứa đường cong và phần search bar đè lên */
+  color: white;
+  text-align: left;
+
+  .hero-content {
+    max-width: 650px;
+
+    h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      margin-bottom: 20px;
+      line-height: 1.2;
+    }
+
+    p {
+      font-size: 1.1rem;
+      margin-bottom: 30px;
+      opacity: 0.9;
+      line-height: 1.6;
+    }
+
+    .btn-hero {
+      background: $primary-green;
+      color: white;
+      border: none;
+      padding: 12px 35px;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0, 203, 169, 0.4);
+      transition: transform 0.2s;
+
+      &:hover {
+        transform: translateY(-2px);
+        // Dùng màu cứng thay vì color.adjust để tránh lỗi version sass nếu chưa cấu hình
+        background: #00b395;
+      }
+    }
+  }
+
+  /* Đường cong đáy banner */
+  .wave-bottom {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    overflow: hidden;
+    line-height: 0;
+
+    svg {
+      position: relative;
+      display: block;
+      width: calc(100% + 1.3px);
+      height: 80px;
+    }
+  }
+}
+
+// --- CŨ: TITLE (ĐÃ XÓA) ---
+// .page-title { ... }
+
+// --- CẬP NHẬT: SEARCH BAR (Đè lên Banner) ---
+.search-bar-container {
+  margin-top: -35px; /* Kéo lên đè vào banner */
+  margin-bottom: 50px;
+  background: white;
+  border-radius: 12px;
+  padding: 15px 20px;
+  border: 1px solid #eee;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important; /* Tăng shadow lên */
+
+  // Thêm thuộc tính để đè lên
+  position: relative;
+  z-index: 10;
+
+  display: flex;
+  align-items: center;
+
+  .search-item {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: 5px 10px;
+
+    i { margin-right: 12px; font-size: 18px; color: #9aa0a6; }
+
+    input, select {
+      width: 100%;
+      border: none;
+      outline: none;
+      font-size: 16px;
+      color: $text-dark;
+      background: transparent;
+      &::placeholder { color: #aaa; }
+    }
+
+    select { cursor: pointer; }
+  }
+
+  .divider {
+    width: 1px;
+    height: 35px;
+    background-color: #e0e0e0;
+    margin: 0 20px;
+  }
+
+  .btn-search-icon {
+    background: $purple-dark;
+    border: none;
+    width: 45px; height: 45px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: white;
+    font-size: 18px;
+    margin-left: 10px;
+    transition: 0.3s;
+    box-shadow: 0 4px 10px rgba(101, 31, 255, 0.3);
+
+    &:hover { transform: scale(1.05); background: color.adjust($purple-dark, $lightness: -5%); }
+  }
+}
+
+/* --- GRID LAYOUT (Giữ nguyên) --- */
+.doctor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 30px;
+}
+
+/* --- DOCTOR CARD (Giữ nguyên) --- */
+// ... (Phần code style cho .doctor-card giữ nguyên như cũ của ông) ...
+.doctor-card {
+  position: relative;
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid #f0f0f0;
+  display: flex;
+  flex-direction: column;
+
+  &:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(101, 31, 255, 0.15);
+  }
+
+  // 1. Header Gradient
+  .card-header-bg {
+    height: 130px;
+    background: linear-gradient(135deg, #6200ea 0%, #b388ff 100%);
+    position: relative;
+
+    svg {
+      position: absolute; bottom: -1px; width: 100%; height: 50px;
+    }
+  }
+
+  // 2. Avatar
+  .avatar-wrapper {
+    width: 110px; height: 110px;
+    margin: -75px auto 10px;
+    position: relative; z-index: 2;
+    padding: 4px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+
+    img {
+      width: 100%; height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+  }
+
+  // 3. Body
+  .card-body {
+    padding: 0 20px 20px;
+    text-align: center;
+    flex: 1;
+
+    .doc-name {
+      font-size: 18px; font-weight: 700; color: #1a237e; margin: 10px 0 5px;
+    }
+
+    .doc-specialty {
+      font-size: 14px; color: #888; font-style: italic; margin-bottom: 20px;
+    }
+
+    .workplace-info {
+      text-align: left;
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+
+      .wp-item {
+        display: flex; align-items: flex-start;
+        margin-bottom: 8px; font-size: 13px; color: #555;
+
+        i { color: #5c6bc0; margin-right: 10px; margin-top: 3px; min-width: 15px; }
+        span { line-height: 1.4; }
+      }
+    }
+  }
+
+  // 4. Footer
+  .card-footer {
+    padding: 15px 20px;
+    background: #fff;
+    border-top: 1px dashed #eee;
+
+    .exp-badge {
+      background: #e8eaf6;
+      color: #3949ab;
+      font-size: 13px; font-weight: 600;
+      padding: 8px 15px;
+      border-radius: 20px;
+      display: inline-flex; align-items: center; gap: 8px;
+      width: 100%;
+    }
+  }
+
+  .overlay-link {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 5; cursor: pointer;
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .hero-section {
+      padding: 60px 0 80px;
+      text-align: center;
+      .hero-content h1 { font-size: 2rem; }
+  }
+  .search-bar-container {
+    margin-top: 0; // Mobile thì không đè nữa
+    flex-direction: column; padding: 20px;
+    .search-item { width: 100%; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+    .divider { display: none; }
+    .btn-search-icon { width: 100%; border-radius: 12px; margin-left: 0; }
+  }
+}

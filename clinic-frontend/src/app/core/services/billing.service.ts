@@ -15,6 +15,7 @@ import { PaymentMethod, PaymentStatus } from '../../models/core.model';
 export class BillingService {
   private invoiceUrl = `${environment.apiUrl}/invoices`;
   private detailUrl = `${environment.apiUrl}/invoice-details`;
+  private paymentUrl = `${environment.apiUrl}/payment`;
 
   constructor(private http: HttpClient) { }
 
@@ -81,9 +82,12 @@ export class BillingService {
 
   // ================== THANH TOÁN & THỐNG KÊ ==================
 
-  // Lưu ý: Các API này chưa thấy trong Controller bạn gửi, hãy đảm bảo BE đã viết
   initiateVnPayPayment(invoiceId: number): Observable<ApiResponse<string>> {
-    return this.http.post<ApiResponse<string>>(`${this.invoiceUrl}/${invoiceId}/payment/vnpay`, {});
+      return this.http.get<ApiResponse<string>>(`${environment.apiUrl}/payment/vnpay/${invoiceId}`);
+  }
+
+  processVnPayReturn(params: any): Observable<ApiResponse<InvoiceResponse>> {
+      return this.http.get<ApiResponse<InvoiceResponse>>(`${this.paymentUrl}/vnpay-return`, { params });
   }
 
   getRevenueStatistics(year: number, month?: number): Observable<ApiResponse<any>> {

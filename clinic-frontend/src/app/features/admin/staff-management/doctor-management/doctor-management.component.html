@@ -29,6 +29,7 @@
                     <tr>
                         <th style="min-width: 100px">Mã BS</th>
                         <th style="min-width: 180px">Họ và tên</th>
+                        <th style="min-width: 100px">Giới tính</th>
                         <th style="min-width: 150px">Chuyên khoa</th>
                         <th style="min-width: 150px">Số giấy phép</th>
                         <th style="min-width: 120px">SĐT</th>
@@ -40,6 +41,11 @@
                     <tr>
                         <td><b class="text-primary">{{ doc.employeeCode }}</b></td>
                         <td><span class="font-medium text-900">{{ doc.fullName }}</span></td>
+                        <td>
+                            <span *ngIf="doc.gender === 'MALE'" class="text-blue-600 font-bold">Nam</span>
+                            <span *ngIf="doc.gender === 'FEMALE'" class="text-pink-600 font-bold">Nữ</span>
+                            <span *ngIf="doc.gender === 'OTHER'">Khác</span>
+                        </td>
                         <td>
                             <span class="inline-flex align-items-center bg-blue-50 text-blue-700 px-2 py-1 border-round text-sm font-bold border-1 border-blue-200">
                                 {{ doc.specialtyName || 'Chưa cập nhật' }}

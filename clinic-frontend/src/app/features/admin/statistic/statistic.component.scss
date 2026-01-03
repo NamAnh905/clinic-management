@@ -1,0 +1,63 @@
+/* statistic.component.scss */
+
+:host {
+  display: block;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: var(--text-color, #495057);
+  background-color: var(--surface-ground, #f8f9fa);
+
+  /* --- [QUAN TRỌNG] FIX LỖI SCROLL --- */
+  /* Tính toán chiều cao: 100% màn hình trừ đi Header (khoảng 5rem ~ 80px) */
+  /* Nếu header của bạn cao hơn hoặc thấp hơn, hãy chỉnh số 5rem này */
+  height: calc(100vh - 5rem);
+  overflow-y: auto; /* Bắt buộc hiện thanh cuộn dọc */
+  overflow-x: hidden;
+}
+
+/* Override PrimeNG Table Styles */
+:host ::ng-deep {
+  .p-datatable {
+    .p-datatable-thead > tr > th {
+      background: #ffffff;
+      color: #64748b;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      font-weight: 600;
+      padding: 1rem 1.25rem;
+      border-bottom: 2px solid #f1f5f9;
+    }
+
+    .p-datatable-tbody > tr > td {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 0.95rem;
+    }
+
+    .p-datatable-tbody > tr:last-child > td {
+      border-bottom: none;
+    }
+
+    .p-datatable-tbody > tr:hover {
+        background-color: #f8fafc !important;
+    }
+  }
+
+  .p-calendar .p-inputtext {
+    border-radius: 6px;
+    padding: 0.6rem 1rem;
+    border-color: #e2e8f0;
+    &:enabled:hover { border-color: #3b82f6; }
+    &:enabled:focus { box-shadow: 0 0 0 2px #bfdbfe; border-color: #3b82f6; }
+  }
+}
+
+.fadein { animation: fadein 0.3s linear forwards; }
+@keyframes fadein {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media screen and (max-width: 768px) {
+  .grid { display: flex; flex-direction: column; }
+  .col-12 { width: 100% !important; }
+}

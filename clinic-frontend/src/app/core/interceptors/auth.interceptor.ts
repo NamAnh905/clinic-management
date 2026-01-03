@@ -2,11 +2,11 @@ import { HttpErrorResponse, HttpInterceptorFn, HttpRequest, HttpHandlerFn } from
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, catchError, filter, switchMap, take, throwError, Observable } from 'rxjs';
-import { AuthService } from '../services/auth.service'; // Điều chỉnh đường dẫn thực tế của bạn
-import { ApiResponse } from '../../models/core.model';
-import { AuthenticationResponse } from '../../models/auth.model';
+import { AuthService } from '../services/auth.service'; // Đảm bảo đường dẫn đúng
+import { ApiResponse } from '../../models/core.model'; // Đảm bảo đường dẫn đúng
+import { AuthenticationResponse } from '../../models/auth.model'; // Đảm bảo đường dẫn đúng
 
-// Biến để kiểm soát trạng thái refresh (đặt ngoài function để dùng chung giữa các request)
+// Biến global quản lý trạng thái refresh token
 let isRefreshing = false;
 const refreshTokenSubject: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
 
@@ -15,25 +15,39 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const token = localStorage.getItem('token');
 
-  // Kiểm tra các endpoint công khai (không cần đính kèm token)
+  // --- 1. ĐỊNH NGHĨA CÁC ENDPOINT PUBLIC (WHITELIST) ---
+  // Các API Auth cơ bản
   const isAuthApi = req.url.includes('/auth/login') ||
                     req.url.includes('/auth/introspect') ||
                     req.url.includes('/auth/logout') ||
-                    req.url.includes('/auth/refresh'); // Không chặn chính nó
+                    req.url.includes('/auth/refresh');
 
   const isRegisterApi = req.url.includes('/users') && req.method === 'POST';
-  const isPublicEndpoint = isAuthApi || isRegisterApi;
+
+  // [MỚI] Các API phục vụ Booking Public & Master Data cho khách vãng lai
+  // Backend cần cấu hình permitAll() cho các path này
+  const isBookingPublicApi = req.url.includes('/appointments/public') ||
+                             (req.method === 'GET' && req.url.includes('/master-data')) || // Lấy chuyên khoa, dịch vụ
+                             (req.method === 'GET' && req.url.includes('/staffs'));      // Lấy danh sách bác sĩ
+
+  // Gom tất cả vào nhóm Public
+  const isPublicEndpoint = isAuthApi || isRegisterApi || isBookingPublicApi;
 
   let authReq = req;
 
-  // Đính kèm Token vào Header nếu có và không phải endpoint công khai
+  // --- 2. LOGIC ĐÍNH KÈM TOKEN ---
+  // Chỉ gửi Token nếu có VÀ không phải endpoint public
+  // (Lý do: Nếu gửi token hết hạn vào API public, một số config Spring Security vẫn chặn 401.
+  //  Tốt nhất với API public của Guest thì không gửi token để tránh rủi ro).
   if (token && !isPublicEndpoint) {
     authReq = addTokenHeader(req, token);
   }
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      // Nếu lỗi 401 và không phải là lỗi từ các API public
+      // --- 3. XỬ LÝ LỖI 401 ---
+      // Chỉ thực hiện Refresh Token nếu lỗi 401 xảy ra ở các API PRIVATE (yêu cầu đăng nhập)
+      // Nếu API Public mà lỗi (ví dụ 400, 500) hoặc 401 giả (hiếm) thì cứ throw ra cho Component xử lý
       if (error.status === 401 && !isPublicEndpoint) {
         return handle401Error(authService, router, authReq, next);
       }
@@ -43,7 +57,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 };
 
 /**
- * Hàm hỗ trợ đính kèm Token vào Header
+ * Helper: Clone request và thêm Header Authorization
  */
 function addTokenHeader(request: HttpRequest<any>, token: string) {
   return request.clone({
@@ -54,7 +68,7 @@ function addTokenHeader(request: HttpRequest<any>, token: string) {
 }
 
 /**
- * Logic xử lý khi gặp lỗi 401 (Refresh Token)
+ * Helper: Logic xử lý Refresh Token khi gặp lỗi 401
  */
 function handle401Error(authService: AuthService, router: Router, request: HttpRequest<any>, next: HttpHandlerFn): Observable<any> {
   if (!isRefreshing) {
@@ -63,32 +77,32 @@ function handle401Error(authService: AuthService, router: Router, request: HttpR
 
     const oldToken = localStorage.getItem('token') || '';
 
-    // Gọi API refresh ở AuthService
+    // Gọi API Refresh
     return authService.refreshToken(oldToken).pipe(
       switchMap((response: ApiResponse<AuthenticationResponse>) => {
         isRefreshing = false;
 
         const newToken = response.result.token;
-        localStorage.setItem('token', newToken); // Lưu token mới vào storage
-        refreshTokenSubject.next(newToken); // Thông báo cho các request đang "chờ"
+        localStorage.setItem('token', newToken); // Lưu token mới
+        refreshTokenSubject.next(newToken);      // Báo hiệu cho các request đang chờ
 
         // Thử lại request ban đầu với token mới
         return next(addTokenHeader(request, newToken));
       }),
       catchError((err) => {
+        // Nếu refresh thất bại -> Logout
         isRefreshing = false;
-        // Nếu refresh cũng lỗi (quá thời hạn REFRESHABLE_DURATION), thực hiện logout
         localStorage.removeItem('token');
         router.navigate(['/login']);
         return throwError(() => err);
       })
     );
   } else {
-    // Nếu đang có một request refresh khác đang chạy, cho request này "xếp hàng" chờ
+    // Nếu đang có tiến trình refresh chạy, các request khác xếp hàng đợi
     return refreshTokenSubject.pipe(
-      filter(token => token !== null), // Đợi cho đến khi có token mới
+      filter(token => token !== null),
       take(1),
-      switchMap((token) => next(addTokenHeader(request, token!))) // Thử lại với token đó
+      switchMap((token) => next(addTokenHeader(request, token!)))
     );
   }
 }

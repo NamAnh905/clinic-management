@@ -6,7 +6,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
-import java.util.Set;
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
@@ -21,4 +21,5 @@ public class InvoiceResponse {
     PaymentStatus paymentStatus;
     PaymentMethod paymentMethod;
     String transactionCode;
+    LocalDateTime createdAt;
 }

@@ -6,18 +6,21 @@ export interface ServiceEntityResponse {
   name: string;
   price: number;
   type: ServiceType;
+  image?: string;
 }
 
 export interface SECreationRequest {
   name: string;
   price: number;
   type: ServiceType;
+  image?: string;
 }
 
 export interface SEUpdationRequest {
   serviceId?: number;
   name?: string;
   price?: number;
+  image?: string;
 }
 
 // ================== DRUG (THUỐC) ==================

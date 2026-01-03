@@ -48,13 +48,16 @@ export class AppointmentManagementComponent implements OnInit {
   selectedStatus: AppointmentStatus | null = null;
   rangeDates: Date[] | undefined;
 
-  // Dropdown Options
+  // Dropdown Options: Đã cập nhật đủ trạng thái
   statusOptions = [
     { label: 'Tất cả trạng thái', value: null },
     { label: 'Chờ xác nhận', value: 'PENDING' },
     { label: 'Đã xác nhận', value: 'CONFIRMED' },
+    { label: 'Đã check-in', value: 'CHECKED_IN' },    // MỚI
+    { label: 'Đang khám', value: 'IN_PROGRESS' },     // MỚI
     { label: 'Đã hoàn thành', value: 'COMPLETED' },
-    { label: 'Đã hủy', value: 'CANCELLED' }
+    { label: 'Đã hủy', value: 'CANCELLED' },
+    { label: 'Vắng mặt (No-show)', value: 'NO_SHOW' } // MỚI
   ];
 
   doctors: any[] = [];
@@ -76,12 +79,12 @@ export class AppointmentManagementComponent implements OnInit {
   private appointmentService = inject(AppointmentService);
   private userService = inject(UserService);
   private billingService = inject(BillingService);
-  public authService = inject(AuthService); // Public để dùng trong HTML nếu cần
+  public authService = inject(AuthService);
   private messageService = inject(MessageService);
   private confirmationService = inject(ConfirmationService);
   private fb = inject(FormBuilder);
 
-  // Getter tiện lợi dùng cho HTML (thay vì khai báo biến)
+  // Getter tiện lợi
   get isDoctor(): boolean { return this.authService.isDoctor; }
   get isAdmin(): boolean { return this.authService.isAdmin; }
 
@@ -122,13 +125,12 @@ export class AppointmentManagementComponent implements OnInit {
       toDateStr = formatDate(this.rangeDates[1], 'yyyy-MM-dd', 'en-US') + 'T23:59:59';
     }
 
-    // Thêm "|| undefined" để nếu là null thì biến thành undefined
     const myDoctorId = this.isDoctor ? (this.authService.currentDoctorIdSubject.value || undefined) : undefined;
 
     this.appointmentService.getAppointments(
       this.page,
       this.size,
-      myDoctorId, // Tự động lọc theo bác sĩ hiện tại nếu là Doctor
+      myDoctorId,
       undefined,
       this.keyword,
       this.selectedStatus || undefined,
@@ -186,7 +188,6 @@ export class AppointmentManagementComponent implements OnInit {
     if (this.apptForm.invalid) return;
 
     const val = this.apptForm.value;
-    // Nếu là Doctor, disable lại UI cho chắc
     if (this.isDoctor) this.apptForm.controls['doctorId'].disable();
 
     const datePart = formatDate(val.date, 'yyyy-MM-dd', 'en-US');
@@ -267,13 +268,17 @@ export class AppointmentManagementComponent implements OnInit {
     this.messageService.add({ severity: 'error', summary: 'Lỗi', detail: msg });
   }
 
+  // --- CẬP NHẬT MÀU SẮC CHO CÁC TRẠNG THÁI MỚI ---
   getSeverity(status: string) {
     switch (status) {
-        case 'CONFIRMED': return 'success';
-        case 'PENDING': return 'warning';
-        case 'COMPLETED': return 'info';
-        case 'CANCELLED': return 'danger';
-        default: return 'secondary';
+        case 'CONFIRMED': return 'success';   // Xanh lá
+        case 'PENDING': return 'warning';     // Vàng
+        case 'COMPLETED': return 'info';      // Xanh dương
+        case 'CHECKED_IN': return 'secondary'; // Xám/Tím nhạt (MỚI)
+        case 'IN_PROGRESS': return 'warning';  // Cam/Vàng (MỚI - Đang diễn ra)
+        case 'CANCELLED': return 'danger';    // Đỏ
+        case 'NO_SHOW': return 'danger';      // Đỏ (MỚI)
+        default: return 'contrast';
     }
   }
 
@@ -325,6 +330,58 @@ export class AppointmentManagementComponent implements OnInit {
               this.loadingDetails = false;
           },
           error: () => this.loadingDetails = false
+      });
+  }
+
+  confirmPayment() {
+      if (!this.currentInvoice) return;
+
+      this.confirmationService.confirm({
+        message: `Xác nhận thu tiền mặt cho hóa đơn <b>#${this.currentInvoice.transactionCode || this.currentInvoice.invoiceId}</b>?<br>Tổng tiền: <b class="text-primary">${this.formatCurrency(this.currentInvoice.totalAmount)}</b>`,
+        header: 'Xác nhận thu tiền',
+        icon: 'pi pi-wallet',
+        acceptLabel: 'Thanh toán',
+        rejectLabel: 'Hủy',
+        acceptButtonStyleClass: 'p-button-success',
+        accept: () => {
+          // Gọi API Update trạng thái thành PAID + CASH
+          const request: any = { // Dùng any hoặc import InvoiceUpdateRequest
+            paymentStatus: 'PAID',
+            paymentMethod: 'CASH'
+          };
+
+          this.billingService.updateInvoice(this.currentInvoice!.invoiceId, request).subscribe({
+            next: () => {
+              this.messageService.add({ severity: 'success', summary: 'Thành công', detail: 'Thanh toán thành công!' });
+              this.invoiceDialog = false; // Đóng popup
+              this.loadAppointments();    // Load lại lịch hẹn để cập nhật trạng thái
+            },
+            error: (err) => {
+              this.showError(err);
+            }
+          });
+        }
+      });
+  }
+
+  payWithVnPay() {
+      if (!this.currentInvoice) return;
+
+      this.loadingDetails = true;
+      this.billingService.initiateVnPayPayment(this.currentInvoice.invoiceId).subscribe({
+          next: (res) => {
+              if (res.result) {
+                  // Backend trả về URL -> Redirect user sang VNPay
+                  window.location.href = res.result;
+              } else {
+                  this.messageService.add({ severity: 'error', summary: 'Lỗi', detail: 'Không lấy được link thanh toán' });
+              }
+              this.loadingDetails = false;
+          },
+          error: (err) => {
+              this.showError(err);
+              this.loadingDetails = false;
+          }
       });
   }
 

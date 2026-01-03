@@ -385,4 +385,10 @@ export class ScheduleManagementComponent implements OnInit {
   onTargetTypeChange() {
       this.scheduleForm.patchValue({ doctorId: null });
   }
+
+  getSpecialtyName(specialtyId: number): string {
+      if (!specialtyId || !this.specialties) return '';
+      const s = this.specialties.find(item => item.value === specialtyId);
+      return s ? s.label : '';
+  }
 }

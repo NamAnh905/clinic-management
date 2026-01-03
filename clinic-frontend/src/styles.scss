@@ -1,70 +1,85 @@
 /* =========================================
    1. IMPORT LIBRARY (PrimeNG v17 + Fonts)
    ========================================= */
-
-/* Import Font Inter từ Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-/* Import Theme giao diện v17 (Màu xanh Aura Light Blue) */
 @import "primeng/resources/themes/aura-light-blue/theme.css";
 @import "primeng/resources/primeng.css";
-
-/* Import Icons & Layout System */
 @import "primeicons/primeicons.css";
 @import "primeflex/primeflex.css";
 
 /* =========================================
    2. GLOBAL SETTINGS
    ========================================= */
-
 :root {
-    /* Khai báo biến dùng chung */
     --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    --primary-color: #0ea5e9; /* Sky Blue */
+    --primary-color: #0ea5e9;
     --text-color: #0f172a;
 }
+
+/* XÓA HẾT CÁC ĐOẠN code html/body ép scroll trước đó đi */
 
 body {
     margin: 0;
     padding: 0;
+    // padding-top: 80px; /* Đẩy nội dung xuống tránh Header che */
     font-family: var(--font-family);
-    background-color: #f8fafc; /* Màu nền xám xanh nhạt dịu mắt */
+    background-color: #f8fafc;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
 }
 
 /* =========================================
-   3. GLOBAL FIXES (Autofill, Inputs, Labels)
+   3. FIX UI BUGS (DIALOG & LAYOUT)
    ========================================= */
 
-/* Fix lỗi Autofill Chrome (Màn hình vàng/xanh) cho TẤT CẢ input trong dự án */
+/* [QUAN TRỌNG] Fix lỗi vệt trắng & Làm mờ vùng thanh cuộn
+   Khi Dialog mở, thanh cuộn mất đi. Ta ép lớp phủ đen tràn ra 100vw (toàn màn hình)
+   để nó che luôn cái khoảng trắng mà thanh cuộn để lại. */
+.p-component-overlay {
+    width: 100vw !important;
+    left: 0 !important;
+    animation: fadeIn 0.2s ease-out; /* Hiệu ứng hiện mượt */
+}
+
+/* [QUAN TRỌNG] Fix lỗi Header bị giật khi mở Dialog
+   Khi body bị khóa cuộn (có class p-overflow-hidden), ta bù thêm padding cho Header
+   để nó không bị giãn ra (giả lập như thanh cuộn vẫn còn đó) */
+body.p-overflow-hidden .main-header {
+    padding-right: 17px; /* 17px là kích thước chuẩn của scrollbar Windows */
+}
+
+/* Fix lỗi Toast bị che */
+.p-toast {
+    z-index: 10000 !important;
+}
+
+/* =========================================
+   4. INPUT & FORM FIXES
+   ========================================= */
+/* Fix lỗi Autofill Chrome */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 30px #ffffff inset !important; /* Ép nền trắng */
-    -webkit-text-fill-color: var(--text-color) !important;   /* Ép màu chữ đen */
+    -webkit-box-shadow: 0 0 0 30px #ffffff inset !important;
+    -webkit-text-fill-color: var(--text-color) !important;
     transition: background-color 5000s ease-in-out 0s;
 }
 
-/* Fix lỗi Label bị đè khi Autofill */
-.organic-field {
-    input:-webkit-autofill + label {
-        top: 0 !important;
-        background: #ffffff;
-        padding: 0 6px;
-        font-size: 0.8rem;
-        color: var(--primary-color);
-        font-weight: 600;
-        z-index: 10;
-    }
+/* Fix Label đè Autofill */
+.organic-field input:-webkit-autofill + label {
+    top: 0 !important;
+    background: #ffffff;
+    padding: 0 6px;
+    font-size: 0.8rem;
+    color: var(--primary-color);
+    font-weight: 600;
+    z-index: 10;
 }
 
-/* Class tiện ích: Ép Label luôn nằm trên (Dùng cho Calendar/Dropdown) */
 .always-top {
     position: absolute;
     left: 16px;
-    top: 0 !important; /* Luôn nằm trên viền */
+    top: 0 !important;
     transform: translateY(-50%);
     background: #ffffff;
     padding: 0 6px;
@@ -74,8 +89,9 @@ input:-webkit-autofill:active {
     z-index: 10;
     pointer-events: none;
 }
+.organic-field.error .always-top { color: #ef4444; }
 
-/* Khi có lỗi thì đổi màu Label always-top sang đỏ */
-.organic-field.error .always-top {
-    color: #ef4444;
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }

@@ -19,6 +19,7 @@ export interface UserResponse {
   gender: Gender;
   dateOfBirth: string;
   address: string;
+  image?: string;
   roles: RoleResponse[];
   isActive: boolean;
 }

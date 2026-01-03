@@ -1,0 +1,150 @@
+<section class="hero-section">
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-text fade-in-up">
+        <span class="badge-new">✨ Giải pháp Y tế Thông minh</span>
+        <h1>Hệ thống Quản lý <br> <span class="text-highlight">Phòng khám 28Care</span></h1>
+        <p>Kết nối bệnh nhân và bác sĩ chuyên gia chỉ với một chạm. Trải nghiệm quy trình khám chữa bệnh không chờ đợi, hồ sơ điện tử trọn đời.</p>
+
+        <div class="hero-actions">
+          <button class="btn btn-primary-lg" (click)="onBookNowClick()">
+            <i class="pi pi-calendar-plus mr-2"></i> Đặt lịch ngay
+          </button>
+          <a routerLink="/services" class="btn btn-outline-lg">Dịch vụ & Bảng giá</a>
+        </div>
+
+        <div class="stats">
+          <div class="stat-item">
+             <h3>50+</h3>
+             <p>Bác sĩ Chuyên khoa</p>
+          </div>
+          <div class="divider-vertical"></div>
+          <div class="stat-item">
+             <h3>24/7</h3>
+             <p>Hỗ trợ trực tuyến</p>
+          </div>
+          <div class="divider-vertical"></div>
+          <div class="stat-item">
+             <h3>10k+</h3>
+             <p>Lượt khám/tháng</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-image fade-in-right">
+        <div class="blob-bg"></div>
+        <img src="https://img.freepik.com/free-photo/team-young-specialist-doctors-standing-corridor-hospital_1303-21199.jpg" alt="Clinic Team">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section process-section">
+  <div class="container">
+     <div class="process-wrapper">
+        <div class="process-img">
+           <img src="https://img.freepik.com/free-vector/appointment-booking-with-calendar_23-2148565261.jpg" alt="Booking Process">
+        </div>
+        <div class="process-content">
+           <h2>Quy trình khám bệnh đơn giản</h2>
+           <p>Chỉ với 3 bước đơn giản để chăm sóc sức khỏe của bạn</p>
+
+           <div class="steps">
+              <div class="step-item">
+                 <div class="step-number">1</div>
+                 <div class="step-info">
+                    <h4>Đặt lịch Online</h4>
+                    <p>Chọn chuyên khoa, bác sĩ và giờ khám phù hợp trên website.</p>
+                 </div>
+              </div>
+              <div class="step-item">
+                 <div class="step-number">2</div>
+                 <div class="step-info">
+                    <h4>Xác nhận & Đến khám</h4>
+                    <p>Nhận tin nhắn xác nhận. Đến phòng khám đúng giờ hẹn.</p>
+                 </div>
+              </div>
+              <div class="step-item">
+                 <div class="step-number">3</div>
+                 <div class="step-info">
+                    <h4>Nhận kết quả & Đơn thuốc</h4>
+                    <p>Khám, nhận kết quả và đơn thuốc ngay trên ứng dụng/website.</p>
+                 </div>
+              </div>
+           </div>
+           </div>
+     </div>
+  </div>
+</section>
+
+<section class="section features-section">
+  <div class="container">
+    <div class="section-header">
+       <h2>Vì sao chọn 28Care?</h2>
+       <p>Chúng tôi mang đến trải nghiệm y tế khác biệt</p>
+    </div>
+
+    <div class="feature-grid">
+       <div class="feature-card">
+          <div class="icon-wrapper bg-blue-100 text-blue-600">
+             <i class="pi pi-clock text-3xl"></i>
+          </div>
+          <h3>Tiết kiệm thời gian</h3>
+          <p>Đặt lịch trước, đến là khám ngay. Không còn cảnh xếp hàng chờ đợi mệt mỏi tại phòng khám.</p>
+       </div>
+
+       <div class="feature-card">
+          <div class="icon-wrapper bg-green-100 text-green-600">
+             <i class="pi pi-file text-3xl"></i>
+          </div>
+          <h3>Hồ sơ điện tử</h3>
+          <p>Lịch sử khám bệnh, đơn thuốc, kết quả xét nghiệm được lưu trữ bảo mật và tra cứu trọn đời.</p>
+       </div>
+
+       <div class="feature-card">
+          <div class="icon-wrapper bg-orange-100 text-orange-600">
+             <i class="pi pi-shield text-3xl"></i>
+          </div>
+          <h3>Bác sĩ uy tín</h3>
+          <p>Đội ngũ bác sĩ chuyên khoa đầu ngành, giàu kinh nghiệm và tận tâm với người bệnh.</p>
+       </div>
+    </div>
+  </div>
+</section>
+
+<p-dialog
+    [(visible)]="showMethodDialog"
+    [modal]="true"
+    [style]="{width: '450px', 'border-radius': '24px', 'overflow': 'hidden'}"
+    [draggable]="false"
+    [resizable]="false"
+    [showHeader]="false"
+    [blockScroll]="true"
+    [dismissableMask]="true">
+
+    <button class="absolute top-0 right-0 m-3 z-5 bg-transparent border-none cursor-pointer text-500 hover:text-800 transition-duration-200"
+            (click)="showMethodDialog = false">
+        <i class="pi pi-times" style="font-size: 1.5rem"></i>
+    </button>
+
+    <div class="text-center p-5 pt-6 pb-6">
+        <h2 class="text-900 font-bold text-2xl mb-2" style="color: #1a237e;">Đặt khám ngay</h2>
+        <p class="text-600 mb-5 text-base">Vui lòng lựa chọn phương thức khám</p>
+
+        <button class="popup-btn btn-blue" (click)="navigateToBooking('CLINIC')">
+            <i class="pi pi-building text-xl"></i>
+            Đặt lịch tại phòng khám
+        </button>
+
+        <div class="flex align-items-center justify-content-center my-3">
+            <div class="border-top-1 border-300 w-3rem"></div>
+            <span class="mx-3 text-700 font-medium text-xs">HOẶC</span>
+            <div class="border-top-1 border-300 w-3rem"></div>
+        </div>
+
+        <button class="popup-btn btn-white">
+            <i class="pi pi-phone text-xl"></i>
+            Liên hệ Hotline: 1900 1080
+        </button>
+    </div>
+</p-dialog>

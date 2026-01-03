@@ -16,6 +16,7 @@ public interface SpecialtyMapper {
     @Mapping(target = "doctors", ignore = true)
     Specialty toSpecialty(SpecialtyCreationRequest request);
 
+    @Mapping(target = "defaultServiceId", source = "defaultService.serviceId")
     SpecialtyResponse toSpecialtyResponse(Specialty specialty);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

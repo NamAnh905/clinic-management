@@ -1,0 +1,372 @@
+/* --- VARIABLES --- */
+$primary-blue: #2563eb;
+$soft-bg: #f8fafc;
+$card-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+$hover-shadow: 0 15px 35px rgba(37, 99, 235, 0.15);
+
+:host {
+  display: block;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  position: relative;
+}
+
+/* --- BACKGROUND --- */
+.booking-bg {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  /* Gradient nền tinh tế hơn */
+  background: radial-gradient(circle at 10% 20%, rgb(239, 246, 255) 0%, rgb(255, 255, 255) 90%);
+  z-index: 0;
+}
+
+.booking-wrapper {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* --- CENTRAL CARD (MAIN) --- */
+.central-card {
+  background: rgba(255, 255, 255, 0.95); /* Một chút trong suốt */
+  backdrop-filter: blur(10px); /* Hiệu ứng mờ nền phía sau */
+  width: 100%;
+  max-width: 1100px;
+  height: 85vh; /* Cố định chiều cao tương đối */
+  border-radius: 30px;
+  box-shadow: $card-shadow;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: zoomIn 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+
+  /* HEADER */
+  .card-header {
+    padding: 25px 40px;
+    background: white;
+    border-bottom: 1px solid #f1f5f9;
+
+    .header-content {
+      display: flex;
+      justify-content: center; /* Căn giữa */
+      align-items: center;
+      position: relative;
+      margin-bottom: 15px;
+
+      .close-btn {
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+    }
+
+    /* Progress Bar Mới */
+    .progress-track {
+      height: 4px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      width: 100%;
+      overflow: hidden;
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #3b82f6, #06b6d4);
+        border-radius: 4px;
+        transition: width 0.5s ease;
+      }
+    }
+  }
+
+  /* BODY */
+  .card-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 30px 40px;
+    background: #fcfcfc;
+
+    /* Custom Scrollbar */
+    &::-webkit-scrollbar { width: 8px; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; border: 2px solid #fcfcfc; }
+  }
+}
+
+/* --- COMPONENTS STYLES --- */
+
+/* 1. CLINIC TICKET (Thẻ phòng khám) */
+.clinic-ticket {
+    display: flex;
+    background: white;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    border: 1px solid #f1f5f9;
+    transition: all 0.3s ease;
+    min-height: 300px;
+
+    &:hover {
+        transform: translateY(-5px);
+        box-shadow: $hover-shadow;
+        border-color: #bfdbfe;
+    }
+
+    .ticket-left {
+        flex: 1;
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        position: relative;
+
+        .clinic-badge {
+            background: #eff6ff;
+            color: $primary-blue;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: inline-block;
+            margin-bottom: 15px;
+            width: fit-content;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            color: #475569;
+            font-size: 1rem;
+            i { font-size: 1.1rem; }
+        }
+
+        .btn-select {
+            background: #0f172a;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex; align-items: center; width: fit-content;
+
+            &:hover { background: $primary-blue; }
+        }
+    }
+
+    .ticket-right {
+        width: 45%;
+        position: relative;
+        .clinic-img { width: 100%; height: 100%; object-fit: cover; }
+        .overlay {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 20%);
+        }
+    }
+}
+
+/* 2. SERVICE GLASS CARD */
+.service-glass-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid #f1f5f9;
+    height: 100%;
+    position: relative;
+    transition: 0.3s;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+
+    &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+        border-color: #bfdbfe;
+
+        .card-img-top img { transform: scale(1.05); }
+        .hover-action { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-img-top {
+        height: 160px;
+        overflow: hidden;
+        background: #f8fafc;
+        display: flex; align-items: center; justify-content: center;
+
+        img.img-fit { width: 100%; height: 100%; object-fit: cover; transition: 0.4s; }
+        .placeholder-icon { font-size: 3rem; color: #94a3b8; }
+    }
+
+    .card-content {
+        padding: 20px;
+        flex: 1;
+        display: flex; flex-direction: column; justify-content: space-between;
+
+        .s-name { margin: 0 0 10px; font-size: 1.1rem; color: #1e293b; font-weight: 700; }
+        .s-price-tag {
+            display: flex; flex-direction: column;
+            .label { font-size: 0.8rem; color: #64748b; }
+            .price { font-size: 1.2rem; font-weight: 800; color: $primary-blue; }
+        }
+    }
+
+    .hover-action {
+        position: absolute; bottom: 0; left: 0; right: 0;
+        background: $primary-blue; color: white;
+        text-align: center; padding: 10px;
+        font-weight: 600;
+        opacity: 0; transform: translateY(100%);
+        transition: 0.3s;
+    }
+}
+
+/* 3. DOCTOR PROFILE CARD */
+.doctor-profile-card {
+    background: white;
+    border-radius: 24px;
+    padding: 25px;
+    border: 1px solid #f1f5f9;
+    transition: 0.3s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+
+    &:hover {
+        transform: translateY(-5px);
+        box-shadow: $hover-shadow;
+        border-color: #bfdbfe;
+        .btn-book-doc { background: $primary-blue; color: white; border-color: $primary-blue; }
+    }
+
+    .doc-header {
+        display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;
+        .avatar-circle {
+            width: 80px; height: 80px; border-radius: 50%; overflow: hidden;
+            border: 3px solid #f0f9ff;
+            img { width: 100%; height: 100%; object-fit: cover; }
+        }
+        .status-badge {
+            background: #f0fdf4; color: #16a34a; font-size: 0.75rem; font-weight: 700;
+            padding: 4px 10px; border-radius: 20px; display: flex; align-items: center; gap: 5px;
+            .dot { width: 6px; height: 6px; background: #16a34a; border-radius: 50%; display: block; }
+        }
+    }
+
+    .doc-body {
+        .d-name { margin: 0 0 5px; font-size: 1.15rem; color: #1e293b; font-weight: 700; }
+        .d-spec { margin: 0; color: #64748b; font-size: 0.9rem; }
+
+        .d-stats {
+            .stat {
+                display: flex; flex-direction: column; align-items: center;
+                b { font-size: 1rem; color: #0f172a; }
+                span { font-size: 0.75rem; color: #94a3b8; }
+            }
+        }
+    }
+
+    .doc-footer {
+        margin-top: 20px;
+        .btn-book-doc {
+            width: 100%; padding: 10px; border-radius: 12px; border: 1px solid #e2e8f0;
+            background: white; color: #475569; font-weight: 600; transition: 0.2s; cursor: pointer;
+        }
+    }
+}
+
+/* --- DIALOG STYLES (MODERN) --- */
+
+/* 1. Mode Selection Dialog (Keep original style) */
+::ng-deep .booking-mode-dialog {
+    .p-dialog-header { border-bottom: none; background: #fff; border-radius: 24px 24px 0 0; }
+    .p-dialog-content { padding: 0 1.5rem 2rem !important; background: #fff; border-radius: 0 0 24px 24px; }
+}
+
+.mode-selection-content {
+    .mode-card {
+        border: 2px solid #f1f5f9; border-radius: 20px; padding: 30px; text-align: center; cursor: pointer; transition: 0.3s;
+        height: 100%; background: #fff; position: relative;
+        .icon-box { width: 70px; height: 70px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 2rem; transition: 0.3s; }
+        h3 { margin: 0 0 10px; font-size: 1.2rem; font-weight: 700; color: #334155; }
+        p { margin: 0; font-size: 0.95rem; color: #64748b; }
+        .hover-indicator { position: absolute; top: 20px; right: 20px; opacity: 0; transform: translateX(-10px); transition: 0.3s; }
+
+        &.card-time {
+            .icon-box { background: #eff6ff; color: #3b82f6; }
+            &:hover { border-color: #3b82f6; background: #eff6ff; transform: translateY(-5px); .icon-box { background: #3b82f6; color: white; } .hover-indicator { opacity: 1; transform: translateX(0); color: #3b82f6; } }
+        }
+        &.card-doctor {
+            .icon-box { background: #f0fdf4; color: #22c55e; }
+            &:hover { border-color: #22c55e; background: #f0fdf4; transform: translateY(-5px); .icon-box { background: #22c55e; color: white; } .hover-indicator { opacity: 1; transform: translateX(0); color: #22c55e; } }
+        }
+    }
+}
+
+/* 2. Custom Modern Dialog (For Time & Info) */
+::ng-deep .custom-dialog-modern {
+    .p-dialog-content { padding: 0 !important; border-radius: 20px; overflow: hidden; }
+}
+
+/* Calendar Clean Style */
+::ng-deep .clean-calendar {
+    .p-datepicker { border: none; }
+    .p-datepicker-header { background: white; font-weight: 700; }
+    table td > span {
+        width: 2.5rem; height: 2.5rem; border-radius: 12px; transition: 0.2s;
+        &.p-highlight { background: $primary-blue; color: white; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3); }
+        &:not(.p-highlight):hover { background: #eff6ff; color: $primary-blue; }
+    }
+}
+
+.modern-time-slot {
+    border: 1px solid #e2e8f0; background: white; color: #1e293b;
+    padding: 10px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.2s;
+    &:hover { border-color: $primary-blue; color: $primary-blue; }
+    &.selected { background: $primary-blue; color: white; border-color: $primary-blue; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3); }
+}
+
+.separator-text {
+    text-align: center; font-size: 0.85rem; color: #94a3b8; margin: 15px 0; position: relative;
+    &::before, &::after { content: ''; position: absolute; top: 50%; width: 30%; height: 1px; background: #e2e8f0; }
+    &::before { left: 0; } &::after { right: 0; }
+}
+
+.empty-state {
+    text-align: center; padding: 30px; background: #fef2f2; border-radius: 12px; color: #ef4444;
+    i { font-size: 2rem; margin-bottom: 10px; }
+}
+
+/* Info Form Styles */
+.summary-card {
+    background: #f8fafc; padding: 20px; border-radius: 16px; border: 1px dashed #cbd5e1;
+    .summary-row {
+        display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.95rem;
+        .s-label { color: #64748b; }
+        .s-value { font-weight: 600; color: #0f172a; }
+        .highlight { color: $primary-blue; font-size: 1.1rem; }
+    }
+}
+
+.input-label { display: block; margin-bottom: 8px; font-weight: 600; color: #334155; font-size: 0.9rem; }
+.modern-input { border-radius: 10px; padding: 12px; border: 1px solid #e2e8f0; &:focus { border-color: $primary-blue; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1); } }
+.icon-circle { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+@keyframes zoomIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in-up { animation: fadeInUp 0.4s ease-out; }

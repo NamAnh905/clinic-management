@@ -24,10 +24,6 @@ import java.util.Arrays;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-    private final String[] PUBLIC_ENDPOINTS = {
-            "/users", "/auth/login", "/auth/introspect", "/auth/logout", "/auth/refresh"
-    };
-
     @Autowired
     private CustomJwtDecoder customJwtDecoder;
 
@@ -36,11 +32,15 @@ public class SecurityConfig {
         httpSecurity
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(request -> request
-                .requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS)
-
-                .permitAll()
-                .anyRequest()
-                .authenticated());
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/appointments/public/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/users").permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/specialties/**",
+                                "/services/**",
+                                "/doctors/**").permitAll()
+                        .anyRequest().authenticated()
+                );
 
         httpSecurity.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer
                         .decoder(customJwtDecoder)

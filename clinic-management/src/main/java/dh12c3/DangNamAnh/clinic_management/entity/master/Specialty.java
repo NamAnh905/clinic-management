@@ -34,5 +34,5 @@ public class Specialty {
 
     @OneToOne
     @JoinColumn(name = "default_service_id")
-    private ServiceEntity defaultService;
+    ServiceEntity defaultService;
 }

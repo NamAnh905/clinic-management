@@ -1,5 +1,6 @@
 package dh12c3.DangNamAnh.clinic_management.dto.response.staff;
 
+import dh12c3.DangNamAnh.clinic_management.enums.Gender;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -11,10 +12,12 @@ import lombok.experimental.FieldDefaults;
 public class DoctorResponse {
     Long doctorId;
     String fullName;
+    Gender gender;
     Long userId;
     Long specialtyId;
     String phoneNumber;
     String employeeCode;
     String licenseNumber;
     String specialtyName;
+    String image;
 }

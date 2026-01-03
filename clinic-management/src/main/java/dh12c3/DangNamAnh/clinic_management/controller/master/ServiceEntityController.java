@@ -42,7 +42,7 @@ public class ServiceEntityController {
                 .build();
     }
 
-    @PreAuthorize("hasAuthority('FULL_ACCESS') or hasAuthority('READ_SERVICE')")
+//    @PreAuthorize("hasAuthority('FULL_ACCESS') or hasAuthority('READ_SERVICE')")
     @GetMapping
     public ApiResponse<PageResponse<ServiceEntityResponse>> findAll(@RequestParam(required = false) ServiceType type,
                                                                     @RequestParam(required = false) String keyword,

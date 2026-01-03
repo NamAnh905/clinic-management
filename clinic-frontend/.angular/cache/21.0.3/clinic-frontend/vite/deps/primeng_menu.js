@@ -1,5 +1,15 @@
 import "./chunk-6CS4XLWG.js";
 import {
+  Ripple,
+  RippleModule
+} from "./chunk-3RXRWCEK.js";
+import {
+  animate,
+  style,
+  transition,
+  trigger
+} from "./chunk-BFE7IYWO.js";
+import {
   Tooltip,
   TooltipModule
 } from "./chunk-5YFAVNSI.js";
@@ -9,24 +19,14 @@ import {
   RouterModule
 } from "./chunk-XI4MIIRV.js";
 import {
-  DomSanitizer
-} from "./chunk-UVYFT7ZC.js";
-import "./chunk-CARKPI6P.js";
-import {
-  animate,
-  style,
-  transition,
-  trigger
-} from "./chunk-BFE7IYWO.js";
-import "./chunk-QP344NCD.js";
-import {
-  Ripple,
-  RippleModule
-} from "./chunk-3RXRWCEK.js";
-import {
   ConnectedOverlayScrollHandler,
   DomHandler
 } from "./chunk-47BQQJB4.js";
+import {
+  DomSanitizer
+} from "./chunk-UVYFT7ZC.js";
+import "./chunk-CARKPI6P.js";
+import "./chunk-QP344NCD.js";
 import {
   CommonModule,
   NgClass,
@@ -106,8 +106,8 @@ import {
   ɵɵtextInterpolate,
   ɵɵviewQuery
 } from "./chunk-QXGWTKNC.js";
-import "./chunk-HWYXSU2G.js";
 import "./chunk-JRFR6BLO.js";
+import "./chunk-HWYXSU2G.js";
 import "./chunk-MARUHEWW.js";
 import "./chunk-WDMUDEB6.js";
 

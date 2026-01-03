@@ -3,6 +3,7 @@ import { Gender } from './core.model';
 export interface DoctorResponse {
   doctorId: number;
   fullName?: string;
+  gender: Gender;
   userId: number;
   specialtyId: number;
   phoneNumber?: string;

@@ -1,6 +1,7 @@
 package dh12c3.DangNamAnh.clinic_management.controller.dashboard;
 
 import dh12c3.DangNamAnh.clinic_management.dto.response.ApiResponse;
+import dh12c3.DangNamAnh.clinic_management.dto.response.dashboard.DashboardSummaryResponse;
 import dh12c3.DangNamAnh.clinic_management.dto.response.dashboard.RevenueResponse;
 import dh12c3.DangNamAnh.clinic_management.service.dashboard.StatisticService;
 import lombok.AccessLevel;
@@ -22,13 +23,13 @@ import java.time.LocalDate;
 public class StatisticController {
     StatisticService statisticService;
 
-    @GetMapping
-    public ApiResponse<RevenueResponse> getRevenueReport(
+    @GetMapping("/dashboard") // Đổi endpoint hoặc thêm mới
+    public ApiResponse<DashboardSummaryResponse> getDashboardStats(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
-        return ApiResponse.<RevenueResponse>builder()
-                .result(statisticService.getRevenueReport(startDate, endDate))
+        return ApiResponse.<DashboardSummaryResponse>builder()
+                .result(statisticService.getDashboardStats(startDate, endDate))
                 .build();
     }
 }

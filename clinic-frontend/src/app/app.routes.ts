@@ -1,8 +1,10 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './features/auth/login/login.component';
 import { RegisterComponent } from './features/auth/register/register.component';
-import { UserManagementComponent } from './features/admin/user-management/user-management.component';
+
+//admin-layout
 import { AdminLayoutComponent } from './layout/admin/admin-layout/admin-layout.component';
+import { UserManagementComponent } from './features/admin/user-management/user-management.component';
 import { ReceptionistManagementComponent } from './features/admin/staff-management/receptionist-management/receptionist-management.component';
 import { DoctorManagementComponent } from './features/admin/staff-management/doctor-management/doctor-management.component';
 import { SpecialtyManagementComponent } from './features/admin/master-data-management/specialty-management/specialty-management.component';
@@ -14,39 +16,87 @@ import { PatientManagementComponent } from './features/admin/patient-management/
 import { MedicalRecordComponent } from './features/admin/medical-management/medical-record.component';
 import { PrescriptionComponent } from './features/admin/prescription-management/prescription-management.component';
 import { InvoiceManagementComponent } from './features/admin/invoice-management/invoice-management.component';
+import { PaymentReturnComponent } from './features/payment/payment-return/payment-return.component';
 
+//public-layout
+import { PublicLayoutComponent } from './layout/public/public-layout/public-layout.component';
+import { HomeComponent } from './features/public/home/home.component';
+
+//others
 import { AuthGuard } from './core/guards/auth.guard';
 import { RoleGuard } from './core/guards/role.guard';
-import { AdminRedirectGuard } from './core/guards/admin-redirect.guard'; // Import Guard mới
+import { AdminRedirectGuard } from './core/guards/admin-redirect.guard';
+import { StatisticComponent } from './features/admin/statistic/statistic.component';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
+  {
+    path: 'payment-return',
+    component: PaymentReturnComponent,
+    title: 'Kết quả thanh toán'
+  },
+  //Public
+  {
+    path: '',
+    component: PublicLayoutComponent,
+    children: [
+      {
+        path: '',
+        component: HomeComponent
+      },
+      {
+        path: 'booking',
+        loadComponent: () => import('./features/public/booking/booking.component').then(m => m.BookingComponent),
+        title: 'Đặt lịch khám - 28Care'
+      },
+      {
+        path: 'specialties',
+        loadComponent: () => import('./features/public/specialty-list/specialty-list.component').then(m => m.SpecialtyListComponent)
+      },
+      {
+        path: 'doctors',
+        loadComponent: () => import('./features/public/doctor-list/doctor-list.component').then(m => m.DoctorListComponent)
+      },
+      {
+        path: 'services',
+        loadComponent: () => import('./features/public/service-list/service-list.component').then(m => m.ServiceListComponent)
+      },
+      // {
+      //   path: 'news',
+      //   // Nếu ông chưa tạo component News thì comment dòng dưới lại hoặc tạo nhanh: ng g c features/public/news
+      //   loadComponent: () => import('./features/public/news/news.component').then(m => m.NewsComponent)
+      // },
+    ]
+  },
 
+  //Admin-management
   {
     path: 'admin',
     component: AdminLayoutComponent,
-    canActivate: [AuthGuard], // Kiểm tra login chung cho cả cụm admin
+    canActivate: [AuthGuard],
     children: [
-      // 1. Trang điều hướng mặc định (Thay thế cho redirectTo: 'users')
       {
         path: '',
         pathMatch: 'full',
-        canActivate: [AdminRedirectGuard], // Guard này sẽ tự lái user đi đúng chỗ
-        children: [] // Rỗng vì Guard sẽ redirect đi nơi khác ngay
+        canActivate: [AdminRedirectGuard],
+        children: []
       },
-
-      // 2. Các trang con (Đã thêm phân quyền Role cụ thể)
+      {
+        path: 'revenue',
+        data: { breadcrumb: 'Quản lý doanh thu', roles: ['ADMIN'] },
+        component: StatisticComponent,
+        canActivate: [RoleGuard]
+      },
       {
         path: 'users',
-        data: { breadcrumb: 'Quản lý người dùng', roles: ['ADMIN'] }, // Chỉ Admin
+        data: { breadcrumb: 'Quản lý người dùng', roles: ['ADMIN'] },
         component: UserManagementComponent,
         canActivate: [RoleGuard]
       },
       {
         path: 'staff',
-        data: { breadcrumb: 'Quản lý nhân viên', roles: ['ADMIN'] }, // Chỉ Admin
+        data: { breadcrumb: 'Quản lý nhân viên', roles: ['ADMIN'] },
         canActivate: [RoleGuard],
         children: [
           { path: 'doctors', data: { breadcrumb: 'Bác sĩ' }, component: DoctorManagementComponent },
@@ -61,7 +111,7 @@ export const routes: Routes = [
       },
       {
         path: 'records',
-        data: { breadcrumb: 'Hồ sơ bệnh án', roles: ['ADMIN', 'DOCTOR'] }, // Recep không xem
+        data: { breadcrumb: 'Hồ sơ bệnh án', roles: ['ADMIN', 'DOCTOR'] },
         component: MedicalRecordComponent,
         canActivate: [RoleGuard]
       },
@@ -73,7 +123,7 @@ export const routes: Routes = [
       },
       {
         path: 'schedule',
-        data: { breadcrumb: 'Lịch làm việc', roles: ['ADMIN', 'DOCTOR', 'RECEPTIONIST'] }, // Tạm để Admin theo Sidebar cũ
+        data: { breadcrumb: 'Lịch làm việc', roles: ['ADMIN', 'DOCTOR', 'RECEPTIONIST'] },
         component: ScheduleManagementComponent,
         canActivate: [RoleGuard]
       },
@@ -109,6 +159,5 @@ export const routes: Routes = [
       }
     ]
   },
-
-  { path: '**', redirectTo: 'login' }
+  { path: '**', redirectTo: '' }
 ];

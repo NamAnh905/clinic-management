@@ -3,6 +3,7 @@ import { CommonModule, formatDate } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { UserResponse } from '../../../models/user.model';
 import { UserService } from '../../../core/services/user.service';
+import { UploadService } from '../../../core/services/upload.service';
 
 // PrimeNG v17 Modules
 import { TableModule } from 'primeng/table';
@@ -16,6 +17,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { CalendarModule } from 'primeng/calendar';
 import { MultiSelectModule } from 'primeng/multiselect'; // Để chọn nhiều Role
 import { ToolbarModule } from 'primeng/toolbar';
+import { AvatarModule } from 'primeng/avatar';
 import { ConfirmationService, MessageService } from 'primeng/api';
 
 @Component({
@@ -26,7 +28,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
     TableModule, ButtonModule, InputTextModule,
     DialogModule, ToastModule, ConfirmDialogModule,
     TagModule, DropdownModule, CalendarModule,
-    MultiSelectModule, ToolbarModule
+    MultiSelectModule, ToolbarModule, AvatarModule
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './user-management.component.html',
@@ -50,6 +52,9 @@ export class UserManagementComponent implements OnInit {
   userForm: FormGroup;
   submitted: boolean = false;
   isEditMode: boolean = false; // Phân biệt Thêm mới vs Sửa
+
+  uploadedImageUrl: string = '';
+  isUploading: boolean = false;
 
   // Options
   genderOptions = [{ label: 'Nam', value: 'MALE' }, { label: 'Nữ', value: 'FEMALE' }];
@@ -79,6 +84,7 @@ export class UserManagementComponent implements OnInit {
 
   private userService = inject(UserService);
   private messageService = inject(MessageService);
+  private uploadService = inject(UploadService);
   private confirmationService = inject(ConfirmationService);
   private fb = inject(FormBuilder);
 
@@ -125,6 +131,7 @@ export class UserManagementComponent implements OnInit {
   openNew() {
     this.isEditMode = false;
     this.userForm.reset();
+    this.uploadedImageUrl = '';
 
     // Khi tạo mới, password là bắt buộc (theo UserCreationRequest)
     this.userForm.get('password')?.setValidators([Validators.required, Validators.minLength(8)]);
@@ -137,6 +144,7 @@ export class UserManagementComponent implements OnInit {
   // 3. Mở Dialog Sửa
   editUser(user: UserResponse) {
     this.isEditMode = true;
+    this.uploadedImageUrl = user.image || '';
     const roleNames = user.roles ? user.roles.map(r => r.name) : [];
 
     this.userForm.patchValue({
@@ -169,6 +177,7 @@ export class UserManagementComponent implements OnInit {
         gender: formValue.gender,
         dateOfBirth: formattedDob,
         address: formValue.address,
+        image: this.uploadedImageUrl,
         roles: formValue.roles,
         isActive: formValue.isActive
       };
@@ -258,7 +267,25 @@ export class UserManagementComponent implements OnInit {
     return 'success';
   }
 
-  // Trong user-management.component.ts
+  onFileSelected(event: any) {
+    const file: File = event.target.files[0];
+    if (file) {
+      this.isUploading = true; // Bật loading
+      this.uploadService.uploadImage(file).subscribe({
+        next: (res) => {
+          if (res.code === 1000) {
+            this.uploadedImageUrl = res.result; // Lưu link ảnh Cloudinary trả về
+            this.messageService.add({ severity: 'success', summary: 'Thành công', detail: 'Đã tải ảnh lên!' });
+          }
+          this.isUploading = false;
+        },
+        error: (err) => {
+          this.showError(err);
+          this.isUploading = false;
+        }
+      });
+    }
+  }
 
   exportExcel() {
     this.loading = true;

@@ -49,7 +49,7 @@ public class SpecialtyController {
                 .build();
     }
 
-    @PreAuthorize("hasAuthority('FULL_ACCESS') or hasAuthority('READ_SPECIALTY')")
+//    @PreAuthorize("hasAuthority('FULL_ACCESS') or hasAuthority('READ_SPECIALTY')")
     @GetMapping
     public ApiResponse<PageResponse<SpecialtyResponse>> findAll(@RequestParam(required = false) String keyword,
                                                                 @RequestParam(defaultValue = "1") int page,

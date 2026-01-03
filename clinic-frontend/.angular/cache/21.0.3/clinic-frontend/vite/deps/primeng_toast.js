@@ -4,10 +4,14 @@ import {
 import {
   CheckIcon
 } from "./chunk-7EBMEKOR.js";
+import "./chunk-6CS4XLWG.js";
 import {
   TimesIcon
 } from "./chunk-O2SPPSX6.js";
-import "./chunk-6CS4XLWG.js";
+import {
+  Ripple,
+  RippleModule
+} from "./chunk-3RXRWCEK.js";
 import {
   animate,
   animateChild,
@@ -20,10 +24,6 @@ import {
 import {
   BaseIcon
 } from "./chunk-JD6GFORM.js";
-import {
-  Ripple,
-  RippleModule
-} from "./chunk-3RXRWCEK.js";
 import {
   DomHandler
 } from "./chunk-47BQQJB4.js";
@@ -102,8 +102,8 @@ import {
   ɵɵtextInterpolate,
   ɵɵviewQuery
 } from "./chunk-QXGWTKNC.js";
-import "./chunk-HWYXSU2G.js";
 import "./chunk-JRFR6BLO.js";
+import "./chunk-HWYXSU2G.js";
 import "./chunk-MARUHEWW.js";
 import "./chunk-WDMUDEB6.js";
 

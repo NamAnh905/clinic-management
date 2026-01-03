@@ -59,6 +59,11 @@ $field-height: 50px;
             background-color: #f8fafc;
         }
 
+        .fit-cover {
+          object-fit: cover; /* Giữ tỷ lệ ảnh, cắt bớt phần thừa */
+          background-color: #f1f5f9;
+        }
+
         /* --- C. PAGINATOR (ĐÃ TỐI ƯU) --- */
         .p-paginator {
             background: #ffffff;

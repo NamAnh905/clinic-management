@@ -1,0 +1,168 @@
+<p-toast></p-toast>
+
+<header class="main-header">
+  <div class="container header-wrapper">
+
+    <a routerLink="/" class="brand-logo">
+       <img src="assets/icons/logo_real.png" alt="28Care Logo">
+    </a>
+
+    <nav class="nav-menu">
+      <ul>
+        <li>
+            <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Trang chủ</a>
+        </li>
+        <li><a routerLink="/specialties" routerLinkActive="active">Chuyên khoa</a></li>
+        <li><a routerLink="/doctors" routerLinkActive="active">Bác sĩ</a></li>
+        <li><a routerLink="/services" routerLinkActive="active">Dịch vụ</a></li>
+        <li><a routerLink="/news" routerLinkActive="active">Tin tức</a></li>
+      </ul>
+    </nav>
+
+    <div class="header-actions">
+
+      <div class="auth-buttons" *ngIf="!currentUser">
+        <a routerLink="/auth/login" class="btn-login">Đăng nhập</a>
+        <a routerLink="/booking" class="btn-booking">Đặt lịch ngay</a>
+      </div>
+
+      <div class="user-profile relative inline-block cursor-pointer" *ngIf="currentUser" (click)="menu.toggle($event)">
+
+          <p-avatar
+            [image]="currentUser.image || 'https://ui-avatars.com/api/?background=007bff&color=fff&name=' + currentUser.fullName"
+            shape="circle"
+            [style]="{'width': '45px', 'height': '45px'}"
+          >
+          </p-avatar>
+
+          <div class="avatar-badge">
+              <i class="pi pi-angle-down"></i>
+          </div>
+      </div>
+
+      <p-menu #menu [model]="userMenuItems" [popup]="true" appendTo="body"></p-menu>
+
+    </div>
+
+  </div>
+</header>
+
+<p-dialog
+    [(visible)]="profileDialog"
+    [style]="{ width: '500px' }"
+    header="Cập nhật hồ sơ"
+    [modal]="true"
+    [draggable]="false"
+    [resizable]="false"
+    styleClass="p-fluid">
+
+    <ng-template pTemplate="content">
+        <form [formGroup]="profileForm" class="mt-3">
+
+            <div class="flex justify-content-center mb-4">
+                <div class="avatar-upload-container">
+                    <img [src]="uploadedImageUrl || 'https://ui-avatars.com/api/?background=random&name=' + (currentUser?.fullName || 'U')"
+                         class="avatar-preview">
+
+                    <label for="fileUpload" class="upload-btn">
+                        <i class="pi pi-camera" *ngIf="!isUploading"></i>
+                        <i class="pi pi-spin pi-spinner" *ngIf="isUploading"></i>
+                    </label>
+                    <input type="file" id="fileUpload" (change)="onFileSelected($event)" accept="image/*" hidden>
+                </div>
+            </div>
+
+            <div class="field mb-3">
+                <label class="font-bold block mb-2">Email</label>
+                <input pInputText formControlName="email" class="bg-gray-100" />
+            </div>
+
+            <div class="field mb-3">
+                <label class="font-bold block mb-2">Họ và tên <span class="text-red-500">*</span></label>
+                <input pInputText formControlName="fullName" />
+            </div>
+
+            <div class="formgrid grid">
+                <div class="field col-6">
+                    <label class="font-bold block mb-2">Số điện thoại</label>
+                    <input pInputText formControlName="phoneNumber" />
+                </div>
+                <div class="field col-6">
+                    <label class="font-bold block mb-2">Ngày sinh</label>
+                    <p-calendar formControlName="dateOfBirth" dateFormat="dd/mm/yy" appendTo="body" [showIcon]="true"></p-calendar>
+                </div>
+            </div>
+
+            <div class="field mb-3">
+                <label class="font-bold block mb-2">Giới tính</label>
+                <p-dropdown [options]="genderOptions" formControlName="gender" optionLabel="label" optionValue="value" placeholder="Chọn giới tính" appendTo="body"></p-dropdown>
+            </div>
+
+            <div class="field mb-3">
+                <label class="font-bold block mb-2">Địa chỉ</label>
+                <input pInputText formControlName="address" />
+            </div>
+
+        </form>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button pButton label="Hủy" icon="pi pi-times" class="p-button-text" (click)="profileDialog = false"></button>
+        <button pButton label="Lưu thay đổi" icon="pi pi-check" class="p-button-primary" (click)="saveProfile()" [disabled]="profileForm.invalid"></button>
+    </ng-template>
+</p-dialog>
+
+<p-dialog
+    [(visible)]="historyDialog"
+    [style]="{ width: '900px' }"
+    header="Lịch sử khám bệnh"
+    [modal]="true"
+    [draggable]="false"
+    [resizable]="false"
+    [dismissableMask]="true"
+    styleClass="p-fluid">
+
+    <div class="card mt-2">
+        <p-table [value]="myAppointments" [loading]="loadingHistory"
+                 styleClass="p-datatable-sm p-datatable-striped"
+                 [paginator]="true" [rows]="5"
+                 responsiveLayout="scroll">
+
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="width: 15%">Ngày giờ</th>
+                    <th style="width: 20%">Bác sĩ</th>
+                    <th>Lý do khám</th>
+                    <th style="width: 15%" class="text-center">Trạng thái</th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-appt>
+                <tr>
+                    <td>
+                        <div class="font-bold">{{ appt.appointmentTime | date:'dd/MM/yyyy' }}</div>
+                        <div class="text-500 text-sm">{{ appt.appointmentTime | date:'HH:mm' }}</div>
+                    </td>
+                    <td>
+                        <span class="font-medium">{{ appt.doctorName }}</span>
+                    </td>
+                    <td>{{ appt.reason }}</td>
+                    <td class="text-center">
+                        <p-tag [value]="appt.status" [severity]="getSeverity(appt.status)"></p-tag>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="4" class="text-center p-4">Bạn chưa có lịch hẹn nào.</td>
+                </tr>
+            </ng-template>
+
+        </p-table>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <button pButton label="Đóng" icon="pi pi-times" class="p-button-text" (click)="historyDialog = false"></button>
+    </ng-template>
+</p-dialog>

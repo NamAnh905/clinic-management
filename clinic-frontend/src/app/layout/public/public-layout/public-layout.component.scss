@@ -1,0 +1,13 @@
+/* Mẹo Flexbox: Đảm bảo Footer luôn nằm dưới đáy
+   kể cả khi nội dung trang (main) rất ngắn
+*/
+.layout-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Chiều cao tối thiểu bằng màn hình */
+}
+
+.main-content {
+  flex: 1; /* Tự động giãn nở để đẩy Footer xuống đáy */
+  background-color: #ffffff;
+}

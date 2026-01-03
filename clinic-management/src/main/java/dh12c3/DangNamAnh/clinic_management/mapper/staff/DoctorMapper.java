@@ -17,6 +17,8 @@ public interface DoctorMapper {
     @Mapping(target = "fullName", source = "user.fullName")
     @Mapping(target = "specialtyName", source = "specialty.name")
     @Mapping(target = "phoneNumber", source = "user.phoneNumber")
+    @Mapping(target = "gender", source = "user.gender")
+    @Mapping(target = "image", source = "user.image")
     DoctorResponse toDoctorResponse(Doctor doctor);
 
     @Mapping(target = "user", ignore = true)

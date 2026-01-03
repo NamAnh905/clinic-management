@@ -283,6 +283,27 @@ export class InvoiceManagementComponent implements OnInit {
     });
   }
 
+  payWithVnPay() {
+      if (!this.currentInvoice) return;
+
+      this.loadingDetails = true; // Hiện loading để user đỡ bấm nhiều lần
+      this.billingService.initiateVnPayPayment(this.currentInvoice.invoiceId).subscribe({
+          next: (res) => {
+              if (res.result) {
+                  // Backend trả về URL -> Redirect user sang VNPay ngay lập tức
+                  window.location.href = res.result;
+              } else {
+                  this.messageService.add({ severity: 'error', summary: 'Lỗi', detail: 'Không lấy được link thanh toán' });
+              }
+              this.loadingDetails = false;
+          },
+          error: (err) => {
+              this.messageService.add({ severity: 'error', summary: 'Lỗi', detail: err.error?.message || 'Lỗi kết nối VNPay' });
+              this.loadingDetails = false;
+          }
+      });
+  }
+
   // --- HELPERS ---
 
   get selectedTotalAmount(): number {
@@ -328,4 +349,27 @@ export class InvoiceManagementComponent implements OnInit {
           default: return status;
       }
   }
+
+  getPaymentMethodConfig(method: string): any {
+    switch (method) {
+        case 'VNPAY':
+            return {
+                label: 'VNPAY',
+                class: 'method-vnpay',
+                icon: 'pi pi-qrcode' // Hoặc pi-credit-card
+            };
+        case 'CASH':
+            return {
+                label: 'Tiền mặt',
+                class: 'method-cash',
+                icon: 'pi pi-wallet'
+            };
+        default:
+            return {
+                label: method,
+                class: 'surface-200 text-600',
+                icon: 'pi pi-info-circle'
+            };
+    }
+}
 }

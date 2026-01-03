@@ -20,10 +20,10 @@ public class InvoiceCreationRequest {
     @NotNull(message = "AppointmentId cannot be null.")
     Long appointmentId;
 
-    BigDecimal totalAmount;
+//    BigDecimal totalAmount;
 
-    @NotNull(message = "Payment status cannot be null.")
-    PaymentStatus paymentStatus;
+//    @NotNull(message = "Payment status cannot be null.")
+//    PaymentStatus paymentStatus;
 
     @NotNull(message = "Payment method cannot be null.")
     PaymentMethod paymentMethod;

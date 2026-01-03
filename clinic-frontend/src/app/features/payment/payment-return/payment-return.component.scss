@@ -1,0 +1,29 @@
+:host {
+    display: block;
+}
+
+.payment-return-container {
+    min-height: 100vh; /* Chiếm toàn bộ chiều cao màn hình */
+    width: 100%;
+    padding: 2rem;
+}
+
+.icon-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto; /* Căn giữa */
+}
+
+/* Hiệu ứng animation nhẹ */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fadein {
+    animation: fadeIn 0.5s ease-out forwards;
+}

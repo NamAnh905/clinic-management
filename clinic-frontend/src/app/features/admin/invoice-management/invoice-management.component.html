@@ -24,27 +24,48 @@
         </div>
 
         <div class="flex-1 min-h-0 w-full relative">
-            <p-table #dt [value]="invoices" [lazy]="true" (onLazyLoad)="loadInvoices($event)" [totalRecords]="totalRecords" [rows]="size" [loading]="loading" [rowHover]="true" styleClass="p-datatable-sm custom-table h-full" [paginator]="true" [rowsPerPageOptions]="[10, 15, 20]" [showCurrentPageReport]="true" currentPageReportTemplate="Hiển thị {first} - {last} trên tổng {totalRecords}" paginatorTemplate="PrevPageLink PageLinks NextPageLink CurrentPageReport RowsPerPageDropdown">
+            <p-table #dt [value]="invoices" [lazy]="true" (onLazyLoad)="loadInvoices($event)"
+             [totalRecords]="totalRecords" [rows]="size" [loading]="loading" [rowHover]="true"
+             styleClass="p-datatable-sm custom-table h-full" [paginator]="true"
+             [rowsPerPageOptions]="[10, 15, 20]" [showCurrentPageReport]="true"
+             currentPageReportTemplate="Hiển thị {first} - {last} trên tổng {totalRecords}"
+             paginatorTemplate="PrevPageLink PageLinks NextPageLink CurrentPageReport RowsPerPageDropdown">
+
                 <ng-template pTemplate="header">
                     <tr>
-                        <th style="width: 120px">Mã GD</th>
+                        <th style="width: 80px">ID</th>
+                        <th style="width: 150px">Mã GD</th>
                         <th style="min-width: 180px">Bệnh nhân</th>
                         <th style="min-width: 150px">Tổng tiền</th>
                         <th style="min-width: 180px">Trạng thái</th>
+                        <th style="min-width: 150px">Ngày tạo</th>
                         <th style="min-width: 150px">Phương thức</th>
                         <th class="text-center" style="width: 140px">Thao tác</th>
                     </tr>
                 </ng-template>
+
                 <ng-template pTemplate="body" let-inv>
                     <tr>
                         <td>
-                            <span class="font-mono text-500 font-bold text-sm">#{{ inv.transactionCode || inv.invoiceId }}</span>
-                            <div class="text-xs text-400 mt-1">ID: {{inv.invoiceId}}</div>
+                            <span class="text-500">#{{ inv.invoiceId }}</span>
+                        </td>
+                        <td>
+                            <span class="font-mono text-700 font-bold text-sm">
+                                {{ inv.transactionCode || '---' }}
+                            </span>
                         </td>
                         <td><span class="font-bold text-900">{{ inv.patientName }}</span></td>
                         <td><span class="font-bold text-primary text-lg">{{ formatCurrency(inv.totalAmount) }}</span></td>
                         <td><span [class]="'status-badge ' + getStatusClass(inv.paymentStatus)">{{ getStatusLabel(inv.paymentStatus) }}</span></td>
-                        <td><span class="text-600 font-medium text-sm">{{ inv.paymentMethod }}</span></td>
+                        <td>
+                            <span class="text-700">{{ inv.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+                        </td>
+                        <td>
+                            <div [class]="'method-badge ' + getPaymentMethodConfig(inv.paymentMethod).class">
+                                <i [class]="getPaymentMethodConfig(inv.paymentMethod).icon"></i>
+                                <span>{{ getPaymentMethodConfig(inv.paymentMethod).label }}</span>
+                            </div>
+                        </td>
                         <td class="text-center">
                             <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-primary" (click)="openInvoiceDetail(inv)" pTooltip="Xem chi tiết"></button>
                             <button *ngIf="inv.paymentStatus !== 'PAID'"
@@ -53,10 +74,13 @@
                                     (click)="deleteInvoice(inv)"
                                     pTooltip="Hủy hóa đơn">
                             </button>
-                          </td>
+                        </td>
                     </tr>
                 </ng-template>
-                <ng-template pTemplate="emptymessage"><tr><td colspan="6" class="text-center p-4 text-500">Không tìm thấy hóa đơn nào.</td></tr></ng-template>
+
+                <ng-template pTemplate="emptymessage">
+                    <tr><td colspan="7" class="text-center p-4 text-500">Không tìm thấy hóa đơn nào.</td></tr>
+                </ng-template>
             </p-table>
         </div>
     </div>
@@ -201,10 +225,19 @@
 
         <button *ngIf="currentInvoice?.paymentStatus === 'PENDING'"
             pButton
-            label="Xác nhận Thanh toán"
+            label="Tiền mặt"
             icon="pi pi-wallet"
             class="p-button-success border-round-3xl px-4"
-            (click)="confirmPayment()"> </button>
+            (click)="confirmPayment()">
+        </button>
+
+        <button *ngIf="currentInvoice?.paymentStatus === 'PENDING'"
+            pButton
+            label="VNPay"
+            icon="pi pi-credit-card"
+            class="p-button-info border-round-3xl px-4 ml-2"
+            (click)="payWithVnPay()">
+        </button>
     </ng-template>
 </p-dialog>
 
@@ -223,7 +256,10 @@
 
         <h2 class="invoice-title">HÓA ĐƠN THANH TOÁN</h2>
         <div class="invoice-meta">
-            Ngày: {{ today | date:'dd/MM/yyyy HH:mm' }}
+            Ngày lập: {{ currentInvoice.createdAt | date:'dd/MM/yyyy HH:mm' }}
+            <span *ngIf="!currentInvoice.createdAt">
+                (In ngày: {{ today | date:'dd/MM/yyyy HH:mm' }})
+            </span>
         </div>
 
         <div class="customer-info">

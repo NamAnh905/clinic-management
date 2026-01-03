@@ -94,6 +94,11 @@ $border-color: #e2e8f0;
         }
     }
 
+    .fit-cover {
+        object-fit: cover;        /* Cắt bớt phần thừa để vừa khung, không bị méo */
+        object-position: center;  /* Lấy trung tâm ảnh */
+    }
+
     /* --- 4. FORM & DIALOG (HỖ TRỢ INPUT PRICE) --- */
     .organic-field {
         position: relative;

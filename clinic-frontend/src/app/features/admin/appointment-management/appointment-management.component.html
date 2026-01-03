@@ -300,11 +300,23 @@
 
     <ng-template pTemplate="footer">
         <button pButton label="Đóng" icon="pi pi-times" class="p-button-text" (click)="invoiceDialog = false"></button>
+
         <button pButton label="In Hóa đơn" icon="pi pi-print" class="p-button-outlined"></button>
 
         <button *ngIf="currentInvoice?.paymentStatus === 'PENDING'"
-                pButton label="Xác nhận đã thu tiền" icon="pi pi-wallet"
-                class="p-button-success border-round-3xl px-4">
+                pButton
+                label="Tiền mặt"
+                icon="pi pi-wallet"
+                class="p-button-success border-round-3xl px-4"
+                (click)="confirmPayment()">
+        </button>
+
+        <button *ngIf="currentInvoice?.paymentStatus === 'PENDING'"
+                pButton
+                label="VNPay"
+                icon="pi pi-credit-card"
+                class="p-button-info border-round-3xl px-4 ml-2"
+                (click)="payWithVnPay()">
         </button>
     </ng-template>
 </p-dialog>

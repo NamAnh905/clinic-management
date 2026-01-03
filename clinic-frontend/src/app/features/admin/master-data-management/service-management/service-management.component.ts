@@ -10,13 +10,14 @@ import { DialogModule } from 'primeng/dialog';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DropdownModule } from 'primeng/dropdown';
-import { InputNumberModule } from 'primeng/inputnumber'; // Dùng cho giá tiền
+import { InputNumberModule } from 'primeng/inputnumber';
 import { TagModule } from 'primeng/tag';
 import { MessageService, ConfirmationService } from 'primeng/api';
 
 // Services & Models
 import { MasterDataService } from '../../../../core/services/master-data.service';
 import { ServiceEntityResponse } from '../../../../models/master-data.model';
+import { UploadService } from '../../../../core/services/upload.service'; // <--- 1. Import Service Upload
 
 @Component({
   selector: 'app-service-management',
@@ -47,16 +48,17 @@ export class ServiceManagementComponent implements OnInit {
   isEditMode: boolean = false;
   currentServiceId: number | null = null;
 
-  // Danh sách loại dịch vụ (Giả định enum ServiceType)
+  // --- 2. Thêm biến xử lý ảnh ---
+  uploadedImageUrl: string = '';
+  isUploading: boolean = false;
+
   serviceTypes = [
     { label: 'Khám bệnh', value: 'CONSULTATION' },
     { label: 'Khám cận lâm sàng', value: 'PARACLINICAL' },
-    // { label: 'Xét nghiệm', value: 'TEST' },
-    // { label: 'Chẩn đoán hình ảnh', value: 'IMAGING' },
-    // { label: 'Phẫu thuật/Thủ thuật', value: 'SURGERY' }
   ];
 
   private masterDataService = inject(MasterDataService);
+  private uploadService = inject(UploadService); // <--- 3. Inject UploadService
   private messageService = inject(MessageService);
   private confirmationService = inject(ConfirmationService);
   private fb = inject(FormBuilder);
@@ -92,6 +94,7 @@ export class ServiceManagementComponent implements OnInit {
 
   openNew() {
     this.serviceForm.reset();
+    this.uploadedImageUrl = ''; // <--- 4. Reset ảnh về rỗng
     this.isEditMode = false;
     this.submitted = false;
     this.serviceDialog = true;
@@ -100,6 +103,10 @@ export class ServiceManagementComponent implements OnInit {
   editService(service: ServiceEntityResponse) {
     this.isEditMode = true;
     this.currentServiceId = service.serviceId;
+
+    // <--- 5. Load ảnh cũ lên (nếu có)
+    this.uploadedImageUrl = service.image || '';
+
     this.serviceForm.patchValue({
       name: service.name,
       price: service.price,
@@ -109,20 +116,43 @@ export class ServiceManagementComponent implements OnInit {
     this.serviceDialog = true;
   }
 
+  // <--- 6. Hàm upload ảnh mới thêm vào
+  onFileSelected(event: any) {
+    const file: File = event.target.files[0];
+    if (file) {
+      this.isUploading = true;
+      this.uploadService.uploadImage(file).subscribe({
+        next: (res) => {
+          if (res.code === 1000) {
+            this.uploadedImageUrl = res.result;
+            this.messageService.add({ severity: 'success', summary: 'Thành công', detail: 'Đã tải ảnh dịch vụ!' });
+          }
+          this.isUploading = false;
+        },
+        error: (err) => {
+          this.messageService.add({ severity: 'error', summary: 'Lỗi', detail: 'Upload ảnh thất bại' });
+          this.isUploading = false;
+        }
+      });
+    }
+  }
+
   saveService() {
     this.submitted = true;
     if (this.serviceForm.invalid) return;
 
     const val = this.serviceForm.value;
 
+    // <--- 7. KHẮC PHỤC LỖI: Tạo payload ở ngoài và thêm image vào
+    const payload = {
+      name: val.name,
+      price: val.price,
+      type: val.type,
+      image: this.uploadedImageUrl // Gửi link ảnh lên
+    };
+
     if (this.isEditMode && this.currentServiceId) {
       // Update
-      const payload = {
-        name: val.name,
-        price: val.price,
-        type: val.type
-      };
-
       this.masterDataService.updateService(this.currentServiceId, payload).subscribe({
         next: () => {
           this.messageService.add({ severity: 'success', summary: 'Thành công', detail: 'Đã cập nhật dịch vụ' });
@@ -133,7 +163,7 @@ export class ServiceManagementComponent implements OnInit {
       });
     } else {
       // Create
-      this.masterDataService.createService(val).subscribe({
+      this.masterDataService.createService(payload).subscribe({
         next: () => {
           this.messageService.add({ severity: 'success', summary: 'Thành công', detail: 'Đã thêm dịch vụ mới' });
           this.serviceDialog = false;
@@ -165,7 +195,6 @@ export class ServiceManagementComponent implements OnInit {
     });
   }
 
-  // Helper để hiển thị loại dịch vụ đẹp hơn
   getServiceTypeLabel(type: string): string {
     const found = this.serviceTypes.find(t => t.value === type);
     return found ? found.label : type;

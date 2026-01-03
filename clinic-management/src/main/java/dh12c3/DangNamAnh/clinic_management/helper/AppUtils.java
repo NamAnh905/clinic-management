@@ -1,5 +1,7 @@
 package dh12c3.DangNamAnh.clinic_management.helper;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.util.Random;
 
 public class AppUtils {
@@ -38,5 +40,18 @@ public class AppUtils {
             result.append(characters.charAt(random.nextInt(characters.length())));
         }
         return result.toString();
+    }
+
+    public static String getIpAddress(HttpServletRequest request) {
+        String ipAdress;
+        try {
+            ipAdress = request.getHeader("X-FORWARDED-FOR");
+            if (ipAdress == null) {
+                ipAdress = request.getRemoteAddr();
+            }
+        } catch (Exception e) {
+            ipAdress = "Invalid IP:" + e.getMessage();
+        }
+        return ipAdress;
     }
 }

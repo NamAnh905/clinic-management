@@ -27,6 +27,11 @@
   align-items: center;
 }
 
+.fit-cover {
+  object-fit: cover;
+  object-position: center;
+}
+
 .icon-btn {
   width: 36px;
   height: 36px;

@@ -4,22 +4,21 @@ import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 
-// PrimeNG Modules
 import { AvatarModule } from 'primeng/avatar';
 import { MenuModule } from 'primeng/menu';
 import { BreadcrumbModule } from 'primeng/breadcrumb';
 import { MenuItem, MessageService } from 'primeng/api';
-import { DialogModule } from 'primeng/dialog'; // Thêm Dialog
+import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { CalendarModule } from 'primeng/calendar';
 import { DropdownModule } from 'primeng/dropdown';
 import { ToastModule } from 'primeng/toast';
 
-// Services & Models
 import { AuthService } from '../../../../core/services/auth.service';
 import { BreadcrumbService } from '../../../../core/services/breadcrumb.service';
 import { UserService } from '../../../../core/services/user.service';
+import { UploadService } from '../../../../core/services/upload.service';
 import { UserResponse } from '../../../../models/user.model';
 
 @Component({
@@ -42,6 +41,7 @@ export class AdminHeaderComponent implements OnInit {
   private breadcrumbService = inject(BreadcrumbService);
   private messageService = inject(MessageService);
   private fb = inject(FormBuilder);
+  private uploadService = inject(UploadService);
 
   userMenuItems: MenuItem[] = [];
   breadcrumbItems: MenuItem[] = [];
@@ -58,6 +58,9 @@ export class AdminHeaderComponent implements OnInit {
   profileDialog: boolean = false;
   profileForm: FormGroup;
   genderOptions = [{ label: 'Nam', value: 'MALE' }, { label: 'Nữ', value: 'FEMALE' }];
+
+  uploadedImageUrl: string = '';
+  isUploading: boolean = false;
 
   constructor() {
     this.profileForm = this.fb.group({
@@ -146,7 +149,29 @@ export class AdminHeaderComponent implements OnInit {
       dateOfBirth: this.currentUser.dateOfBirth ? new Date(this.currentUser.dateOfBirth) : null
     });
 
+    this.uploadedImageUrl = this.currentUser.image || '';
+
     this.profileDialog = true;
+  }
+
+  onFileSelected(event: any) {
+    const file: File = event.target.files[0];
+    if (file) {
+      this.isUploading = true;
+      this.uploadService.uploadImage(file).subscribe({
+        next: (res) => {
+          if (res.code === 1000) {
+            this.uploadedImageUrl = res.result; // Lưu link ảnh mới
+            this.messageService.add({ severity: 'success', summary: 'Thành công', detail: 'Đã tải ảnh lên!' });
+          }
+          this.isUploading = false;
+        },
+        error: (err) => {
+          this.messageService.add({ severity: 'error', summary: 'Lỗi', detail: 'Upload ảnh thất bại' });
+          this.isUploading = false;
+        }
+      });
+    }
   }
 
   saveProfile() {
@@ -161,8 +186,8 @@ export class AdminHeaderComponent implements OnInit {
       phoneNumber: formValue.phoneNumber,
       gender: formValue.gender,
       dateOfBirth: formattedDob,
-      address: formValue.address
-      // Không gửi password, roles, isActive, email tại đây
+      address: formValue.address,
+      image: this.uploadedImageUrl
     };
 
     this.userService.updateMyInfo(updateData as any).subscribe({

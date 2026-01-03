@@ -22,6 +22,28 @@ export interface AppointmentCreationRequest {
   reason: string;
 }
 
+export interface PublicAppointmentRequest {
+  // Thông tin cá nhân
+  fullName: string;
+  phoneNumber: string;
+  email?: string; // Optional
+  dateOfBirth?: string; // 'yyyy-MM-dd'
+  gender?: string; // 'MALE', 'FEMALE', 'OTHER'
+  address?: string;
+
+  // Thông tin khám
+  doctorId: number;
+  appointmentTime: string; // 'yyyy-MM-ddTHH:mm:ss' (ISO string)
+  reason?: string;
+}
+
+// 2. DTO gửi đi khi khách muốn hủy lịch
+export interface CancelAppointmentRequest {
+  appointmentId: number;
+  phoneNumber: string;
+  reason?: string;
+}
+
 // Form cập nhật lịch
 export interface AppointmentUpdationRequest {
   appointmentTime?: string;

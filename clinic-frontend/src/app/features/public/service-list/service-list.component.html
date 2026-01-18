@@ -5,25 +5,51 @@
       <div class="hero-content">
         <h1>Bạn thấy không khỏe?<br>Hãy để 28Care chăm sóc!</h1>
         <p>Tra cứu bảng giá dịch vụ minh bạch. Đặt lịch xét nghiệm, chụp chiếu nhanh chóng tại nhà hoặc phòng khám.</p>
-        <button class="btn-hero" (click)="scrollDown()">Xem bảng giá</button>
       </div>
     </div>
-
     <div class="wave-bottom">
-      <svg viewBox="0 0 1440 320" preserveAspectRatio="none">
-        <path fill="#ffffff" fill-opacity="1" d="M0,64L48,80C96,96,192,128,288,128C384,128,480,96,576,90.7C672,85,768,107,864,122.7C960,139,1056,149,1152,133.3C1248,117,1344,75,1392,53.3L1440,32L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-      </svg>
+        <svg viewBox="0 0 1440 320" preserveAspectRatio="none">
+            <path fill="#f8faff" fill-opacity="1" d="M0,64L48,80C96,96,192,128,288,128C384,128,480,96,576,90.7C672,85,768,107,864,122.7C960,139,1056,149,1152,133.3C1248,117,1344,75,1392,53.3L1440,32L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+        </svg>
     </div>
   </div>
 
-  <div class="container main-content">
+  <div class="container main-content" id="search-area">
 
-    <div class="section-title">
-      <h2>Dịch vụ Phổ biến</h2>
+    <div class="search-container-wrapper">
+      <div class="integrated-search-bar">
+
+        <div class="input-section">
+          <input type="text"
+                 [(ngModel)]="searchTerm"
+                 (keyup.enter)="filterServices()"
+                 placeholder="Tìm kiếm dịch vụ..."
+                 class="search-input">
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="filter-section" (click)="toggleDropdown()">
+          <span class="selected-text">{{ getCategoryLabel(selectedCategory) }}</span>
+          <i class="pi pi-chevron-down text-gray-500 text-sm ml-2 transition-transform"
+             [class.rotate-180]="showDropdown"></i>
+
+          <div class="dropdown-menu shadow-4" *ngIf="showDropdown">
+            <div class="dropdown-item" (click)="selectCategory('ALL')">Tất cả dịch vụ</div>
+            <div class="dropdown-item" (click)="selectCategory('CONSULTATION')">Khám bệnh</div>
+            <div class="dropdown-item" (click)="selectCategory('PARACLINICAL')">Cận lâm sàng</div>
+          </div>
+        </div>
+
+        <button class="search-btn" (click)="filterServices()">
+          <i class="pi pi-search"></i>
+        </button>
+
+      </div>
     </div>
 
     <div class="service-grid">
-      <div class="service-card" *ngFor="let item of services">
+      <div class="service-card" *ngFor="let item of displayServices">
 
         <div class="card-img">
           <img [src]="getServiceImage(item)" [alt]="item.name">
@@ -32,7 +58,8 @@
         <div class="card-body">
           <h3 class="service-name">{{ item.name }}</h3>
           <p class="service-type">
-            {{ item.type === 'CONSULTATION' ? 'Khám bệnh' : 'Cận lâm sàng' }}
+            <span *ngIf="item.type === 'CONSULTATION'" class="text-blue-600"><i class="pi pi-user-edit"></i> Khám bệnh</span>
+            <span *ngIf="item.type === 'PARACLINICAL'" class="text-orange-500"><i class="pi pi-desktop"></i> Cận lâm sàng</span>
           </p>
           <div class="price-tag">
             {{ item.price | number:'1.0-0' }} ₫
@@ -40,13 +67,15 @@
         </div>
 
         <div class="card-hover-action">
-          <button class="btn-book">Đặt lịch</button>
+          <button class="btn-book" (click)="navigateToBooking(item)">Đặt lịch</button>
         </div>
       </div>
     </div>
 
-    <div *ngIf="services.length === 0" class="empty-state">
-      <p>Hiện chưa có dịch vụ nào được cập nhật.</p>
+    <div *ngIf="displayServices.length === 0" class="empty-state text-center py-5">
+      <i class="pi pi-search text-4xl text-gray-400 mb-3"></i>
+      <p class="text-lg text-gray-600">Không tìm thấy dịch vụ nào phù hợp với từ khóa "{{searchTerm}}".</p>
+      <button class="btn-reset mt-2" (click)="searchTerm=''; selectCategory('ALL')">Xem tất cả</button>
     </div>
 
   </div>

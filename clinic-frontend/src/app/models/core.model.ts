@@ -28,6 +28,11 @@ export enum AppointmentStatus {
   NO_SHOW = "NO_SHOW"
 }
 
+export enum InvoiceType {
+  BOOKING = 'BOOKING',
+  FINAL = 'FINAL'
+}
+
 export enum PaymentMethod {
   CASH = 'CASH',
   VNPAY = 'VNPAY'

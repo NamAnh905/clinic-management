@@ -18,5 +18,6 @@ public class SpecialtyCreationRequest {
     @NotBlank(message = "Specialty name cannot be empty.")
     String name;
     String description;
+    String image;
     Set<Long> doctors;
 }

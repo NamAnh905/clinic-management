@@ -30,7 +30,14 @@ public class InvoiceController {
     @PostMapping
     public ApiResponse<InvoiceResponse> create(@RequestBody @Valid InvoiceCreationRequest request) {
         return ApiResponse.<InvoiceResponse>builder()
-                .result(invoiceService.create(request))
+                .result(invoiceService.createFinalInvoice(request))
+                .build();
+    }
+
+    @PostMapping("/booking/{appointmentId}")
+    public ApiResponse<InvoiceResponse> createBookingInvoice(@PathVariable Long appointmentId) {
+        return ApiResponse.<InvoiceResponse>builder()
+                .result(invoiceService.createBookingInvoice(appointmentId))
                 .build();
     }
 

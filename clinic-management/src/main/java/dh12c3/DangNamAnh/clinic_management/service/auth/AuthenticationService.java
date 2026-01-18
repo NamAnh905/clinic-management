@@ -77,6 +77,10 @@ public class AuthenticationService {
                 .findByEmail(request.getEmail())
                 .orElseThrow(() -> new AppException(ErrorCode.INVALID_KEY));
 
+        if (!user.isActive()) {
+            throw new AppException(ErrorCode.USER_LOCKED);
+        }
+
         boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPasswordHash());
 
         if (!authenticated) throw new AppException(ErrorCode.UNAUTHENTICATED);

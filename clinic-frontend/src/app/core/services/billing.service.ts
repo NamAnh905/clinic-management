@@ -58,6 +58,10 @@ export class BillingService {
     return this.http.post<ApiResponse<InvoiceResponse>>(this.invoiceUrl, request);
   }
 
+  createBookingInvoice(appointmentId: number): Observable<ApiResponse<InvoiceResponse>> {
+      return this.http.post<ApiResponse<InvoiceResponse>>(`${this.invoiceUrl}/booking/${appointmentId}`, {});
+  }
+
   updateInvoice(invoiceId: number, request: InvoiceUpdateRequest): Observable<ApiResponse<InvoiceResponse>> {
     return this.http.put<ApiResponse<InvoiceResponse>>(`${this.invoiceUrl}/${invoiceId}`, request);
   }

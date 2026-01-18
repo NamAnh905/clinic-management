@@ -5,6 +5,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 
 // PrimeNG Imports
 import { ButtonModule } from 'primeng/button';
+import { RadioButtonModule } from 'primeng/radiobutton';
 import { CalendarModule } from 'primeng/calendar';
 import { DialogModule } from 'primeng/dialog';
 import { ToastModule } from 'primeng/toast';
@@ -24,7 +25,7 @@ import { UserService } from '../../../core/services/user.service';
   imports: [
     CommonModule, FormsModule, ReactiveFormsModule,
     ButtonModule, CalendarModule, DialogModule, ToastModule,
-    InputTextModule, InputTextareaModule
+    InputTextModule, InputTextareaModule, RadioButtonModule
   ],
   providers: [MessageService],
   templateUrl: './booking.component.html',
@@ -66,23 +67,21 @@ export class BookingComponent implements OnInit {
   currentDate = new Date();
 
   constructor() {
+    // Khởi tạo form với validator cơ bản
     this.infoForm = this.fb.group({
       fullName: ['', Validators.required],
       phoneNumber: ['', [Validators.required, Validators.pattern(/(84|0[3|5|7|8|9])+([0-9]{8})\b/)]],
-      email: [''],
-      dateOfBirth: [null],
+      email: ['', [Validators.email]], // Thêm validate email
+      dateOfBirth: [null], // Mặc định null, sẽ add validator sau nếu là khách
       gender: ['MALE'],
-      reason: ['', Validators.required],
-      address: ['']
+      address: [''],
+      reason: ['', Validators.required]
     });
   }
 
   ngOnInit() {
     this.loadServices();
-
-    // 1. Tự động điền thông tin nếu đã đăng nhập
-    this.checkUserLogin();
-
+    this.checkUserLogin(); // Check xong mới biết là User hay Guest
     this.route.queryParams.subscribe(params => this.syncStateWithUrl(params));
   }
 
@@ -198,32 +197,30 @@ export class BookingComponent implements OnInit {
   findAvailableDoctorForService(dateStr: string) {
       if (!this.selectedService) return;
 
-      // 1. Lấy danh sách chuyên khoa để tìm ID chuyên khoa đúng
       this.masterDataService.getAllSpecialties(1, 100).subscribe(specRes => {
           const specialties = specRes.result?.data || [];
-
-          // Tìm chuyên khoa tương ứng với dịch vụ đang chọn
           const targetSpec = specialties.find((s: any) => s.defaultServiceId == this.selectedService.serviceId);
 
           if (targetSpec) {
-              // 2. Nếu tìm thấy chuyên khoa -> Lấy danh sách bác sĩ
               this.staffService.getAllDoctors(1, 100).subscribe(res => {
                   const docs = res.result?.data || [];
-
-                  // Lọc ra các bác sĩ thuộc chuyên khoa này
                   const availableDocs = docs.filter((d: any) => d.specialtyId == targetSpec.specialtyId);
 
                   if (availableDocs.length > 0) {
-                      // 3. Lấy đại diện bác sĩ đầu tiên để hiển thị Slot
-                      // (Logic thực tế có thể phức tạp hơn: gộp lịch của tất cả bác sĩ)
-                      // Ở đây ta lấy lịch của người đầu tiên tìm được
-                      this.getSlots(availableDocs[0].doctorId, dateStr);
+                      // --- SỬA Ở ĐÂY: Lưu lại bác sĩ được chọn ---
+                      const chosenDoc = availableDocs[0];
+
+                      this.doctors = docs; // Lưu danh sách để finalSubmit có thể tra cứu
+                      this.selectedDoctor = chosenDoc; // Lưu bác sĩ để dùng cho confirmBooking
+
+                      // Gọi API lấy slot theo Doctor ID (PK)
+                      this.getSlots(chosenDoc.doctorId, dateStr);
                   } else {
-                      this.availableSlots = []; // Không có bác sĩ nào thuộc khoa này
+                      this.availableSlots = [];
+                      this.selectedDoctor = null; // Reset nếu không tìm thấy
                   }
               });
           } else {
-              // Trường hợp dịch vụ không thuộc chuyên khoa nào (hoặc cấu hình sai)
               this.availableSlots = [];
           }
       });
@@ -231,7 +228,39 @@ export class BookingComponent implements OnInit {
 
   getSlots(docId: number, dateStr: string) {
     this.appointmentService.getAvailableSlots(docId, dateStr).subscribe(res => {
-      this.availableSlots = res.result || [];
+      let slots = res.result || [];
+
+      // 1. Kiểm tra xem ngày được chọn có phải là "Hôm nay" không
+      const now = new Date();
+      // Lưu ý: this.selectedDate là đối tượng Date đang được binding với p-calendar
+      const checkDate = new Date(this.selectedDate);
+
+      const isToday = checkDate.getDate() === now.getDate() &&
+                      checkDate.getMonth() === now.getMonth() &&
+                      checkDate.getFullYear() === now.getFullYear();
+
+      // 2. Nếu là hôm nay, lọc bỏ các slot đã qua hoặc hiện tại
+      if (isToday) {
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+
+        slots = slots.filter(slot => {
+          // slot string có dạng "09:30"
+          const parts = slot.split(':');
+          const slotHour = parseInt(parts[0], 10);
+          const slotMinute = parseInt(parts[1], 10);
+
+          // Logic:
+          // - Nếu giờ slot > giờ hiện tại -> Lấy
+          // - Nếu giờ slot == giờ hiện tại -> Phút slot phải lớn hơn phút hiện tại
+          if (slotHour > currentHour) return true;
+          if (slotHour === currentHour && slotMinute > currentMinute) return true;
+
+          return false;
+        });
+      }
+
+      this.availableSlots = slots;
     });
   }
 
@@ -242,45 +271,100 @@ export class BookingComponent implements OnInit {
 
   // --- LOGIC XÁC NHẬN ĐẶT LỊCH ---
   confirmBooking() {
+    // 1. Validate Form
     if (this.infoForm.invalid) {
         this.infoForm.markAllAsTouched();
+        this.messageService.add({
+            severity: 'warn',
+            summary: 'Thông tin chưa đủ',
+            detail: 'Vui lòng kiểm tra lại các trường báo đỏ.'
+        });
         return;
     }
+
     this.progress = 100;
 
-    // Logic auto-assign bác sĩ nếu chọn theo giờ
-    let docId = this.selectedDoctor?.doctorId;
-    if (this.bookingMode === 'TIME' && !docId) {
-         this.staffService.getAllDoctors(1, 50).subscribe(res => {
-             const docs = res.result?.data || [];
-             const doc = docs.find((d:any) => d.specialtyId == this.selectedService.serviceId);
-             if(doc) this.finalSubmit(doc.doctorId);
-         });
-    } else {
-        this.finalSubmit(docId);
+    // 2. Kiểm tra xem đã có bác sĩ được chọn chưa
+    // (Dù là mode TIME hay DOCTOR, thì logic ở bước chọn ngày/giờ đã phải gán selectedDoctor rồi)
+    if (!this.selectedDoctor || !this.selectedDoctor.doctorId) {
+        this.messageService.add({
+            severity: 'error',
+            summary: 'Lỗi',
+            detail: 'Chưa xác định được bác sĩ cho lịch khám này. Vui lòng chọn lại ngày giờ.'
+        });
+        return;
     }
+
+    // 3. Gọi finalSubmit với ID của bác sĩ đã chọn
+    this.finalSubmit(this.selectedDoctor.doctorId);
   }
 
-  finalSubmit(doctorId: number) { // doctorId truyền vào đây đang là ID Bảng Doctor (VD: 16)
+  // LOGIC AUTO-FILL QUAN TRỌNG
+  checkUserLogin() {
+      const token = localStorage.getItem('token');
+      if (token) {
+          this.userService.getMyInfo().subscribe({
+              next: (res) => {
+                  if (res.result) {
+                      this.currentUser = res.result;
+
+                      // 1. Tự động điền (Auto-fill)
+                      this.infoForm.patchValue({
+                          fullName: this.currentUser.fullName,
+                          phoneNumber: this.currentUser.phoneNumber,
+                          email: this.currentUser.email,
+                          address: this.currentUser.address,
+                          gender: this.currentUser.gender || 'MALE',
+                          // Map date string sang Date object cho Calendar hiển thị
+                          dateOfBirth: this.currentUser.dateOfBirth ? new Date(this.currentUser.dateOfBirth) : null
+                      });
+
+                      // 2. TẮT bắt buộc nhập Ngày sinh (Vì User đã có trong DB rồi)
+                      // Giúp User không bị lỗi form nếu họ lỡ xóa ngày sinh trên giao diện
+                      this.infoForm.get('dateOfBirth')?.clearValidators();
+                      this.infoForm.get('dateOfBirth')?.updateValueAndValidity();
+                  }
+              },
+              error: () => {
+                  // Token lỗi -> Coi như khách
+                  this.currentUser = null;
+                  this.setupGuestValidators();
+              }
+          });
+      } else {
+          // Không có token -> Là khách
+          this.currentUser = null;
+          this.setupGuestValidators();
+      }
+  }
+
+  finalSubmit(doctorId: number) {
+    if (this.infoForm.invalid) return; // Đã check ở trên rồi nhưng giữ lại cũng được
+
     const p = this.infoForm.value;
     const dateTimeStr = `${this.formatDate(this.selectedDate)}T${this.selectedTime}:00`;
 
+    // Tìm object bác sĩ để lấy UserID (Quan trọng cho luồng Auth)
     const selectedDocObj = this.doctors.find(d => d.doctorId === doctorId);
-    const realDoctorIdToSend = selectedDocObj ? (selectedDocObj.userId || selectedDocObj.user_id) : doctorId;
 
-    if (!realDoctorIdToSend) {
-        this.messageService.add({severity:'error', summary:'Lỗi', detail:'Không tìm thấy thông tin User ID của bác sĩ.'});
-        return;
-    }
-    // ---------------------------
-
-    // KIỂM TRA: Đã đăng nhập hay chưa?
+    // --- TRƯỜNG HỢP 1: CÓ USER LOGIN ---
     if (this.currentUser && this.currentUser.userId) {
-        const myId = this.currentUser.userId || this.currentUser.id;
+        const doctorUserId = selectedDocObj ? (selectedDocObj.userId || selectedDocObj.user_id) : null;
+
+        // --- SỬA LỖI: Thêm thông báo nếu không tìm thấy ID ---
+        if (!doctorUserId) {
+            console.error("Lỗi: Không tìm thấy UserID của bác sĩ trong danh sách", this.doctors);
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Lỗi hệ thống',
+                detail: 'Không lấy được thông tin bác sĩ. Vui lòng tải lại trang.'
+            });
+            return;
+        }
 
         const requestBody = {
-            patientId: Number(myId),
-            doctorId: Number(realDoctorIdToSend), // <--- Gửi UserID của bác sĩ (VD: 35) thay vì 16
+            patientId: Number(this.currentUser.userId),
+            doctorId: Number(doctorUserId), // Gửi UserID
             appointmentTime: dateTimeStr,
             reason: p.reason
         };
@@ -289,14 +373,24 @@ export class BookingComponent implements OnInit {
             next: () => this.handleSuccess('admin'),
             error: (err) => this.handleError(err)
         });
-    } else {
-        // Khách vãng lai
+    }
+    // --- TRƯỜNG HỢP 2: KHÁCH VÃNG LAI (PUBLIC) ---
+    else {
+        // Fix lỗi null dateOfBirth như đã bàn trước đó
+        const dobFormatted = p.dateOfBirth ? this.formatDate(p.dateOfBirth) : '';
+
         const requestBody = {
-            ...p,
-            dateOfBirth: p.dateOfBirth ? this.formatDate(p.dateOfBirth) : null,
-            doctorId: Number(realDoctorIdToSend), // <--- Gửi UserID của bác sĩ ở đây nữa
-            appointmentTime: dateTimeStr
+            fullName: p.fullName,
+            phoneNumber: p.phoneNumber,
+            email: p.email,
+            dateOfBirth: dobFormatted,
+            gender: p.gender,
+            address: p.address,
+            doctorId: Number(doctorId), // Gửi DoctorID (PK)
+            appointmentTime: dateTimeStr,
+            reason: p.reason
         };
+
         this.appointmentService.bookPublicAppointment(requestBody).subscribe({
             next: () => this.handleSuccess('home'),
             error: (err) => this.handleError(err)
@@ -305,10 +399,28 @@ export class BookingComponent implements OnInit {
   }
 
   handleSuccess(redirectType: 'admin' | 'home') {
-      this.messageService.add({severity: 'success', summary: 'Thành công', detail: 'Đặt lịch thành công!'});
+      let detailMessage = '';
+
+      // TRƯỜNG HỢP 1: Khách hàng ĐÃ đăng nhập (User cũ)
+      if (redirectType === 'admin') {
+          detailMessage = 'Đặt lịch thành công! Chi tiết cuộc hẹn đã được gửi tới email của bạn.';
+      }
+      // TRƯỜNG HỢP 2: Khách vãng lai (Guest)
+      else {
+          detailMessage = 'Đặt lịch thành công! Vui lòng kiểm tra email để nhận Lịch hẹn và Tài khoản đăng nhập.';
+      }
+
+      this.messageService.add({
+          severity: 'success',
+          summary: 'Thành công',
+          detail: detailMessage // Sử dụng nội dung linh hoạt
+      });
+
       this.showInfoDialog = false;
       const url = redirectType === 'admin' ? '/appointment-management' : '/';
-      setTimeout(() => this.router.navigate([url]), 1500);
+
+      // Tăng thời gian delay một chút để người dùng kịp đọc thông báo dài hơn
+      setTimeout(() => this.router.navigate([url]), 3000);
   }
 
   handleError(err: any) {
@@ -317,6 +429,21 @@ export class BookingComponent implements OnInit {
 
   // --- UTILS ---
   loadServices() { this.masterDataService.getAllServices(1, 100).subscribe(res => this.services = res.result?.data || []); }
+
+  setupGuestValidators() {
+      this.infoForm.reset();
+      this.infoForm.patchValue({ gender: 'MALE' });
+
+      // 1. Ngày sinh: BẮT BUỘC (Backend có @NotNull)
+      this.infoForm.get('dateOfBirth')?.setValidators([Validators.required]);
+
+      // 2. Email: KHÔNG BẮT BUỘC (Backend tự handle nếu null)
+      // Chỉ validate đúng định dạng email nếu người dùng có nhập
+      this.infoForm.get('email')?.setValidators([Validators.email]);
+
+      this.infoForm.get('dateOfBirth')?.updateValueAndValidity();
+      this.infoForm.get('email')?.updateValueAndValidity();
+  }
 
   loadDoctors(serviceId?: number) {
     this.staffService.getAllDoctors(1, 100).subscribe(res => {
@@ -338,44 +465,6 @@ export class BookingComponent implements OnInit {
     // QUAN TRỌNG: Xóa tham số mode, date, time, doctorId khỏi URL
     // Khi null, router sẽ xóa param đó đi
     this.updateParams({ mode: null, date: null, time: null, doctorId: null });
-  }
-
-  // LOGIC AUTO-FILL QUAN TRỌNG
-  checkUserLogin() {
-    // 1. Kiểm tra cả 2 key phổ biến (đề phòng bạn lưu tên khác)
-    const token = localStorage.getItem('access_token') || localStorage.getItem('token');
-
-    if (token) {
-        this.userService.getMyInfo().subscribe({
-            next: (res) => {
-                if (res.result) {
-                    this.currentUser = res.result;
-                    console.log('User found:', this.currentUser); // Debug: Xem log có hiện user không
-
-                    // 2. Điền dữ liệu vào form
-                    this.infoForm.patchValue({
-                        fullName: this.currentUser.fullName || '', // Thêm || '' để tránh null
-                        phoneNumber: this.currentUser.phoneNumber || '',
-                        email: this.currentUser.email || '',
-                        address: this.currentUser.address || '',
-                        gender: this.currentUser.gender || 'MALE',
-                        dateOfBirth: this.currentUser.dateOfBirth ? new Date(this.currentUser.dateOfBirth) : null
-                    });
-
-                    // 3. (Quan trọng) Disable các trường không nên sửa nếu là User thật
-                    // Tùy ý bạn: Nếu muốn user không được sửa tên thì bỏ comment dòng dưới
-                    // this.infoForm.get('fullName')?.disable();
-                }
-            },
-            error: (err) => {
-                console.error('Không lấy được thông tin user:', err);
-                // Nếu token hết hạn hoặc lỗi, có thể xóa token đi
-                // localStorage.removeItem('access_token');
-            }
-        });
-    } else {
-        console.log('Không tìm thấy token, coi như khách vãng lai.');
-    }
   }
 
   formatDate(date: Date): string {

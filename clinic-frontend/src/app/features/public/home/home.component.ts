@@ -6,10 +6,12 @@ import { Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 
+import { ChatbotComponent } from '../../../shared/components/chatbot/chatbot.component';
+
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink, ButtonModule, DialogModule],
+  imports: [CommonModule, RouterLink, ButtonModule, DialogModule, ChatbotComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })

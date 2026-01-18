@@ -5,47 +5,58 @@
       <div class="hero-content">
         <h1>Đội ngũ Bác sĩ Chuyên gia<br>Tận tâm & Giàu kinh nghiệm</h1>
         <p>Tìm kiếm và đặt lịch khám dễ dàng với các bác sĩ hàng đầu. Xem hồ sơ chi tiết, đánh giá và chọn bác sĩ phù hợp nhất với bạn.</p>
-        <button class="btn-hero" (click)="scrollDown()">Tìm bác sĩ ngay</button>
       </div>
     </div>
 
     <div class="wave-bottom">
       <svg viewBox="0 0 1440 320" preserveAspectRatio="none">
-        <path fill="#ffffff" fill-opacity="1" d="M0,64L48,80C96,96,192,128,288,128C384,128,480,96,576,90.7C672,85,768,107,864,122.7C960,139,1056,149,1152,133.3C1248,117,1344,75,1392,53.3L1440,32L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+        <path fill="#f8faff" fill-opacity="1" d="M0,64L48,80C96,96,192,128,288,128C384,128,480,96,576,90.7C672,85,768,107,864,122.7C960,139,1056,149,1152,133.3C1248,117,1344,75,1392,53.3L1440,32L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
       </svg>
     </div>
   </div>
 
-  <div class="container header-container">
-    <div class="search-bar-container shadow-2">
-      <div class="search-item flex-grow">
-        <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
-        <input type="text" placeholder="Tìm theo tên bác sĩ..." [(ngModel)]="keyword" (keyup.enter)="onSearch()">
+  <div class="container main-content" id="search-area">
+
+    <div class="search-container-wrapper">
+      <div class="integrated-search-bar shadow-2">
+
+        <div class="input-section">
+          <input type="text"
+                 [(ngModel)]="keyword"
+                 (keyup.enter)="onSearch()"
+                 placeholder="Tìm theo tên bác sĩ..."
+                 class="search-input">
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="filter-section" (click)="toggleDropdown()">
+          <span class="selected-text">{{ getSpecialtyLabel() }}</span>
+          <i class="pi pi-chevron-down text-gray-500 text-sm ml-2 transition-transform"
+             [class.rotate-180]="showDropdown"></i>
+
+          <div class="dropdown-menu shadow-4" *ngIf="showDropdown">
+            <div class="dropdown-item" (click)="selectSpecialty(null)">Tất cả chuyên khoa</div>
+
+            <div class="dropdown-item" *ngFor="let spec of specialties"
+                 (click)="selectSpecialty(spec)">
+                 {{ spec.name }}
+            </div>
+          </div>
+        </div>
+
+        <button class="search-btn" (click)="onSearch()">
+          <i class="pi pi-search"></i>
+        </button>
+
       </div>
-
-      <div class="divider"></div>
-
-      <div class="search-item flex-grow">
-        <i class="fa-solid fa-stethoscope text-gray-400"></i>
-        <select [(ngModel)]="selectedSpecialtyId" (change)="onSearch()">
-          <option value="">Tất cả chuyên khoa</option>
-          <option *ngFor="let s of specialties" [value]="s.specialtyId">{{ s.name }}</option>
-        </select>
-      </div>
-
-      <button class="btn-search-icon" (click)="onSearch()">
-        <i class="fa-solid fa-arrow-right"></i>
-      </button>
     </div>
-  </div>
-
-  <div class="container main-content" id="main-content">
     <div class="doctor-grid">
-
       <div class="doctor-card" *ngFor="let doc of doctors">
-        <div class="card-header-bg">
+
+        <div class="card-bg-shape">
           <svg viewBox="0 0 1440 320" preserveAspectRatio="none">
-            <path fill="#ffffff" fill-opacity="1" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,224C672,245,768,267,864,250.7C960,235,1056,181,1152,165.3C1248,149,1344,171,1392,181.3L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+             <path fill="#f1f5f9" fill-opacity="1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,165.3C1248,171,1344,149,1392,138.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
           </svg>
         </div>
 
@@ -59,30 +70,28 @@
 
           <div class="workplace-info">
              <div class="wp-item">
-                <i class="fa-solid fa-hospital"></i>
+                <i class="pi pi-building"></i>
                 <span>Phòng khám Đa khoa 28Care</span>
              </div>
              <div class="wp-item">
-                <i class="fa-solid fa-building-user"></i>
-                <span>Bệnh viện Đại học Y Hà Nội</span>
+                <i class="pi pi-check-circle"></i>
+                <span>Kinh nghiệm: {{ (doc.doctorId % 10) + 5 }} năm</span>
              </div>
           </div>
         </div>
 
         <div class="card-footer">
-          <div class="exp-badge">
-            <i class="fa-solid fa-user-clock"></i>
-            <span>{{ (doc.doctorId % 10) + 5 }} Năm kinh nghiệm</span>
-          </div>
+          <button class="btn-book-doc">Đặt lịch khám</button>
         </div>
 
-        <a [routerLink]="['/booking']" [queryParams]="{doctorId: doc.doctorId}" class="overlay-link"></a>
       </div>
     </div>
 
-    <div *ngIf="doctors.length === 0" class="text-center py-5">
-       <img src="https://cdn-icons-png.flaticon.com/512/7466/7466073.png" width="80" style="opacity: 0.5">
-       <p class="text-gray-500 mt-3">Không tìm thấy bác sĩ nào phù hợp.</p>
+    <div *ngIf="doctors.length === 0" class="empty-state">
+      <i class="pi pi-search" style="font-size: 3rem; color: #cbd5e1;"></i>
+      <p>Không tìm thấy bác sĩ nào phù hợp.</p>
+      <button class="btn-reset" (click)="resetSearch()">Xem tất cả</button>
     </div>
+
   </div>
 </div>

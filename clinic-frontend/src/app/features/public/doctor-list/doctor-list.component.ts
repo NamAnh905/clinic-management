@@ -18,8 +18,13 @@ export class DoctorListComponent implements OnInit {
   doctors: DoctorResponse[] = [];
   specialties: SpecialtyResponse[] = [];
 
+  // Filter States
   keyword: string = '';
-  selectedSpecialtyId: string = '';
+  selectedSpecialtyId: number | null = null;
+  selectedSpecialtyName: string = 'Tất cả chuyên khoa';
+
+  // UI Control
+  showDropdown: boolean = false;
 
   page: number = 1;
   size: number = 100;
@@ -33,14 +38,14 @@ export class DoctorListComponent implements OnInit {
   }
 
   fetchDoctors() {
+    // Gọi API lấy tất cả, sau đó lọc Client-side (do API search hiện tại có thể chưa support full filter)
     this.staffService.getAllDoctors(this.page, this.size, this.keyword).subscribe({
       next: (res) => {
         let data = res.result?.data || [];
 
-        // Filter Client-side theo chuyên khoa (Nếu API chưa hỗ trợ filter này)
+        // Lọc theo chuyên khoa nếu có chọn
         if (this.selectedSpecialtyId) {
-             const specId = Number(this.selectedSpecialtyId);
-             data = data.filter(d => d.specialtyId === specId);
+             data = data.filter(d => d.specialtyId === this.selectedSpecialtyId);
         }
         this.doctors = data;
       },
@@ -56,19 +61,47 @@ export class DoctorListComponent implements OnInit {
     });
   }
 
+  // --- ACTIONS ---
   onSearch() {
     this.page = 1;
     this.fetchDoctors();
   }
 
-  getDoctorImage(doctor: any): string {
-     if (doctor && doctor.image) return doctor.image;
-     return doctor.gender === 'FEMALE'
-        ? 'https://img.freepik.com/free-photo/pleased-young-female-doctor-wearing-medical-robe-stethoscope-around-neck-standing-closed-posture_409827-254.jpg'
-        : 'https://img.freepik.com/free-photo/portrait-smiling-handsome-male-doctor-man_171337-5055.jpg';
+  toggleDropdown() {
+    this.showDropdown = !this.showDropdown;
+  }
+
+  selectSpecialty(spec: SpecialtyResponse | null) {
+    if (spec) {
+      this.selectedSpecialtyId = spec.specialtyId;
+      this.selectedSpecialtyName = spec.name;
+    } else {
+      this.selectedSpecialtyId = null;
+      this.selectedSpecialtyName = 'Tất cả chuyên khoa';
+    }
+
+    this.showDropdown = false; // Đóng menu
+    this.onSearch(); // Gọi tìm kiếm lại ngay
+  }
+
+  getSpecialtyLabel(): string {
+    return this.selectedSpecialtyName;
+  }
+
+  resetSearch() {
+    this.keyword = '';
+    this.selectSpecialty(null);
   }
 
   scrollDown() {
-    document.getElementById('main-content')?.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('search-area')?.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // Helper hiển thị ảnh
+  getDoctorImage(doctor: any): string {
+     if (doctor && doctor.image) return doctor.image;
+     return doctor.gender === 'FEMALE'
+        ? 'https://img.freepik.com/free-vector/doctor-character-background_1270-84.jpg'
+        : 'https://img.freepik.com/free-vector/doctor-character-background_1270-84.jpg';
   }
 }

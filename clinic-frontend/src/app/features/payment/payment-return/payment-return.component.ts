@@ -11,6 +11,7 @@ import { ButtonModule } from 'primeng/button';
 
 import { ApiResponse } from '../../../models/core.model';
 import { InvoiceResponse } from '../../../models/billing.model';
+import { UserService } from '../../../core/services/user.service';
 
 @Component({
   selector: 'app-payment-return',
@@ -34,6 +35,7 @@ export class PaymentReturnComponent implements OnInit {
   private router = inject(Router);
   private billingService = inject(BillingService);
   private messageService = inject(MessageService);
+  private userService = inject(UserService);
 
   ngOnInit() {
     // Lấy query params từ URL (do VNPay trả về)
@@ -87,7 +89,32 @@ export class PaymentReturnComponent implements OnInit {
   }
 
   goBack() {
-    // Điều hướng về trang danh sách hóa đơn của Admin
-    this.router.navigate(['/admin/invoices']);
+    // 1. Lấy URL cũ đã lưu
+    const returnUrl = localStorage.getItem('paymentReturnUrl');
+
+    if (returnUrl) {
+      // 2. Xóa đi để không ảnh hưởng lần sau
+      localStorage.removeItem('paymentReturnUrl');
+      // 3. Quay về đúng nơi đã bắt đầu
+      this.router.navigateByUrl(returnUrl);
+    } else {
+      // 4. FALLBACK: Nếu không có URL lưu (ví dụ user mở tab mới), tự động check role để về trang chủ hoặc admin
+      this.checkRoleAndRedirect();
+    }
+  }
+
+  // Hàm phụ trợ để điều hướng nếu mất dấu vết lịch sử
+  private checkRoleAndRedirect() {
+      this.userService.getMyInfo().subscribe({
+          next: (res) => {
+              const roles = res.result?.roles?.map((r: any) => r.name) || [];
+              if (roles.includes('ADMIN') || roles.includes('RECEPTIONIST')) {
+                  this.router.navigate(['/admin/invoices']);
+              } else {
+                  this.router.navigate(['/']); // Người dùng thường về trang chủ
+              }
+          },
+          error: () => this.router.navigate(['/'])
+      });
   }
 }

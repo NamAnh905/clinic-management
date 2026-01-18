@@ -1,5 +1,6 @@
 package dh12c3.DangNamAnh.clinic_management.dto.response.billing;
 
+import dh12c3.DangNamAnh.clinic_management.enums.InvoiceType;
 import dh12c3.DangNamAnh.clinic_management.enums.PaymentMethod;
 import dh12c3.DangNamAnh.clinic_management.enums.PaymentStatus;
 import lombok.*;
@@ -22,4 +23,5 @@ public class InvoiceResponse {
     PaymentMethod paymentMethod;
     String transactionCode;
     LocalDateTime createdAt;
+    InvoiceType type;
 }

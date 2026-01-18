@@ -24,6 +24,7 @@ public enum ErrorCode {
     ROLE_NOT_FOUND(2005, "Role not found.", HttpStatus.NOT_FOUND),
     STAFF_ROLE_CHANGE_DENIED(2006, "Current role cannot be changed to avoid role conflict.",  HttpStatus.CONFLICT),
     INVALID_PASSWORD(2007, "Invalid password.", HttpStatus.UNAUTHORIZED),
+    USER_LOCKED(2008, "User account has been inactivated.", HttpStatus.FORBIDDEN),
 
     // ========================================================================
     // 3xxx: CATALOG (SERVICE, SPECIALTY, DRUG)

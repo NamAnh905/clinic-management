@@ -1,13 +1,10 @@
 package dh12c3.DangNamAnh.clinic_management.dto.response.master;
 
-import dh12c3.DangNamAnh.clinic_management.dto.response.medical.PresDetailResponse;
-import dh12c3.DangNamAnh.clinic_management.entity.medical.PrescriptionDetail;
 import dh12c3.DangNamAnh.clinic_management.helper.ExcelColumn;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
-import java.util.Set;
 
 @Data
 @AllArgsConstructor

@@ -1,4 +1,8 @@
 import {
+  PrimeTemplate,
+  SharedModule
+} from "./chunk-GWKAQB5R.js";
+import {
   CommonModule,
   NgClass,
   NgIf,
@@ -6,10 +10,6 @@ import {
   NgTemplateOutlet
 } from "./chunk-SLB4UZNK.js";
 import "./chunk-54XDLG5S.js";
-import {
-  PrimeTemplate,
-  SharedModule
-} from "./chunk-GWKAQB5R.js";
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -42,8 +42,8 @@ import {
   ɵɵtext,
   ɵɵtextInterpolate
 } from "./chunk-QXGWTKNC.js";
-import "./chunk-JRFR6BLO.js";
 import "./chunk-HWYXSU2G.js";
+import "./chunk-JRFR6BLO.js";
 import "./chunk-MARUHEWW.js";
 import "./chunk-WDMUDEB6.js";
 

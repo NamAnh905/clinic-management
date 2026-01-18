@@ -1,65 +1,82 @@
 @use "sass:color";
 
 // --- VARIABLES ---
-$purple-gradient: linear-gradient(135deg, #6200ea 0%, #9046fe 100%);
-$primary-green: #00cba9;
-$text-dark: #2c3e50;
-$text-light: #636e72;
+$primary-gradient: linear-gradient(135deg, #0f4c75 0%, #3282b8 100%);
+$button-color: #ffffff;
+$button-text: #0f4c75;
+$bg-light: #f8faff;
+$text-dark: #2d3436;
 $card-radius: 20px;
 
 .service-page-wrapper {
-  background-color: #f8faff; /* Nền xanh nhạt */
+  background-color: $bg-light;
   min-height: 100vh;
   padding-bottom: 60px;
 }
 
-// --- 1. HERO SECTION (BANNER) ---
-// (Copy y hệt từ specialty-list để đồng bộ)
+// --- HERO SECTION ---
 .hero-section {
   position: relative;
-  background: $purple-gradient;
-  padding: 80px 0 140px;
+  background: $primary-gradient;
+  // Giữ padding-bottom lớn để có chỗ cho search bar đè lên
+  padding: 100px 0 180px;
   color: white;
-  margin-bottom: 40px;
+  margin-bottom: 0; // Xóa margin bottom để liền mạch
+  overflow: visible; // QUAN TRỌNG: Để search bar không bị cắt mất nếu trồi lên quá cao
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.05) 0%, transparent 25%),
+                      radial-gradient(circle at 80% 20%, rgba(255,255,255,0.05) 0%, transparent 25%);
+    pointer-events: none;
+  }
 
   .container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px;
+    position: relative;
+    z-index: 2;
   }
 
   .hero-content {
-    max-width: 600px;
+    max-width: 650px;
 
     h1 {
       font-size: 3rem;
       font-weight: 800;
-      line-height: 1.2;
-      margin-bottom: 20px;
+      line-height: 1.25;
+      margin-bottom: 24px;
+      letter-spacing: -0.5px;
+      text-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
     p {
-      font-size: 1.1rem;
-      opacity: 0.9;
-      margin-bottom: 30px;
-      line-height: 1.6;
+      font-size: 1.15rem;
+      opacity: 0.95;
+      margin-bottom: 35px;
+      line-height: 1.7;
+      font-weight: 400;
     }
 
     .btn-hero {
-      background: $primary-green;
-      color: white;
+      background: $button-color;
+      color: $button-text;
       border: none;
-      padding: 12px 35px;
-      border-radius: 30px;
+      padding: 14px 40px;
+      border-radius: 50px;
       font-weight: 700;
       font-size: 1rem;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(0, 203, 169, 0.4);
-      transition: transform 0.2s;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      transition: all 0.3s ease;
 
       &:hover {
-        transform: translateY(-2px);
-        background: #00b395;
+        transform: translateY(-3px);
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+        background: #f1f5f9;
       }
     }
   }
@@ -69,25 +86,211 @@ $card-radius: 20px;
     bottom: -1px;
     left: 0;
     width: 100%;
-    overflow: hidden;
     line-height: 0;
+    z-index: 1;
 
     svg {
-      position: relative;
-      display: block;
       width: calc(100% + 1.3px);
-      height: 80px;
+      height: 120px; // Tăng chiều cao sóng lên một chút cho mềm mại
+      path {
+        fill: $bg-light;
+        fill-opacity: 1;
+      }
     }
   }
 }
 
-// --- 2. GRID & CONTENT ---
+// --- CONTAINER ---
 .container.main-content {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
 }
 
+// === NEW INTEGRATED SEARCH BAR STYLES ===
+.search-container-wrapper {
+  display: flex;
+  justify-content: center;
+
+  // --- CHỈNH SỬA QUAN TRỌNG ĐỂ ĐÈ LÊN SÓNG ---
+  margin-top: -100px; // Kéo ngược lên trên (Negative Margin)
+  position: relative; // Để dùng z-index
+  z-index: 10;        // Nổi lên trên layer sóng
+  padding: 0 15px;    // Padding an toàn cho mobile
+  margin-bottom: 60px; // Đẩy nội dung bên dưới xuống xa một chút
+}
+
+.integrated-search-bar {
+  background: white;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  padding: 5px;
+  width: 100%;
+  max-width: 800px;
+  height: 65px;
+  position: relative;
+  transition: box-shadow 0.3s;
+  // Thêm bóng đổ đậm hơn chút để nổi bật trên nền sóng
+  box-shadow: 0 15px 35px rgba(15, 76, 117, 0.15);
+
+  &:focus-within {
+    box-shadow: 0 15px 40px rgba(15, 76, 117, 0.25) !important;
+  }
+
+  // 1. Input Section
+  .input-section {
+    flex: 1;
+    padding-left: 25px;
+
+    .search-input {
+      width: 100%;
+      border: none;
+      outline: none;
+      font-size: 1rem;
+      color: $text-dark;
+      background: transparent;
+
+      &::placeholder {
+        color: #9ca3af;
+        font-weight: 400;
+      }
+    }
+  }
+
+  // 2. Divider
+  .divider {
+    width: 1px;
+    height: 30px;
+    background-color: #e5e7eb;
+    margin: 0 15px;
+  }
+
+  // 3. Filter Section (Dropdown Trigger)
+  .filter-section {
+    position: relative;
+    cursor: pointer;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    min-width: 180px;
+    justify-content: space-between;
+    user-select: none;
+
+    .selected-text {
+      font-weight: 500;
+      color: #374151;
+      font-size: 0.95rem;
+      white-space: nowrap;
+    }
+
+    &:hover .selected-text {
+      color: #0f4c75;
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      top: 130%;
+      right: -10px;
+      background: white;
+      border-radius: 12px;
+      padding: 8px;
+      min-width: 220px;
+      z-index: 100;
+      border: 1px solid #f3f4f6;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1); // Thêm shadow cho dropdown
+      animation: fadeInDropdown 0.2s ease-out;
+
+      .dropdown-item {
+        padding: 10px 16px;
+        border-radius: 8px;
+        color: #4b5563;
+        font-weight: 500;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+
+        &:hover {
+          background-color: #f0f9ff;
+          color: #0f4c75;
+        }
+      }
+    }
+  }
+
+  // 4. Search Button
+  .search-btn {
+    width: 50px;
+    height: 50px;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+    margin-right: 2px;
+    flex-shrink: 0;
+
+    i {
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+
+    &:hover {
+      background-color: #1d4ed8;
+      transform: scale(1.05);
+    }
+  }
+}
+
+@keyframes fadeInDropdown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.rotate-180 {
+  transform: rotate(180deg);
+}
+
+// Responsive
+@media (max-width: 768px) {
+  // Mobile: Không đè lên sóng nữa vì không đủ chỗ, trả về bình thường
+  .search-container-wrapper {
+    margin-top: -30px; // Kéo lên ít thôi
+  }
+
+  .integrated-search-bar {
+    flex-direction: column;
+    height: auto;
+    border-radius: 20px;
+    padding: 15px;
+    gap: 10px;
+
+    .divider { display: none; }
+
+    .input-section { width: 100%; padding: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+
+    .filter-section {
+      width: 100%;
+      justify-content: space-between;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+      .dropdown-menu { left: 0; width: 100%; top: 100%; }
+    }
+
+    .search-btn { width: 100%; border-radius: 12px; margin-top: 5px; }
+  }
+
+  .hero-section {
+    padding: 60px 0 100px; // Giảm padding bottom trên mobile
+    text-align: center;
+    .hero-content h1 { font-size: 1.8rem; }
+  }
+}
+
+// --- GRID & CARDS (Giữ nguyên) ---
 .section-title {
   text-align: center;
   margin-bottom: 40px;
@@ -100,7 +303,6 @@ $card-radius: 20px;
   gap: 30px;
 }
 
-// --- 3. SERVICE CARD ---
 .service-card {
   background: white;
   border-radius: $card-radius;
@@ -115,26 +317,17 @@ $card-radius: 20px;
 
   &:hover {
     transform: translateY(-10px);
-    box-shadow: 0 20px 40px rgba(74, 0, 224, 0.15);
-    border-color: rgba(142, 45, 226, 0.3);
+    box-shadow: 0 20px 40px rgba(15, 76, 117, 0.15);
+    border-color: rgba(50, 130, 184, 0.3);
 
-    // Hiện nút đặt lịch khi hover
-    .card-hover-action {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    // Zoom ảnh
-    .card-img img {
-      transform: scale(1.05);
-    }
+    .card-hover-action { opacity: 1; visibility: visible; }
+    .card-img img { transform: scale(1.05); }
   }
 
   .card-img {
     height: 180px;
     width: 100%;
     overflow: hidden;
-
     img {
       width: 100%;
       height: 100%;
@@ -154,7 +347,6 @@ $card-radius: 20px;
       font-weight: 700;
       color: $text-dark;
       margin-bottom: 5px;
-
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
@@ -176,7 +368,6 @@ $card-radius: 20px;
     }
   }
 
-  // Hover Overlay Button
   .card-hover-action {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
@@ -189,40 +380,44 @@ $card-radius: 20px;
     transition: 0.3s;
 
     .btn-book {
-      background: linear-gradient(to right, #8e2de2, #4a00e0);
+      background: $primary-gradient;
       color: white;
       border: none;
       padding: 12px 30px;
       border-radius: 25px;
       font-weight: 600;
       cursor: pointer;
-      box-shadow: 0 5px 15px rgba(74, 0, 224, 0.4);
+      box-shadow: 0 5px 15px rgba(15, 76, 117, 0.3);
       transform: translateY(20px);
       transition: 0.3s;
 
       &:hover {
         transform: translateY(0);
+        background: linear-gradient(135deg, #166599 0%, #4696cf 100%);
       }
     }
   }
 
-  &:hover .card-hover-action .btn-book {
-    transform: translateY(0);
-  }
+  &:hover .card-hover-action .btn-book { transform: translateY(0); }
 }
 
 .empty-state {
   text-align: center;
   padding: 50px;
-  color: $text-light;
+  color: #636e72;
   font-style: italic;
 }
 
-// Responsive
-@media (max-width: 768px) {
-  .hero-section {
-    padding: 60px 0 80px;
-    text-align: center;
-    .hero-content h1 { font-size: 1.8rem; }
+.btn-reset {
+  background: transparent;
+  border: 1px solid #0f4c75;
+  color: #0f4c75;
+  padding: 8px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 600;
+  &:hover {
+    background: #0f4c75;
+    color: white;
   }
 }

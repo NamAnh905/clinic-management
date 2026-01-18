@@ -55,16 +55,19 @@ export interface SpecialtyResponse {
   specialtyId: number;
   name: string;
   description: string;
+  image?: string;
 }
 
 export interface SpecialtyCreationRequest {
   name: string;
   description?: string;
+  image?: string;
   doctors?: number[]; // List ID bác sĩ
 }
 
 export interface SpecialtyUpdateRequest {
   name?: string;
   description?: string;
+  image?: string;
   doctors?: number[];
 }

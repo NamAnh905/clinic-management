@@ -1,5 +1,7 @@
 import { PaymentMethod, PaymentStatus } from "./core.model";
 
+export type InvoiceType = 'BOOKING' | 'FINAL';
+
 export interface InvoiceDetailResponse {
   detailId: number;
   serviceId?: number;
@@ -20,6 +22,7 @@ export interface InvoiceResponse {
   paymentMethod: PaymentMethod;
   transactionCode?: string;
   createdAt?: string;
+  type: InvoiceType;
 }
 
 export interface InvoiceCreationRequest {

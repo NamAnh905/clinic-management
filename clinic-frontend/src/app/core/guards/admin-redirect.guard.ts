@@ -8,7 +8,7 @@ export const AdminRedirectGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
 
   if (authService.hasRole(['ADMIN'])) {
-    return router.createUrlTree(['/admin/users']);
+    return router.createUrlTree(['/admin/revenue']);
   }
 
   if (authService.hasRole(['DOCTOR'])) {

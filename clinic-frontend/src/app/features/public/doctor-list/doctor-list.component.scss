@@ -1,33 +1,44 @@
 @use "sass:color";
 
-$purple-light: #7c4dff;
-$purple-dark: #651fff;
-// Thêm biến gradient mới cho đồng bộ banner
-$purple-gradient-banner: linear-gradient(135deg, #6200ea 0%, #9046fe 100%);
-$primary-green: #00cba9; // Dùng màu xanh ngọc cho nút banner
-$bg-color: #f9faff;
-$text-dark: #333;
-$text-light: #666;
+// --- VARIABLES (ĐỒNG BỘ STYLE GUIDE) ---
+$primary-gradient: linear-gradient(135deg, #0f4c75 0%, #3282b8 100%);
+$button-color: #ffffff;
+$button-text: #0f4c75;
+$bg-light: #f8faff;
+$text-dark: #2d3436;
+$card-radius: 20px;
 
 .doctor-page-wrapper {
-  background-color: white;
+  background-color: $bg-light;
   min-height: 100vh;
-  padding-bottom: 50px;
+  padding-bottom: 60px;
 }
 
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 15px;
-}
-
-// --- MỚI: HERO SECTION (BANNER) ---
+// --- 1. HERO SECTION (COPY TỪ SERVICE-LIST) ---
 .hero-section {
   position: relative;
-  background: $purple-gradient-banner;
-  padding: 80px 0 140px; /* Padding đáy lớn để chứa đường cong và phần search bar đè lên */
+  background: $primary-gradient;
+  padding: 100px 0 180px;
   color: white;
-  text-align: left;
+  margin-bottom: 0;
+  overflow: visible;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.05) 0%, transparent 25%),
+                      radial-gradient(circle at 80% 20%, rgba(255,255,255,0.05) 0%, transparent 25%);
+    pointer-events: none;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    position: relative;
+    z-index: 2;
+  }
 
   .hero-content {
     max-width: 650px;
@@ -35,239 +46,316 @@ $text-light: #666;
     h1 {
       font-size: 3rem;
       font-weight: 800;
-      margin-bottom: 20px;
-      line-height: 1.2;
+      line-height: 1.25;
+      margin-bottom: 24px;
+      letter-spacing: -0.5px;
+      text-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
     p {
-      font-size: 1.1rem;
-      margin-bottom: 30px;
-      opacity: 0.9;
-      line-height: 1.6;
+      font-size: 1.15rem;
+      opacity: 0.95;
+      margin-bottom: 35px;
+      line-height: 1.7;
+      font-weight: 400;
     }
 
     .btn-hero {
-      background: $primary-green;
-      color: white;
+      background: $button-color;
+      color: $button-text;
       border: none;
-      padding: 12px 35px;
-      border-radius: 30px;
+      padding: 14px 40px;
+      border-radius: 50px;
       font-weight: 700;
       font-size: 1rem;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(0, 203, 169, 0.4);
-      transition: transform 0.2s;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      transition: all 0.3s ease;
 
       &:hover {
-        transform: translateY(-2px);
-        // Dùng màu cứng thay vì color.adjust để tránh lỗi version sass nếu chưa cấu hình
-        background: #00b395;
+        transform: translateY(-3px);
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+        background: #f1f5f9;
       }
     }
   }
 
-  /* Đường cong đáy banner */
   .wave-bottom {
     position: absolute;
     bottom: -1px;
     left: 0;
     width: 100%;
-    overflow: hidden;
     line-height: 0;
+    z-index: 1;
 
     svg {
-      position: relative;
-      display: block;
       width: calc(100% + 1.3px);
-      height: 80px;
+      height: 120px;
+      path { fill: $bg-light; fill-opacity: 1; }
     }
   }
 }
 
-// --- CŨ: TITLE (ĐÃ XÓA) ---
-// .page-title { ... }
+// --- CONTAINER ---
+.container.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
 
-// --- CẬP NHẬT: SEARCH BAR (Đè lên Banner) ---
-.search-bar-container {
-  margin-top: -35px; /* Kéo lên đè vào banner */
-  margin-bottom: 50px;
-  background: white;
-  border-radius: 12px;
-  padding: 15px 20px;
-  border: 1px solid #eee;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important; /* Tăng shadow lên */
-
-  // Thêm thuộc tính để đè lên
+// === 2. INTEGRATED SEARCH BAR (COPY TỪ SERVICE-LIST) ===
+.search-container-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: -115px; // Negative Margin để đè lên sóng
   position: relative;
   z-index: 10;
+  padding: 0 15px;
+  margin-bottom: 60px;
+}
 
+.integrated-search-bar {
+  background: white;
+  border-radius: 50px;
   display: flex;
   align-items: center;
+  padding: 5px;
+  width: 100%;
+  max-width: 800px;
+  height: 65px;
+  position: relative;
+  transition: box-shadow 0.3s;
+  box-shadow: 0 15px 35px rgba(15, 76, 117, 0.15);
 
-  .search-item {
+  &:focus-within {
+    box-shadow: 0 15px 40px rgba(15, 76, 117, 0.25) !important;
+  }
+
+  .input-section {
     flex: 1;
-    display: flex;
-    align-items: center;
-    padding: 5px 10px;
-
-    i { margin-right: 12px; font-size: 18px; color: #9aa0a6; }
-
-    input, select {
+    padding-left: 25px;
+    .search-input {
       width: 100%;
       border: none;
       outline: none;
-      font-size: 16px;
+      font-size: 1rem;
       color: $text-dark;
       background: transparent;
-      &::placeholder { color: #aaa; }
+      &::placeholder { color: #9ca3af; font-weight: 400; }
     }
-
-    select { cursor: pointer; }
   }
 
   .divider {
     width: 1px;
-    height: 35px;
-    background-color: #e0e0e0;
-    margin: 0 20px;
+    height: 30px;
+    background-color: #e5e7eb;
+    margin: 0 15px;
   }
 
-  .btn-search-icon {
-    background: $purple-dark;
-    border: none;
-    width: 45px; height: 45px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    color: white;
-    font-size: 18px;
-    margin-left: 10px;
-    transition: 0.3s;
-    box-shadow: 0 4px 10px rgba(101, 31, 255, 0.3);
-
-    &:hover { transform: scale(1.05); background: color.adjust($purple-dark, $lightness: -5%); }
-  }
-}
-
-/* --- GRID LAYOUT (Giữ nguyên) --- */
-.doctor-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 30px;
-}
-
-/* --- DOCTOR CARD (Giữ nguyên) --- */
-// ... (Phần code style cho .doctor-card giữ nguyên như cũ của ông) ...
-.doctor-card {
-  position: relative;
-  background: white;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border: 1px solid #f0f0f0;
-  display: flex;
-  flex-direction: column;
-
-  &:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 40px rgba(101, 31, 255, 0.15);
-  }
-
-  // 1. Header Gradient
-  .card-header-bg {
-    height: 130px;
-    background: linear-gradient(135deg, #6200ea 0%, #b388ff 100%);
+  .filter-section {
     position: relative;
+    cursor: pointer;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    min-width: 200px; // Rộng hơn chút vì tên chuyên khoa dài
+    justify-content: space-between;
+    user-select: none;
 
-    svg {
-      position: absolute; bottom: -1px; width: 100%; height: 50px;
-    }
-  }
-
-  // 2. Avatar
-  .avatar-wrapper {
-    width: 110px; height: 110px;
-    margin: -75px auto 10px;
-    position: relative; z-index: 2;
-    padding: 4px;
-    background: white;
-    border-radius: 50%;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-
-    img {
-      width: 100%; height: 100%;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-  }
-
-  // 3. Body
-  .card-body {
-    padding: 0 20px 20px;
-    text-align: center;
-    flex: 1;
-
-    .doc-name {
-      font-size: 18px; font-weight: 700; color: #1a237e; margin: 10px 0 5px;
+    .selected-text {
+      font-weight: 500;
+      color: #374151;
+      font-size: 0.95rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 180px;
     }
 
-    .doc-specialty {
-      font-size: 14px; color: #888; font-style: italic; margin-bottom: 20px;
-    }
+    &:hover .selected-text { color: #0f4c75; }
 
-    .workplace-info {
-      text-align: left;
-      background: #f8f9fa;
-      padding: 15px;
+    .dropdown-menu {
+      position: absolute;
+      top: 130%; right: -10px;
+      background: white;
       border-radius: 12px;
-      margin-bottom: 10px;
+      padding: 8px;
+      min-width: 250px;
+      z-index: 100;
+      border: 1px solid #f3f4f6;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      max-height: 300px;
+      overflow-y: auto;
+      animation: fadeInDropdown 0.2s ease-out;
 
-      .wp-item {
-        display: flex; align-items: flex-start;
-        margin-bottom: 8px; font-size: 13px; color: #555;
-
-        i { color: #5c6bc0; margin-right: 10px; margin-top: 3px; min-width: 15px; }
-        span { line-height: 1.4; }
+      .dropdown-item {
+        padding: 10px 16px;
+        border-radius: 8px;
+        color: #4b5563;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+        cursor: pointer;
+        &:hover { background-color: #f0f9ff; color: #0f4c75; }
       }
     }
   }
 
-  // 4. Footer
-  .card-footer {
-    padding: 15px 20px;
-    background: #fff;
-    border-top: 1px dashed #eee;
+  .search-btn {
+    width: 50px;
+    height: 50px;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+    margin-right: 2px;
+    flex-shrink: 0;
 
-    .exp-badge {
-      background: #e8eaf6;
-      color: #3949ab;
-      font-size: 13px; font-weight: 600;
-      padding: 8px 15px;
-      border-radius: 20px;
-      display: inline-flex; align-items: center; gap: 8px;
-      width: 100%;
-    }
-  }
-
-  .overlay-link {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    z-index: 5; cursor: pointer;
+    i { font-size: 1.1rem; font-weight: bold; }
+    &:hover { background-color: #1d4ed8; transform: scale(1.05); }
   }
 }
 
-// Responsive
+@keyframes fadeInDropdown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.rotate-180 { transform: rotate(180deg); }
+
+// Responsive Search Bar
 @media (max-width: 768px) {
-  .hero-section {
-      padding: 60px 0 80px;
-      text-align: center;
-      .hero-content h1 { font-size: 2rem; }
-  }
-  .search-bar-container {
-    margin-top: 0; // Mobile thì không đè nữa
-    flex-direction: column; padding: 20px;
-    .search-item { width: 100%; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+  .search-container-wrapper { margin-top: -30px; }
+  .integrated-search-bar {
+    flex-direction: column; height: auto; border-radius: 20px; padding: 15px; gap: 10px;
     .divider { display: none; }
-    .btn-search-icon { width: 100%; border-radius: 12px; margin-left: 0; }
+    .input-section { width: 100%; padding: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+    .filter-section { width: 100%; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 10px; .dropdown-menu { left: 0; width: 100%; top: 100%; } }
+    .search-btn { width: 100%; border-radius: 12px; margin-top: 5px; }
+  }
+  .hero-section { padding: 60px 0 100px; text-align: center; .hero-content h1 { font-size: 1.8rem; } }
+}
+
+// === 3. DOCTOR GRID & CARDS ===
+.doctor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 30px;
+}
+
+.doctor-card {
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid transparent;
+  padding-bottom: 20px;
+
+  &:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(15, 76, 117, 0.15);
+    border-color: rgba(50, 130, 184, 0.3);
+
+    .btn-book-doc {
+      background: $primary-gradient;
+      color: white;
+    }
+  }
+
+  // Hình nền lượn sóng nhỏ trong card
+  .card-bg-shape {
+    height: 80px;
+    overflow: hidden;
+    svg {
+      width: 100%; height: 100%;
+      path { fill: #f1f5f9; }
+    }
+  }
+
+  .avatar-wrapper {
+    width: 100px; height: 100px;
+    margin: -50px auto 15px; // Kéo avatar lên đè vào shape
+    position: relative;
+    border-radius: 50%;
+    border: 4px solid white;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    overflow: hidden;
+    background: white;
+
+    img { width: 100%; height: 100%; object-fit: cover; }
+  }
+
+  .card-body {
+    padding: 0 20px;
+    text-align: center;
+    flex-grow: 1;
+
+    .doc-name {
+      font-size: 1.2rem; font-weight: 700; color: $text-dark;
+      margin-bottom: 5px;
+    }
+    .doc-specialty {
+      color: #0f4c75; font-weight: 600; font-size: 0.9rem;
+      margin-bottom: 15px;
+    }
+
+    .workplace-info {
+      text-align: left;
+      background: #f8faff;
+      padding: 12px;
+      border-radius: 12px;
+      margin-bottom: 15px;
+
+      .wp-item {
+        display: flex; align-items: center;
+        margin-bottom: 5px; font-size: 0.85rem; color: #64748b;
+        &:last-child { margin-bottom: 0; }
+        i { color: #3282b8; margin-right: 8px; width: 16px; }
+      }
+    }
+  }
+
+  .card-footer {
+    text-align: center;
+    padding: 0 20px;
+
+    .btn-book-doc {
+      width: 100%;
+      padding: 10px;
+      border-radius: 25px;
+      border: 1px solid #0f4c75;
+      background: transparent;
+      color: #0f4c75;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 0;
+  color: #94a3b8;
+
+  p { margin: 15px 0; font-size: 1.1rem; }
+
+  .btn-reset {
+    background: transparent;
+    border: 1px solid #0f4c75;
+    color: #0f4c75;
+    padding: 8px 25px;
+    border-radius: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    &:hover { background: #0f4c75; color: white; }
   }
 }

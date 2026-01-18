@@ -1,85 +1,116 @@
-<div class="p-4 bg-gray-50">
-  <div class="flex flex-column sm:flex-row justify-content-between align-items-center mb-4 gap-3">
-    <h2 class="text-2xl font-bold text-900 m-0">Báo cáo Doanh thu</h2>
+<div class="fadein">
+  <div class="flex flex-column sm:flex-row justify-content-between align-items-center mb-5 gap-3">
+    <div>
+        <h2 class="text-2xl font-bold text-800 m-0 mb-1">Tổng quan Phòng khám</h2>
+        <span class="text-gray-500 text-sm">Chào mừng trở lại, đây là tình hình kinh doanh hôm nay.</span>
+    </div>
 
-    <div class="flex align-items-center gap-2">
-        <span class="text-sm font-medium text-gray-600">Thời gian:</span>
+    <div class="flex align-items-center bg-white border-round-xl px-3 py-2 shadow-1">
+        <i class="pi pi-calendar text-gray-400 mr-2"></i>
         <p-calendar [(ngModel)]="rangeDates" selectionMode="range" [readonlyInput]="true"
-                    placeholder="Chọn khoảng ngày" (onClose)="onDateChange()" [showIcon]="true"
-                    dateFormat="dd/mm/yy" styleClass="w-full sm:w-20rem">
+                    placeholder="Chọn thời gian" (onClose)="onDateChange()"
+                    dateFormat="dd/mm/yy" styleClass="p-inputtext-sm border-none shadow-none w-15rem">
         </p-calendar>
+        <i class="pi pi-chevron-down text-gray-400 text-xs ml-2"></i>
     </div>
   </div>
 
-  <div *ngIf="isLoading" class="flex flex-column align-items-center justify-content-center p-6 bg-white border-round shadow-1" style="height: 400px;">
-      <i class="pi pi-spin pi-spinner text-5xl text-blue-500 mb-3"></i>
-      <span class="text-gray-500 font-medium">Đang tính toán số liệu...</span>
+  <div *ngIf="isLoading" class="flex flex-column align-items-center justify-content-center modern-card h-20rem">
+      <i class="pi pi-spin pi-spinner text-4xl text-blue-500 mb-3"></i>
+      <span class="text-gray-500">Đang tải dữ liệu...</span>
   </div>
 
-  <div *ngIf="!isLoading && stats" class="fadein animation-duration-300">
+  <div *ngIf="!isLoading && stats" class="fadein">
 
-      <div class="grid mb-4">
+      <div class="grid mb-5">
         <div class="col-12 md:col-4">
-          <div class="card p-3 shadow-1 border-round bg-white flex align-items-center h-full hover:shadow-2 transition-all transition-duration-200">
-            <div class="bg-blue-100 p-3 border-round mr-3 flex align-items-center justify-content-center" style="width: 56px; height: 56px">
-                <i class="pi pi-dollar text-blue-600 text-2xl"></i>
-            </div>
-            <div>
-              <span class="text-500 font-medium text-sm uppercase">Tổng doanh thu</span>
-              <div class="text-2xl font-bold mt-1 text-900">
-                  {{ stats.totalRevenue | currency:'VND':'symbol':'1.0-0':'vi-VN' }}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-12 md:col-4">
-          <div class="card p-3 shadow-1 border-round bg-white flex align-items-center h-full hover:shadow-2 transition-all transition-duration-200">
-            <div class="bg-purple-100 p-3 border-round mr-3 flex align-items-center justify-content-center" style="width: 56px; height: 56px">
-                <i class="pi pi-receipt text-purple-600 text-2xl"></i>
-            </div>
-            <div>
-              <span class="text-500 font-medium text-sm uppercase">Số hóa đơn thành công</span>
-              <div class="text-2xl font-bold mt-1 text-900">{{ stats.totalInvoices }}</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-12 md:col-4">
-            <div class="card p-3 shadow-1 border-round bg-white h-full flex flex-column justify-content-center hover:shadow-2 transition-all transition-duration-200">
-                <div class="flex justify-content-between align-items-center">
-                    <div>
-                        <span class="text-500 font-medium text-sm uppercase">Hôm nay</span>
-                        <div class="text-2xl font-bold mt-1 text-900">
-                            {{ stats.todayRevenue | currency:'VND':'symbol':'1.0-0':'vi-VN' }}
-                        </div>
-                    </div>
-                    <div class="flex align-items-center px-2 py-1 border-round"
-                         [ngClass]="stats.growthRate >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
-                        <i class="pi text-xs mr-1" [ngClass]="stats.growthRate >= 0 ? 'pi-arrow-up' : 'pi-arrow-down'"></i>
-                        <span class="font-bold text-sm">{{ stats.growthRate | number:'1.0-1' }}%</span>
+          <div class="modern-card p-4 h-full flex flex-column justify-content-between">
+            <div class="flex justify-content-between align-items-start mb-3">
+                <div>
+                    <span class="text-gray-500 font-medium text-sm block mb-2">Tổng doanh thu</span>
+                    <div class="text-3xl font-bold text-gray-900">
+                        {{ stats.totalRevenue | currency:'VND':'symbol':'1.0-0':'vi-VN' }}
                     </div>
                 </div>
-                <span class="text-xs text-400 mt-2">So với ngày hôm qua</span>
+                <div class="icon-box bg-green-50 text-green-600">
+                    <i class="pi pi-dollar text-xl"></i>
+                </div>
+            </div>
+            <div class="flex align-items-center mt-2">
+                 <span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 border-round mr-2 flex align-items-center">
+                    <i class="pi pi-arrow-up text-xs mr-1"></i> 20.1%
+                 </span>
+                 <span class="text-gray-400 text-xs">so với tháng trước</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 md:col-4">
+            <div class="modern-card p-4 h-full flex flex-column justify-content-between">
+              <div class="flex justify-content-between align-items-start mb-3">
+                  <div>
+                      <span class="text-gray-500 font-medium text-sm block mb-2">Số lượt khám</span>
+                      <div class="text-3xl font-bold text-gray-900">
+                          {{ stats.totalInvoices }}
+                      </div>
+                  </div>
+                  <div class="icon-box bg-blue-50 text-blue-600">
+                      <i class="pi pi-users text-xl"></i>
+                  </div>
+              </div>
+              <div class="flex align-items-center mt-2">
+                   <span class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 border-round mr-2 flex align-items-center">
+                      <i class="pi pi-arrow-up text-xs mr-1"></i> 5.4%
+                   </span>
+                   <span class="text-gray-400 text-xs">so với tháng trước</span>
+              </div>
+            </div>
+        </div>
+
+        <div class="col-12 md:col-4">
+            <div class="modern-card p-4 h-full flex flex-column justify-content-between">
+              <div class="flex justify-content-between align-items-start mb-3">
+                  <div>
+                      <span class="text-gray-500 font-medium text-sm block mb-2">Doanh thu hôm nay</span>
+                      <div class="text-3xl font-bold text-gray-900">
+                          {{ stats.todayRevenue | currency:'VND':'symbol':'1.0-0':'vi-VN' }}
+                      </div>
+                  </div>
+                  <div class="icon-box bg-orange-50 text-orange-600">
+                      <i class="pi pi-bolt text-xl"></i>
+                  </div>
+              </div>
+              <div class="flex align-items-center mt-2">
+                   <span class="text-xs font-bold px-2 py-1 border-round mr-2 flex align-items-center"
+                        [ngClass]="stats.growthRate >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
+                      <i class="pi text-xs mr-1" [ngClass]="stats.growthRate >= 0 ? 'pi-arrow-up' : 'pi-arrow-down'"></i>
+                      {{ stats.growthRate | number:'1.0-1' }}%
+                   </span>
+                   <span class="text-gray-400 text-xs">so với hôm qua</span>
+              </div>
             </div>
         </div>
       </div>
 
-      <div class="grid mb-4">
+      <div class="grid mb-5">
         <div class="col-12 md:col-8">
-          <div class="card bg-white p-4 border-round shadow-1 h-full">
-            <h5 class="mb-4 text-lg font-bold text-900 border-bottom-1 surface-border pb-3">Xu hướng doanh thu</h5>
-            <div style="height: 320px;">
-                <p-chart type="bar" [data]="barData" [options]="barOptions" height="100%"></p-chart>
+          <div class="modern-card p-4 h-full">
+            <h5 class="m-0 mb-4 text-lg font-bold text-gray-800">Biểu đồ Doanh thu</h5>
+            <div style="height: 350px;">
+                <p-chart type="line" [data]="revenueChartData" [options]="revenueChartOptions" height="100%"></p-chart>
             </div>
           </div>
         </div>
 
         <div class="col-12 md:col-4">
-          <div class="card bg-white p-4 border-round shadow-1 h-full flex flex-column">
-            <h5 class="mb-4 text-lg font-bold text-900 border-bottom-1 surface-border pb-3">Cơ cấu nguồn thu</h5>
-            <div class="flex-1 flex align-items-center justify-content-center">
-                <p-chart type="doughnut" [data]="pieData" [options]="pieOptions" height="240px"></p-chart>
+          <div class="modern-card p-4 h-full flex flex-column">
+            <h5 class="m-0 mb-4 text-lg font-bold text-gray-800">Cơ cấu nguồn thu</h5>
+            <div class="flex-1 flex align-items-center justify-content-center relative">
+                <p-chart type="doughnut" [data]="pieData" [options]="pieOptions" height="250px" width="100%"></p-chart>
+                <div class="absolute text-center" style="top: 50%; left: 50%; transform: translate(-50%, -60%); pointer-events: none;">
+                    <span class="block text-3xl font-bold text-gray-800">100%</span>
+                    <span class="text-xs text-gray-500 uppercase">Tổng cộng</span>
+                </div>
             </div>
           </div>
         </div>
@@ -87,66 +118,69 @@
 
       <div class="grid">
         <div class="col-12 md:col-6">
-          <div class="card bg-white p-0 border-round shadow-1 overflow-hidden h-full">
-            <div class="p-4 border-bottom-1 surface-border bg-gray-50">
-                 <h5 class="m-0 text-lg font-bold text-900">Top 5 Dịch vụ & Thuốc</h5>
+          <div class="modern-card overflow-hidden h-full">
+            <div class="p-4 border-bottom-1 border-gray-100">
+                 <h5 class="m-0 text-lg font-bold text-gray-800">Top Dịch vụ & Thuốc</h5>
             </div>
-            <p-table [value]="stats.topServices" [rowHover]="true" styleClass="p-datatable-sm">
+            <p-table [value]="stats.topServices" [rowHover]="true">
                 <ng-template pTemplate="header">
                     <tr>
-                        <th class="bg-white">Tên</th>
-                        <th class="text-right bg-white">Doanh thu</th>
+                        <th>Tên sản phẩm</th>
+                        <th class="text-right">Doanh thu</th>
+                        <th class="text-right" style="width: 50px"></th>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="body" let-item>
                     <tr>
-                        <td class="font-medium text-700">{{ item.label }}</td>
-                        <td class="text-right font-bold text-900">
+                        <td>
+                            <span class="font-medium text-gray-700">{{ item.label }}</span>
+                        </td>
+                        <td class="text-right font-bold text-gray-900">
                             {{ item.value | currency:'VND':'symbol':'1.0-0':'vi-VN' }}
                         </td>
+                        <td class="text-right">
+                             <i class="pi pi-chevron-right text-gray-300 text-xs"></i>
+                        </td>
                     </tr>
-                </ng-template>
-                <ng-template pTemplate="emptymessage">
-                    <tr><td colspan="2" class="text-center p-4 text-500">Chưa có dữ liệu.</td></tr>
                 </ng-template>
             </p-table>
           </div>
         </div>
 
         <div class="col-12 md:col-6">
-          <div class="card bg-white p-0 border-round shadow-1 overflow-hidden h-full">
-            <div class="p-4 border-bottom-1 surface-border bg-gray-50">
-                 <h5 class="m-0 text-lg font-bold text-900">Top 5 Bác sĩ tiêu biểu</h5>
+          <div class="modern-card overflow-hidden h-full">
+            <div class="p-4 border-bottom-1 border-gray-100">
+                 <h5 class="m-0 text-lg font-bold text-gray-800">Bác sĩ tiêu biểu</h5>
             </div>
-            <p-table [value]="stats.topDoctors" [rowHover]="true" styleClass="p-datatable-sm">
+            <p-table [value]="stats.topDoctors" [rowHover]="true">
                 <ng-template pTemplate="header">
                     <tr>
-                        <th class="bg-white">Bác sĩ</th>
-                        <th class="text-right bg-white">Đóng góp</th>
+                        <th>Bác sĩ</th>
+                        <th class="text-right">Đóng góp</th>
+                        <th class="text-right" style="width: 50px"></th>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="body" let-item>
                     <tr>
                         <td>
                             <div class="flex align-items-center">
-                                <div class="w-2rem h-2rem border-circle bg-blue-100 flex align-items-center justify-content-center mr-2">
-                                    <i class="pi pi-user text-blue-600 text-sm"></i>
+                                <div class="w-2rem h-2rem border-circle bg-blue-50 flex align-items-center justify-content-center mr-3">
+                                    <span class="text-blue-600 font-bold text-xs">{{ item.label.charAt(0) }}</span>
                                 </div>
-                                <span class="font-medium text-700">{{ item.label }}</span>
+                                <span class="font-medium text-gray-700">{{ item.label }}</span>
                             </div>
                         </td>
                         <td class="text-right font-bold text-green-600">
                             {{ item.value | currency:'VND':'symbol':'1.0-0':'vi-VN' }}
                         </td>
+                        <td class="text-right">
+                            <i class="pi pi-chevron-right text-gray-300 text-xs"></i>
+                       </td>
                     </tr>
-                </ng-template>
-                <ng-template pTemplate="emptymessage">
-                    <tr><td colspan="2" class="text-center p-4 text-500">Chưa có dữ liệu.</td></tr>
                 </ng-template>
             </p-table>
           </div>
         </div>
       </div>
-
   </div>
 </div>

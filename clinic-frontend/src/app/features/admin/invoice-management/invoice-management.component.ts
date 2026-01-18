@@ -371,5 +371,16 @@ export class InvoiceManagementComponent implements OnInit {
                 icon: 'pi pi-info-circle'
             };
     }
-}
+  }
+
+  getInvoiceTypeConfig(type: string): any {
+      switch (type) {
+          case 'BOOKING':
+              return { label: 'Phí đặt lịch', severity: 'warning', icon: 'pi pi-clock' };
+          case 'FINAL':
+              return { label: 'Tất toán', severity: 'info', icon: 'pi pi-check-circle' };
+          default:
+              return { label: 'Khác', severity: 'secondary', icon: 'pi pi-file' };
+      }
+  }
 }

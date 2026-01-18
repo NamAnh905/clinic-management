@@ -1,234 +1,326 @@
 @use "sass:color";
 
 // --- VARIABLES ---
-$purple-gradient: linear-gradient(135deg, #6200ea 0%, #9046fe 100%); /* Tím Jio */
-$primary-green: #00cba9; /* Xanh ngọc nút bấm */
-$text-dark: #333;
-$text-light: #666;
-$bg-input: #f3f4f6;
+$primary-gradient: linear-gradient(135deg, #0f4c75 0%, #3282b8 100%);
+$primary-color: #0f4c75;
+$accent-color: #3282b8;
+$text-main: #1e293b;
+$text-sub: #64748b;
+$card-bg: #ffffff;
+$bg-light: #f8faff;
+$radius: 16px;
+$button-color: #ffffff;
+$button-text: #0f4c75;
 
 .specialty-page-wrapper {
-  background-color: white;
+  background-color: $bg-light;
   min-height: 100vh;
-  padding-bottom: 50px;
+  padding-bottom: 60px;
 }
 
-// --- 1. HERO SECTION (BANNER) ---
+// --- 1. HERO SECTION ---
 .hero-section {
   position: relative;
-  background: $purple-gradient;
-  padding: 80px 0 140px; /* Padding đáy lớn để chứa đường cong */
+  background: $primary-gradient;
+  padding: 100px 0 180px;
   color: white;
-  text-align: left;
+  margin-bottom: 0;
+  overflow: visible;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.05) 0%, transparent 25%),
+                      radial-gradient(circle at 80% 20%, rgba(255,255,255,0.05) 0%, transparent 25%);
+    pointer-events: none;
+  }
 
   .container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px;
+    position: relative;
+    z-index: 2;
   }
 
   .hero-content {
-    max-width: 600px;
+    max-width: 650px;
 
     h1 {
       font-size: 3rem;
       font-weight: 800;
-      margin-bottom: 20px;
-      line-height: 1.2;
+      line-height: 1.25;
+      margin-bottom: 24px;
+      letter-spacing: -0.5px;
+      text-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
     p {
-      font-size: 1.1rem;
-      margin-bottom: 30px;
-      opacity: 0.9;
-      line-height: 1.6;
-    }
-
-    .btn-hero {
-      background: $primary-green;
-      color: white;
-      border: none;
-      padding: 12px 35px;
-      border-radius: 30px;
-      font-weight: 700;
-      font-size: 1rem;
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(0, 203, 169, 0.4);
-      transition: transform 0.2s;
-
-      &:hover {
-        transform: translateY(-2px);
-        // Thay vì darken/lighten, dùng color.adjust hoặc hardcode màu nếu muốn an toàn
-        background: #00b395;
-      }
+      font-size: 1.15rem;
+      opacity: 0.95;
+      margin-bottom: 35px;
+      line-height: 1.7;
+      font-weight: 400;
     }
   }
 
-  /* Đường cong đáy banner */
   .wave-bottom {
     position: absolute;
     bottom: -1px;
     left: 0;
     width: 100%;
-    overflow: hidden;
     line-height: 0;
+    z-index: 1;
 
     svg {
-      position: relative;
-      display: block;
       width: calc(100% + 1.3px);
-      height: 80px;
+      height: 120px;
+      path { fill: $bg-light; fill-opacity: 1; }
     }
   }
 }
 
-// --- 2. SEARCH CONTAINER (Đè lên Banner) ---
-.search-container {
-  margin-top: -35px; /* Kéo lên đè vào banner */
-  margin-bottom: 60px;
-  background: white;
-  border-radius: 12px;
-  padding: 10px;
-  position: relative;
-  z-index: 10;
-  max-width: 800px;
-  margin-left: auto;
-  margin-right: auto;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-
-  .search-box {
-    display: flex;
-    align-items: center;
-    padding: 0 20px;
-    height: 50px;
-    background: white;
-    border-radius: 8px;
-
-    input {
-      width: 100%;
-      height: 100%;
-      border: none;
-      outline: none;
-      font-size: 16px;
-      color: $text-dark;
-
-      &::placeholder { color: #9ca3af; }
-    }
-
-    .search-icon {
-      font-size: 20px;
-      color: $primary-green;
-      cursor: pointer;
-      transition: 0.2s;
-
-      &:hover { transform: scale(1.1); }
-    }
-  }
-}
-
-// --- 3. GRID & CARD ---
+// --- CONTAINER CHÍNH ---
 .container.main-content {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
 }
 
-.specialty-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 30px;
+// --- 2. INTEGRATED SEARCH BAR ---
+.search-container-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: -115px; // Negative Margin để đè lên Hero
+  position: relative;
+  z-index: 10;
+  padding: 0 15px;
+  margin-bottom: 60px;
 }
 
-// Card Chuyên khoa (Style Wave Gradient ở header)
-.spec-card {
-  position: relative;
+.integrated-search-bar {
   background: white;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border: 1px solid #f0f0f0;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  padding: 5px;
+  width: 100%;
+  max-width: 700px;
+  height: 65px;
+  position: relative;
+  transition: box-shadow 0.3s;
+  box-shadow: 0 15px 35px rgba(15, 76, 117, 0.15);
+
+  &:focus-within {
+    box-shadow: 0 15px 40px rgba(15, 76, 117, 0.25) !important;
+  }
+
+  .input-section {
+    flex: 1;
+    padding-left: 25px;
+
+    .search-input {
+      width: 100%;
+      border: none;
+      outline: none;
+      font-size: 1rem;
+      color: #2d3436;
+      background: transparent;
+      &::placeholder { color: #9ca3af; font-weight: 400; }
+    }
+  }
+
+  .search-btn {
+    width: 50px;
+    height: 50px;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+    margin-right: 2px;
+    flex-shrink: 0;
+
+    i { font-size: 1.1rem; font-weight: bold; }
+    &:hover { background-color: #1d4ed8; transform: scale(1.05); }
+  }
+}
+
+// Responsive Search Bar & Hero
+@media (max-width: 768px) {
+  .search-container-wrapper { margin-top: -30px; }
+  .integrated-search-bar {
+    height: auto; padding: 10px;
+    .input-section { padding-left: 15px; }
+    .search-btn { width: 45px; height: 45px; }
+  }
+  .hero-section {
+    padding: 60px 0 100px;
+    text-align: center;
+    .hero-content h1 { font-size: 1.8rem; }
+  }
+}
+
+// --- 3. GRID SYSTEM ---
+.specialty-grid {
+  display: grid;
+  // Tự động chia cột: Tối thiểu 280px, tối đa 1fr
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 30px;
+  padding-bottom: 40px;
+}
+
+// --- 4. NEW CARD DESIGN (MODERN CLEAN) ---
+.spec-card {
+  background: $card-bg;
+  border-radius: $radius;
+  overflow: hidden; // Để ảnh không tràn ra ngoài bo góc
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04); // Bóng đổ nhẹ, tinh tế
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+  border: 1px solid rgba(0,0,0,0.03);
   display: flex;
   flex-direction: column;
   height: 100%;
 
+  // Hover Effect: Nổi lên và đậm bóng
   &:hover {
     transform: translateY(-8px);
-    box-shadow: 0 20px 40px rgba(101, 31, 255, 0.15);
+    box-shadow: 0 20px 40px rgba(15, 76, 117, 0.12);
 
-    .icon-wrapper {
-        transform: scale(1.1) rotate(-5deg);
+    // Zoom ảnh bên trong
+    .card-thumb img,
+    .card-thumb .no-image-placeholder i {
+      transform: scale(1.1);
+    }
+
+    // Đổi màu nút text
+    .card-footer .btn-text {
+      color: $accent-color;
+      padding-left: 5px; // Di chuyển chữ nhẹ sang phải
     }
   }
 
-  // Header Gradient & Wave
-  .card-header-bg {
-    height: 120px;
-    background: linear-gradient(135deg, #6200ea 0%, #b388ff 100%);
+  // A. Phần Ảnh Thumbnail
+  .card-thumb {
+    width: 100%;
+    height: 180px; // Chiều cao cố định
     position: relative;
+    overflow: hidden;
+    background-color: #f1f5f9; // Màu nền xám sẽ hiện ra ở chỗ trống
 
-    svg {
-      position: absolute; bottom: -1px; width: 100%; height: 50px;
+    img {
+      width: 100%;
+      height: 100%;
+
+      // QUAN TRỌNG: Dùng 'contain' để ảnh không bị mất góc
+      object-fit: contain;
+
+      object-position: center;
+      transition: transform 0.5s ease; // Zoom chậm mượt
+    }
+
+    // Fallback khi không có ảnh
+    .no-image-placeholder {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      i {
+        font-size: 3.5rem;
+        color: rgba($primary-color, 0.2); // Màu icon nhạt
+        transition: transform 0.5s ease;
+      }
     }
   }
 
-  // Icon Wrapper (Nổi lên)
-  .icon-wrapper {
-    width: 90px; height: 90px;
-    margin: -60px auto 15px; /* Đẩy lên đè vào header */
-    position: relative; z-index: 2;
-    background: white;
-    border-radius: 50%;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    display: flex; align-items: center; justify-content: center;
-    transition: transform 0.3s ease;
+  // B. Phần Nội dung
+  .card-content {
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
 
-    i {
-      font-size: 40px;
-      // Gradient text cho icon
-      background: -webkit-linear-gradient(#6200ea, #b388ff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-  }
+    .spec-name {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: $text-main;
+      margin: 0 0 10px 0;
+      line-height: 1.4;
 
-  .card-body {
-    padding: 0 25px 30px;
-    text-align: center;
-    flex: 1;
-
-    h3 {
-      font-size: 20px; font-weight: 700; color: #1a237e;
-      margin: 0 0 10px;
+      // Giới hạn 2 dòng tên
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
 
-    .desc {
-      font-size: 14px; color: $text-light; line-height: 1.6;
+    .spec-desc {
+      font-size: 0.925rem;
+      color: $text-sub;
+      line-height: 1.6;
+      margin-bottom: 20px;
+
+      // Giới hạn 3 dòng mô tả
       display: -webkit-box;
       -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
       overflow: hidden;
+      flex-grow: 1; // Đẩy footer xuống đáy
+    }
+
+    .card-footer {
+      padding-top: 15px;
+      border-top: 1px solid #f1f5f9;
+
+      .btn-text {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: $primary-color;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s ease;
+
+        i { font-size: 0.8rem; margin-top: 1px; }
+      }
     }
   }
 
+  // Link ảo phủ toàn bộ card (để click vào đâu cũng ăn)
   .overlay-link {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    z-index: 5; cursor: pointer;
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 10;
+    cursor: pointer;
   }
 }
 
-// Empty State
+// --- 5. EMPTY STATE ---
 .no-result {
-  text-align: center; padding: 50px 0;
-  p { color: $text-light; margin-top: 15px; }
-}
+  text-align: center;
+  padding: 60px 0;
 
-// Responsive
-@media (max-width: 768px) {
-  .hero-section {
-    padding: 60px 0 80px;
-    text-align: center;
-    .hero-content h1 { font-size: 2rem; }
+  i { color: #cbd5e1; font-size: 3rem; }
+
+  .btn-reset {
+    background: transparent;
+    border: 1px solid #0f4c75;
+    color: #0f4c75;
+    padding: 8px 25px;
+    border-radius: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: all 0.2s;
+    &:hover { background: #0f4c75; color: white; }
   }
-  .search-container { margin-top: 0; margin-bottom: 30px; }
 }

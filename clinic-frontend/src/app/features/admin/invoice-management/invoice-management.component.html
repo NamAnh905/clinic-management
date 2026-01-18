@@ -3,7 +3,7 @@
 
 <div class="flex flex-column h-full">
     <div class="mb-3 flex-none">
-        <h2 class="text-2xl font-bold text-900 m-0">Quản lý Hóa đơn & Thu ngân</h2>
+        <h2 class="text-2xl font-bold text-900 m-0">Quản lý Hóa đơn</h2>
     </div>
 
     <div class="surface-card shadow-1 border-round-xl flex flex-column bg-white overflow-hidden"
@@ -36,8 +36,11 @@
                         <th style="width: 80px">ID</th>
                         <th style="width: 150px">Mã GD</th>
                         <th style="min-width: 180px">Bệnh nhân</th>
+
+                        <th style="width: 130px" class="text-center">Loại</th>
+
                         <th style="min-width: 150px">Tổng tiền</th>
-                        <th style="min-width: 180px">Trạng thái</th>
+                        <th style="min-width: 150px">Trạng thái</th>
                         <th style="min-width: 150px">Ngày tạo</th>
                         <th style="min-width: 150px">Phương thức</th>
                         <th class="text-center" style="width: 140px">Thao tác</th>
@@ -55,6 +58,14 @@
                             </span>
                         </td>
                         <td><span class="font-bold text-900">{{ inv.patientName }}</span></td>
+
+                        <td class="text-center">
+                            <p-tag [value]="getInvoiceTypeConfig(inv.type).label"
+                                   [severity]="getInvoiceTypeConfig(inv.type).severity"
+                                   [icon]="getInvoiceTypeConfig(inv.type).icon">
+                            </p-tag>
+                        </td>
+
                         <td><span class="font-bold text-primary text-lg">{{ formatCurrency(inv.totalAmount) }}</span></td>
                         <td><span [class]="'status-badge ' + getStatusClass(inv.paymentStatus)">{{ getStatusLabel(inv.paymentStatus) }}</span></td>
                         <td>
@@ -79,7 +90,7 @@
                 </ng-template>
 
                 <ng-template pTemplate="emptymessage">
-                    <tr><td colspan="7" class="text-center p-4 text-500">Không tìm thấy hóa đơn nào.</td></tr>
+                    <tr><td colspan="9" class="text-center p-4 text-500">Không tìm thấy hóa đơn nào.</td></tr>
                 </ng-template>
             </p-table>
         </div>
@@ -101,6 +112,12 @@
                     <div class="text-500 text-sm mb-1">Bệnh nhân</div>
                     <div class="text-900 font-medium text-lg text-primary">{{ currentInvoice.patientName }}</div>
                 </div>
+                <div class="text-center">
+                    <div class="text-500 text-sm mb-1">Loại phiếu</div>
+                    <p-tag [value]="getInvoiceTypeConfig(currentInvoice.type).label"
+                           [severity]="getInvoiceTypeConfig(currentInvoice.type).severity">
+                    </p-tag>
+                </div>
                 <div class="text-right">
                     <div class="text-500 text-sm mb-1">Trạng thái</div>
                     <span [class]="'status-badge ' + getStatusClass(currentInvoice.paymentStatus)">
@@ -109,9 +126,10 @@
                 </div>
             </div>
 
-            <div *ngIf="currentInvoice.paymentStatus !== 'PAID'" class="p-3 surface-50 border-round-xl border-1 surface-border mb-4">
+            <div *ngIf="currentInvoice.paymentStatus !== 'PAID' && currentInvoice.type === 'FINAL'"
+                 class="p-3 surface-50 border-round-xl border-1 surface-border mb-4">
                 <div class="font-bold text-900 mb-3 flex align-items-center">
-                    <i class="pi pi-plus-circle text-primary mr-2"></i>Thêm Dịch vụ / Thuốc
+                    <i class="pi pi-plus-circle text-primary mr-2"></i>Thêm Dịch vụ / Thuốc phát sinh
                 </div>
 
                 <div class="formgrid grid align-items-end">
@@ -155,6 +173,15 @@
                 </div>
             </div>
 
+            <div *ngIf="currentInvoice.type === 'BOOKING' && currentInvoice.paymentStatus !== 'PAID'"
+                 class="mb-3 p-3 bg-yellow-50 border-round border-1 border-yellow-200 flex align-items-center text-yellow-800">
+                <i class="pi pi-info-circle text-xl mr-3"></i>
+                <div>
+                    <span class="font-bold">Lưu ý:</span> Đây là hóa đơn <span class="font-bold">Đặt cọc / Phí khám trước</span>.
+                    Không thể thêm thuốc hay dịch vụ vào hóa đơn này. Các chi phí phát sinh sẽ được tính vào hóa đơn tất toán sau.
+                </div>
+            </div>
+
             <p-table [value]="invoiceDetails"
                      [loading]="loadingDetails"
                      [(selection)]="selectedInvoiceItems"
@@ -172,7 +199,7 @@
                         <th style="width: 100px" class="text-center">Số lượng</th>
                         <th style="width: 130px" class="text-right">Đơn giá</th>
                         <th style="width: 130px" class="text-right">Thành tiền</th>
-                        <th style="width: 60px" *ngIf="currentInvoice.paymentStatus !== 'PAID'"></th>
+                        <th style="width: 60px" *ngIf="currentInvoice.paymentStatus !== 'PAID' && currentInvoice.type === 'FINAL'"></th>
                     </tr>
                 </ng-template>
 
@@ -192,7 +219,7 @@
                         <td class="text-right font-bold text-900">
                             {{ formatCurrency(item.quantity * item.unitPrice) }}
                         </td>
-                        <td class="text-center" *ngIf="currentInvoice.paymentStatus !== 'PAID'">
+                        <td class="text-center" *ngIf="currentInvoice.paymentStatus !== 'PAID' && currentInvoice.type === 'FINAL'">
                              <button pButton icon="pi pi-trash"
                                      class="p-button-text p-button-danger p-button-sm p-0"
                                      (click)="deleteInvoiceDetail(item.detailId)"
@@ -208,7 +235,7 @@
                         <td class="text-right font-bold text-xl text-primary">
                             {{ formatCurrency(selectedTotalAmount) }}
                         </td>
-                        <td *ngIf="currentInvoice.paymentStatus !== 'PAID'"></td>
+                        <td *ngIf="currentInvoice.paymentStatus !== 'PAID' && currentInvoice.type === 'FINAL'"></td>
                     </tr>
                 </ng-template>
 
@@ -254,7 +281,10 @@
             </div>
         </div>
 
-        <h2 class="invoice-title">HÓA ĐƠN THANH TOÁN</h2>
+        <h2 class="invoice-title">
+            {{ currentInvoice.type === 'BOOKING' ? 'BIÊN LAI THU PHÍ ĐẶT LỊCH' : 'HÓA ĐƠN THANH TOÁN' }}
+        </h2>
+
         <div class="invoice-meta">
             Ngày lập: {{ currentInvoice.createdAt | date:'dd/MM/yyyy HH:mm' }}
             <span *ngIf="!currentInvoice.createdAt">

@@ -15,9 +15,18 @@
         <p class="text-600 mb-5">Hóa đơn của bạn đã được thanh toán và cập nhật vào hệ thống.</p>
 
         <button pButton
-                label="Quay về danh sách Hóa đơn"
-                icon="pi pi-arrow-left"
+                label="Hoàn tất"
+                icon="pi pi-check"
                 class="p-button-success p-button-rounded px-4 py-2 shadow-2"
+                (click)="goBack()">
+        </button>
+    </div>
+
+    <div *ngIf="!loading && !success" class="text-center fadein animation-duration-500">
+        <button pButton
+                label="Quay lại"
+                icon="pi pi-arrow-left"
+                class="p-button-secondary p-button-rounded px-4 py-2 shadow-2"
                 (click)="goBack()">
         </button>
     </div>

@@ -27,6 +27,9 @@ public class Specialty {
     @Column(columnDefinition = "TEXT")
     String description;
 
+    @Column(length = 500)
+    String image;
+
     boolean deleted = false;
 
     @OneToMany(mappedBy = "specialty")

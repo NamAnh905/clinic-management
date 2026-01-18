@@ -19,5 +19,6 @@ public class SpecialtyResponse {
     Long specialtyId;
     String name;
     String description;
+    String image;
     Long defaultServiceId;
 }

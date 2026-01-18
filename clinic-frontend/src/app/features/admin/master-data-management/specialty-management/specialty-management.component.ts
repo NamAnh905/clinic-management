@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } 
 
 // Services
 import { MasterDataService } from '../../../../core/services/master-data.service';
+import { UploadService } from '../../../../core/services/upload.service'; // <--- Import UploadService
 import { SpecialtyResponse } from '../../../../models/master-data.model';
 
 // PrimeNG Modules
@@ -13,8 +14,9 @@ import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { InputTextareaModule } from 'primeng/inputtextarea'; // Thêm cái này cho mô tả
+import { InputTextareaModule } from 'primeng/inputtextarea';
 import { MessageService, ConfirmationService } from 'primeng/api';
+import { ImageModule } from 'primeng/image'; // <--- Thêm module Image để xem ảnh to
 
 @Component({
   selector: 'app-specialty-management',
@@ -22,31 +24,32 @@ import { MessageService, ConfirmationService } from 'primeng/api';
   imports: [
     CommonModule, ReactiveFormsModule, FormsModule,
     TableModule, ButtonModule, InputTextModule, InputTextareaModule,
-    DialogModule, ToastModule, ConfirmDialogModule
+    DialogModule, ToastModule, ConfirmDialogModule, ImageModule
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './specialty-management.component.html',
   styleUrls: ['./specialty-management.component.scss']
 })
 export class SpecialtyManagementComponent implements OnInit {
-  // Data
   specialties: SpecialtyResponse[] = [];
   totalRecords: number = 0;
   loading: boolean = false;
 
-  // Pagination Params
   page: number = 1;
   size: number = 10;
   keyword: string = '';
 
-  // Dialog & Form
   specialtyDialog: boolean = false;
   specialtyForm: FormGroup;
   submitted: boolean = false;
   isEditMode: boolean = false;
 
-  // DI
+  // --- Image Logic ---
+  uploadedImageUrl: string = '';
+  isUploading: boolean = false;
+
   private masterDataService = inject(MasterDataService);
+  private uploadService = inject(UploadService); // <--- Inject
   private messageService = inject(MessageService);
   private confirmationService = inject(ConfirmationService);
   private fb = inject(FormBuilder);
@@ -70,7 +73,6 @@ export class SpecialtyManagementComponent implements OnInit {
       this.size = event.rows;
     }
 
-    // Gọi API lấy danh sách chuyên khoa
     this.masterDataService.getAllSpecialties(this.page, this.size, this.keyword).subscribe({
       next: (res) => {
         this.specialties = res.result?.data || [];
@@ -84,6 +86,7 @@ export class SpecialtyManagementComponent implements OnInit {
   openNew() {
     this.isEditMode = false;
     this.specialtyForm.reset();
+    this.uploadedImageUrl = ''; // Reset ảnh
     this.submitted = false;
     this.specialtyDialog = true;
   }
@@ -95,7 +98,29 @@ export class SpecialtyManagementComponent implements OnInit {
       name: item.name,
       description: item.description
     });
+    this.uploadedImageUrl = item.image || ''; // Load ảnh cũ vào
     this.specialtyDialog = true;
+  }
+
+  // --- Xử lý upload ảnh ---
+  onFileSelected(event: any) {
+    const file: File = event.target.files[0];
+    if (file) {
+      this.isUploading = true;
+      this.uploadService.uploadImage(file).subscribe({
+        next: (res) => {
+          if (res.result) {
+            this.uploadedImageUrl = res.result; // Lưu URL trả về từ Cloudinary
+            this.messageService.add({ severity: 'success', summary: 'Upload', detail: 'Tải ảnh thành công!' });
+          }
+          this.isUploading = false;
+        },
+        error: () => {
+          this.messageService.add({ severity: 'error', summary: 'Lỗi', detail: 'Upload ảnh thất bại' });
+          this.isUploading = false;
+        }
+      });
+    }
   }
 
   saveSpecialty() {
@@ -104,11 +129,15 @@ export class SpecialtyManagementComponent implements OnInit {
 
     const val = this.specialtyForm.value;
 
-    if (this.isEditMode) {
-      this.masterDataService.updateSpecialty(val.specialtyId, {
+    // Tạo payload có kèm image
+    const payload = {
         name: val.name,
-        description: val.description
-      }).subscribe({
+        description: val.description,
+        image: this.uploadedImageUrl // <--- Gửi kèm URL ảnh
+    };
+
+    if (this.isEditMode) {
+      this.masterDataService.updateSpecialty(val.specialtyId, payload).subscribe({
         next: () => {
           this.messageService.add({ severity: 'success', summary: 'Thành công', detail: 'Đã cập nhật chuyên khoa' });
           this.specialtyDialog = false;
@@ -116,10 +145,7 @@ export class SpecialtyManagementComponent implements OnInit {
         }
       });
     } else {
-      this.masterDataService.createSpecialty({
-        name: val.name,
-        description: val.description
-      }).subscribe({
+      this.masterDataService.createSpecialty(payload).subscribe({
         next: () => {
           this.messageService.add({ severity: 'success', summary: 'Thành công', detail: 'Đã thêm chuyên khoa mới' });
           this.specialtyDialog = false;

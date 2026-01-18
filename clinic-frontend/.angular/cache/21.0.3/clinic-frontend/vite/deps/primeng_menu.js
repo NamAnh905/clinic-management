@@ -1,8 +1,24 @@
-import "./chunk-6CS4XLWG.js";
+import {
+  Tooltip,
+  TooltipModule
+} from "./chunk-UK5YG6S3.js";
 import {
   Ripple,
   RippleModule
-} from "./chunk-3RXRWCEK.js";
+} from "./chunk-GTTE7RE6.js";
+import "./chunk-6CS4XLWG.js";
+import {
+  ConnectedOverlayScrollHandler,
+  DomHandler
+} from "./chunk-47BQQJB4.js";
+import {
+  OverlayService,
+  PrimeNGConfig,
+  PrimeTemplate,
+  SharedModule,
+  UniqueComponentId,
+  zindexutils
+} from "./chunk-GWKAQB5R.js";
 import {
   animate,
   style,
@@ -10,18 +26,10 @@ import {
   trigger
 } from "./chunk-BFE7IYWO.js";
 import {
-  Tooltip,
-  TooltipModule
-} from "./chunk-5YFAVNSI.js";
-import {
   RouterLink,
   RouterLinkActive,
   RouterModule
 } from "./chunk-XI4MIIRV.js";
-import {
-  ConnectedOverlayScrollHandler,
-  DomHandler
-} from "./chunk-47BQQJB4.js";
 import {
   DomSanitizer
 } from "./chunk-UVYFT7ZC.js";
@@ -37,14 +45,6 @@ import {
   isPlatformBrowser
 } from "./chunk-SLB4UZNK.js";
 import "./chunk-54XDLG5S.js";
-import {
-  OverlayService,
-  PrimeNGConfig,
-  PrimeTemplate,
-  SharedModule,
-  UniqueComponentId,
-  zindexutils
-} from "./chunk-GWKAQB5R.js";
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -106,8 +106,8 @@ import {
   ɵɵtextInterpolate,
   ɵɵviewQuery
 } from "./chunk-QXGWTKNC.js";
-import "./chunk-JRFR6BLO.js";
 import "./chunk-HWYXSU2G.js";
+import "./chunk-JRFR6BLO.js";
 import "./chunk-MARUHEWW.js";
 import "./chunk-WDMUDEB6.js";
 

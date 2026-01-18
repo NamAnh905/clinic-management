@@ -1,4 +1,7 @@
 import {
+  PrimeNGConfig
+} from "./chunk-GWKAQB5R.js";
+import {
   NgControl,
   NgModel
 } from "./chunk-EX2OLAEH.js";
@@ -6,9 +9,6 @@ import {
   CommonModule
 } from "./chunk-SLB4UZNK.js";
 import "./chunk-54XDLG5S.js";
-import {
-  PrimeNGConfig
-} from "./chunk-GWKAQB5R.js";
 import {
   ChangeDetectorRef,
   Directive,
@@ -28,8 +28,8 @@ import {
   ɵɵdirectiveInject,
   ɵɵlistener
 } from "./chunk-QXGWTKNC.js";
-import "./chunk-JRFR6BLO.js";
 import "./chunk-HWYXSU2G.js";
+import "./chunk-JRFR6BLO.js";
 import "./chunk-MARUHEWW.js";
 import "./chunk-WDMUDEB6.js";
 

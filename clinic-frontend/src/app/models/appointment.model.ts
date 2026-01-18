@@ -26,15 +26,20 @@ export interface PublicAppointmentRequest {
   // Thông tin cá nhân
   fullName: string;
   phoneNumber: string;
-  email?: string; // Optional
-  dateOfBirth?: string; // 'yyyy-MM-dd'
+  email?: string; // Backend không bắt buộc @NotNull -> Optional ok
+
+  // SỬA: Backend @NotNull -> Bỏ dấu ?
+  dateOfBirth: string; // 'yyyy-MM-dd'
+
   gender?: string; // 'MALE', 'FEMALE', 'OTHER'
   address?: string;
 
   // Thông tin khám
-  doctorId: number;
+  doctorId: number; // LƯU Ý: Đây là Doctor ID (PK) (do logic backend findById)
   appointmentTime: string; // 'yyyy-MM-ddTHH:mm:ss' (ISO string)
-  reason?: string;
+
+  // SỬA: Backend @NotNull -> Bỏ dấu ?
+  reason: string;
 }
 
 // 2. DTO gửi đi khi khách muốn hủy lịch

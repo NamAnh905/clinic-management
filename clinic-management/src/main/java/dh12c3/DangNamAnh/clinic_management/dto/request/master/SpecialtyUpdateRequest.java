@@ -16,5 +16,6 @@ import java.util.Set;
 public class SpecialtyUpdateRequest {
     String name;
     String description;
+    String image;
     Set<Long> doctors;
 }

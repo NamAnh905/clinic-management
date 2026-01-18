@@ -21,7 +21,7 @@ SET @@SESSION.SQL_LOG_BIN= 0;
 -- GTID state at the beginning of the backup 
 --
 
-SET @@GLOBAL.GTID_PURGED=/*!80000 '+'*/ 'bf1fd672-c48b-11f0-b37a-9e7706ec6987:1-2233';
+SET @@GLOBAL.GTID_PURGED=/*!80000 '+'*/ 'bf1fd672-c48b-11f0-b37a-9e7706ec6987:1-3022';
 
 --
 -- Table structure for table `appointments`
@@ -34,17 +34,20 @@ CREATE TABLE `appointments` (
   `appointment_id` bigint NOT NULL AUTO_INCREMENT,
   `appointment_time` datetime(6) NOT NULL,
   `reason` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `status` enum('CANCELLED','COMPLETED','CONFIRMED','NO_SHOW','PENDING') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` enum('CANCELLED','CHECKED_IN','COMPLETED','CONFIRMED','IN_PROGRESS','NO_SHOW','PENDING') COLLATE utf8mb4_unicode_ci NOT NULL,
   `doctor_id` bigint NOT NULL,
   `patient_id` bigint NOT NULL,
   `end_time` datetime(6) NOT NULL,
   `deleted` bit(1) NOT NULL,
+  `service_id` bigint DEFAULT NULL,
   PRIMARY KEY (`appointment_id`),
   KEY `FKmujeo4tymoo98cmf7uj3vsv76` (`doctor_id`),
   KEY `FK8exap5wmg8kmb1g1rx3by21yt` (`patient_id`),
+  KEY `FK5iltr7k9pows18hk8nc101vc1` (`service_id`),
+  CONSTRAINT `FK5iltr7k9pows18hk8nc101vc1` FOREIGN KEY (`service_id`) REFERENCES `services` (`service_id`),
   CONSTRAINT `FK8exap5wmg8kmb1g1rx3by21yt` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`patient_id`),
   CONSTRAINT `FKmujeo4tymoo98cmf7uj3vsv76` FOREIGN KEY (`doctor_id`) REFERENCES `doctors` (`doctor_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -87,7 +90,7 @@ CREATE TABLE `drugs` (
   `deleted` bit(1) NOT NULL,
   PRIMARY KEY (`drug_id`),
   UNIQUE KEY `UK7y0wvkbrailun86372bq84fep` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -125,7 +128,7 @@ CREATE TABLE `invoice_details` (
   CONSTRAINT `FK20gw0hp83pimxas5ptopo6gpo` FOREIGN KEY (`drug_id`) REFERENCES `drugs` (`drug_id`),
   CONSTRAINT `FK439lfpbc6j1k0cn26wtp8f96r` FOREIGN KEY (`invoice_id`) REFERENCES `invoices` (`invoice_id`),
   CONSTRAINT `FKj626s1ou3nc9bh2ceu1uu8bcb` FOREIGN KEY (`service_id`) REFERENCES `services` (`service_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -143,11 +146,29 @@ CREATE TABLE `invoices` (
   `transaction_code` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `appointment_id` bigint NOT NULL,
   `created_at` datetime(6) NOT NULL,
+  `type` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'FINAL',
   PRIMARY KEY (`invoice_id`),
-  UNIQUE KEY `UKr1gsksmeq3yb5fipnxl93yqqv` (`appointment_id`),
   UNIQUE KEY `UKn58vjh8uqcsdol1gpp8m45tdf` (`transaction_code`),
-  CONSTRAINT `FKngg5bc8atao2b9jehl9l8tdsw` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`appointment_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  KEY `FK_invoice_appointment` (`appointment_id`),
+  CONSTRAINT `FK_invoice_appointment` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`appointment_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `knowledge_base`
+--
+
+DROP TABLE IF EXISTS `knowledge_base`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `knowledge_base` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `answer` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `is_active` bit(1) NOT NULL,
+  `question` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `knowledge_type` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -189,7 +210,7 @@ CREATE TABLE `patients` (
   PRIMARY KEY (`patient_id`),
   UNIQUE KEY `UK9tbsl3fmey0eofbm2xj69v4qs` (`user_id`),
   CONSTRAINT `FKuwca24wcd1tg6pjex8lmc0y7` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -264,26 +285,6 @@ CREATE TABLE `receptionists` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `refresh_tokens`
---
-
-DROP TABLE IF EXISTS `refresh_tokens`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `refresh_tokens` (
-  `token_id` bigint NOT NULL AUTO_INCREMENT,
-  `expiry_date` datetime(6) NOT NULL,
-  `is_revoked` bit(1) NOT NULL,
-  `token` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `user_id` bigint NOT NULL,
-  PRIMARY KEY (`token_id`),
-  UNIQUE KEY `UKghpmfn23vmxfu3spu3lfg4r2d` (`token`),
-  KEY `FK1lih5y2npsf8u5o3vhdb9y0os` (`user_id`),
-  CONSTRAINT `FK1lih5y2npsf8u5o3vhdb9y0os` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `role`
 --
 
@@ -324,12 +325,13 @@ DROP TABLE IF EXISTS `services`;
 CREATE TABLE `services` (
   `service_id` bigint NOT NULL AUTO_INCREMENT,
   `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `image` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `price` decimal(15,2) NOT NULL,
   `type` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `deleted` bit(1) NOT NULL,
   PRIMARY KEY (`service_id`),
   UNIQUE KEY `UKh4rqgjwnqidx6mvj4i22dxwxe` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -343,13 +345,14 @@ CREATE TABLE `specialties` (
   `specialty_id` bigint NOT NULL AUTO_INCREMENT,
   `description` text COLLATE utf8mb4_unicode_ci,
   `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `image` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `deleted` bit(1) NOT NULL,
   `default_service_id` bigint DEFAULT NULL,
   PRIMARY KEY (`specialty_id`),
   UNIQUE KEY `UKbhb8s9o5hv30lkbidtod9cixc` (`name`),
   KEY `FK_specialty_service` (`default_service_id`),
   CONSTRAINT `FK_specialty_service` FOREIGN KEY (`default_service_id`) REFERENCES `services` (`service_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -369,10 +372,11 @@ CREATE TABLE `users` (
   `gender` enum('FEMALE','MALE','OTHER') COLLATE utf8mb4_unicode_ci NOT NULL,
   `date_of_birth` date NOT NULL,
   `address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `image` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `UK6dotkott2kjsp8vw4d0m25fb7` (`email`),
   UNIQUE KEY `UK9q63snka3mdh91as4io72espi` (`phone_number`)
-) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=48 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -412,7 +416,7 @@ CREATE TABLE `working_schedules` (
   KEY `FK_schedule_receptionist` (`receptionist_id`),
   CONSTRAINT `FK479kuxq27exa1qd8td40xabye` FOREIGN KEY (`doctor_id`) REFERENCES `doctors` (`doctor_id`),
   CONSTRAINT `FK_schedule_receptionist` FOREIGN KEY (`receptionist_id`) REFERENCES `receptionists` (`receptionist_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -425,4 +429,4 @@ SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-12-25 19:01:05
+-- Dump completed on 2026-01-18 10:19:46

@@ -1,26 +1,38 @@
-/* admin-sidebar.component.scss */
-
 $primary-color: #2563eb;
 $text-color: #334155;
-$text-muted: #64748b;
+$text-muted: #94a3b8; // Màu xám nhạt cho header
 $hover-bg: #f8fafc;
+$border-color: #e2e8f0;
 
 .sidebar-container {
   width: 260px;
   height: 100vh;
   background: #ffffff;
-  border-right: 1px solid #e2e8f0;
+  border-right: 1px solid $border-color;
   display: flex;
   flex-direction: column;
-  padding: 1.5rem 1rem;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
 
+  /* --- TRẠNG THÁI THU GỌN (SỬA ĐOẠN NÀY) --- */
   &.collapsed {
     width: 80px;
     padding: 1.5rem 0.5rem;
 
     .logo-area { justify-content: center; }
+
+    /* 1. Ẩn hoàn toàn tên nhóm khi thu gọn */
+    .menu-header {
+        display: none !important;
+    }
+
+    /* 2. Hiện vạch kẻ khi thu gọn */
+    .menu-divider {
+        display: block !important;
+        margin: 1rem auto; /* Căn giữa */
+        width: 40px;       /* Độ dài vạch kẻ ngắn lại cho đẹp */
+    }
+
     .brand-name, .submenu-wrapper, .layout-menuitem-toggler { display: none !important; }
 
     .nav-link {
@@ -33,177 +45,133 @@ $hover-bg: #f8fafc;
 }
 
 .logo-area {
-  // 1. Tăng chiều cao thanh header lên 100px (để chứa vừa cái logo to)
-  height: 100px;
-
+  height: 90px; // Giảm xuống 1 chút cho cân đối
   display: flex;
   align-items: center;
-  justify-content: space-between; // Logo trái - Icon phải
-  padding: 0 20px;
-  border-bottom: 1px solid #e5e7eb;
+  justify-content: space-between;
+  padding: 0 1.25rem;
+  border-bottom: 1px solid $border-color;
+  flex-shrink: 0; // Không cho co lại
 
-  .logo-icon {
-    display: flex;
-    align-items: center;
-    transition: all 0.3s ease;
-
-    img {
-      // 2. Tăng kích thước logo lên 1.5 lần (Khoảng 85px là đẹp)
-      height: 85px;
+  .logo-icon img {
+      height: 60px; // Logo vừa phải
       width: auto;
       object-fit: contain;
-      filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1)); // Thêm bóng đổ cho logo nổi bật hơn
-    }
   }
 
   .toggle-btn {
-    width: 40px;
-    height: 40px;
-    border: none;
-    background: transparent;
-    color: #64748b;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    i {
-      font-size: 1.6rem; // Tăng icon menu lên một xíu cho cân đối với logo to
-    }
-
-    &:hover {
-      background: #f1f5f9;
-      color: #2563eb;
-      border-radius: 8px;
-    }
+    width: 36px; height: 36px;
+    border: none; background: transparent; color: $text-muted;
+    cursor: pointer; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    &:hover { background: $hover-bg; color: $primary-color; }
+    i { font-size: 1.2rem; }
   }
 }
 
-.nav-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.menu-section {
+  flex-grow: 1;
+  overflow-y: auto; // Scroll nếu menu quá dài
+  padding: 1.5rem 1rem;
+
+  // Custom scrollbar cho đẹp
+  &::-webkit-scrollbar { width: 5px; }
+  &::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
 }
 
-/* --- STYLE MENU CHA --- */
-.nav-link {
-    display: flex;
-    align-items: center;
-    padding: 0.75rem 1rem;
-    border-radius: 10px;
-    color: $text-color;
-    text-decoration: none;
-    font-weight: 500;
-    transition: background-color 0.2s;
-    cursor: pointer;
-    user-select: none;
-    margin-bottom: 4px;
+.nav-list {
+  list-style: none; padding: 0; margin: 0;
+}
+
+/* --- SECTION HEADER (MỚI) --- */
+.menu-header {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: $text-muted;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    padding-left: 0.5rem;
+
+    /* 3. Thêm thuộc tính này để chống vỡ dòng khi animation đang chạy */
     white-space: nowrap;
     overflow: hidden;
+    text-overflow: ellipsis;
 
-    /* Icon bên trái */
+    &:first-child { margin-top: 0; }
+}
+
+.menu-divider {
+    height: 1px;
+    background-color: $border-color;
+    margin: 1rem 0.5rem;
+}
+
+/* --- STYLE ITEM MENU --- */
+.nav-link {
+    display: flex; align-items: center;
+    padding: 0.75rem 1rem;
+    border-radius: 12px; // Bo tròn mềm hơn
+    color: $text-color;
+    text-decoration: none; font-weight: 500; font-size: 0.95rem;
+    transition: all 0.2s ease;
+    cursor: pointer; margin-bottom: 4px;
+    position: relative; overflow: hidden;
+
     .layout-menuitem-icon {
-        margin-right: 10px;
-        font-size: 1.1rem;
-        color: $text-muted;
-        min-width: 20px; /* Cố định chiều rộng để thẳng hàng */
-        text-align: center;
-        flex-shrink: 0;
+        margin-right: 12px; font-size: 1.2rem; color: #64748b;
+        width: 24px; text-align: center; transition: color 0.2s;
     }
 
-    .layout-menuitem-text {
-        /* Đảm bảo text hiển thị ... nếu quá dài */
-        text-overflow: ellipsis;
-        overflow: hidden;
-        flex-grow: 1; /* Để text chiếm hết khoảng trống */
-    }
+    .layout-menuitem-text { flex-grow: 1; white-space: nowrap; }
 
-    /* Mũi tên bên phải (Quan trọng) */
     .layout-menuitem-toggler {
-        margin-left: auto; /* Đẩy sát lề phải */
-        font-size: 0.8rem;
-        transition: transform 0.3s; /* Xoay mượt */
-        color: $text-muted;
-        flex-shrink: 0;
-    }
-
-    /* Xoay mũi tên khi mở */
-    .layout-menuitem-toggler.rotated {
-        transform: rotate(-180deg);
+        margin-left: auto; font-size: 0.8rem; color: $text-muted; transition: transform 0.3s;
+        &.rotated { transform: rotate(-180deg); }
     }
 
     &:hover {
-      background-color: $hover-bg;
-      color: #0f172a;
-      .layout-menuitem-icon, .layout-menuitem-toggler { color: #0f172a; }
+      background-color: $hover-bg; color: #0f172a;
+      .layout-menuitem-icon { color: $primary-color; transform: scale(1.1); }
     }
 
     &.active, &.active-parent {
-      background-color: #eff6ff;
-      color: $primary-color;
-      font-weight: 600;
+      background-color: fade-out($primary-color, 0.9); // Màu nền xanh rất nhạt
+      color: $primary-color; font-weight: 600;
+
+      // Thêm vạch màu xanh bên trái để nhấn mạnh
+      &::before {
+          content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+          height: 20px; width: 4px; border-radius: 0 4px 4px 0;
+          background-color: $primary-color;
+      }
+
       .layout-menuitem-icon { color: $primary-color; }
     }
 }
 
-/* --- ANIMATION TRƯỢT MƯỢT (Grid Trick) --- */
+/* --- SUBMENU --- */
 .submenu-wrapper {
-    display: grid;
-    grid-template-rows: 0fr;
-    transition: grid-template-rows 0.3s ease-out; /* Tốc độ mượt */
-
-    &.expanded {
-        grid-template-rows: 1fr;
-    }
-
-    .sub-nav-list {
-        overflow: hidden;
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
+    display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.3s ease-out;
+    &.expanded { grid-template-rows: 1fr; }
+    .sub-nav-list { overflow: hidden; list-style: none; padding: 0; }
 }
 
-/* --- STYLE MENU CON --- */
-.sub-nav-list {
-    .sub-link {
-        display: flex;
-        align-items: center;
-        /* Thụt lề: padding trái lớn để tạo cấp bậc */
-        padding: 0.65rem 1rem 0.65rem 2.2rem;
-        text-decoration: none;
-        color: $text-muted;
-        font-size: 0.95rem;
-        border-radius: 10px;
-        margin-bottom: 2px;
-        transition: all 0.2s;
+.sub-link {
+    display: flex; align-items: center;
+    padding: 0.6rem 1rem 0.6rem 3.2rem; // Thụt đầu dòng sâu hơn
+    text-decoration: none; color: #64748b; font-size: 0.9rem;
+    border-radius: 10px; margin-top: 2px;
+    transition: all 0.2s;
 
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+    .sub-icon { margin-right: 8px; font-size: 0.5rem; opacity: 0.7; } // Icon chấm tròn nhỏ
 
-        /* Icon con nhỏ hơn icon cha */
-        .sub-icon {
-            margin-right: 10px;
-            font-size: 0.9rem;
-            flex-shrink: 0;
-        }
+    &:hover { color: $text-color; background-color: $hover-bg; }
 
-        span:last-child {
-             text-overflow: ellipsis;
-             overflow: hidden;
-        }
-
-        &:hover {
-            color: $text-color;
-            .sub-icon { color: $text-color; }
-        }
-
-        &.active-sub {
-            color: $primary-color;
-            font-weight: 600;
-            .sub-icon { color: $primary-color; }
-        }
+    &.active-sub {
+        color: $primary-color; font-weight: 600; background-color: transparent;
+        .sub-icon { color: $primary-color; opacity: 1; transform: scale(1.5); }
     }
 }

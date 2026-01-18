@@ -21,7 +21,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
            JOIN FETCH a.patient p
            JOIN FETCH p.user pu
            WHERE (:doctorId IS NULL OR du.userId = :doctorId)
-           AND (:patientId IS NULL OR pu.userId = :patientId)
+           AND (:patientId IS NULL OR p.patientId = :patientId)
            AND (:status IS NULL OR a.status = :status)
            AND (:startDate IS NULL OR a.appointmentTime >= :startDate)
            AND (:endDate IS NULL OR a.appointmentTime <= :endDate)
@@ -37,7 +37,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
            JOIN a.patient p
            JOIN p.user pu
            WHERE (:doctorId IS NULL OR du.userId = :doctorId)
-           AND (:patientId IS NULL OR pu.userId = :patientId)
+           AND (:patientId IS NULL OR p.patientId = :patientId)
            AND (:status IS NULL OR a.status = :status)
            AND (:startDate IS NULL OR a.appointmentTime >= :startDate)
            AND (:endDate IS NULL OR a.appointmentTime <= :endDate)

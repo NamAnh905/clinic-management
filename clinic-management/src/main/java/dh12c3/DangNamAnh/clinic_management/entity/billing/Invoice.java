@@ -1,5 +1,6 @@
 package dh12c3.DangNamAnh.clinic_management.entity.billing;
 
+import dh12c3.DangNamAnh.clinic_management.enums.InvoiceType;
 import dh12c3.DangNamAnh.clinic_management.enums.PaymentMethod;
 import dh12c3.DangNamAnh.clinic_management.enums.PaymentStatus;
 import dh12c3.DangNamAnh.clinic_management.entity.appointment.Appointment;
@@ -49,6 +50,9 @@ public class Invoice {
     @CreatedDate
     @Column(nullable = false, updatable = false)
     LocalDateTime createdAt;
+
+    @Enumerated(EnumType.STRING)
+    InvoiceType type;
 
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
     Set<InvoiceDetail> invoiceDetails;

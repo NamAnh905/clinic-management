@@ -23,6 +23,7 @@ import dh12c3.DangNamAnh.clinic_management.repository.patient.PatientRepository;
 import dh12c3.DangNamAnh.clinic_management.repository.staff.DoctorRepository;
 import dh12c3.DangNamAnh.clinic_management.repository.user.RoleRepository;
 import dh12c3.DangNamAnh.clinic_management.repository.user.UserRepository;
+import dh12c3.DangNamAnh.clinic_management.service.EmailService;
 import dh12c3.DangNamAnh.clinic_management.service.ExcelExportService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +41,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -57,6 +59,7 @@ public class AppointmentService {
     RoleRepository roleRepository;
     PasswordEncoder passwordEncoder;
     ExcelExportService excelExportService;
+    EmailService emailService;
 
     SecurityUtils securityUtils;
 
@@ -136,6 +139,22 @@ public class AppointmentService {
         appointment.setStatus(AppointmentStatus.PENDING);
 
         Appointment saved = appointmentRepository.save(appointment);
+
+        if (patient.getUser().getEmail() != null && !patient.getUser().getEmail().isEmpty()) {
+            String timeStr = saved.getAppointmentTime().format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"));
+            String docName = doctor.getUser().getFullName();
+            String patientName = patient.getUser().getFullName();
+            String patientEmail = patient.getUser().getEmail();
+
+            // Gọi hàm gửi mail notification (đã có sẵn trong EmailService)
+            emailService.sendBookingNotification(
+                    patientEmail,
+                    patientName,
+                    timeStr,
+                    docName
+            );
+        }
+
         return appointmentMapper.toAppointmentResponse(saved);
     }
 
@@ -152,6 +171,9 @@ public class AppointmentService {
         Patient patient;
         var existingUser = userRepository.findByPhoneNumber(request.getPhoneNumber());
 
+        String rawPassword = null;
+        boolean isNewUser = false;
+
         if (existingUser.isPresent()) {
             patient = patientRepository.findByUser_UserId(existingUser.get().getUserId())
                     .orElseGet(() -> {
@@ -160,13 +182,21 @@ public class AppointmentService {
                         return patientRepository.save(p);
                     });
         } else {
+            if (request.getEmail() != null && !request.getEmail().isEmpty()) {
+                if (userRepository.existsByEmail(request.getEmail())) {
+                    throw new AppException(ErrorCode.EXISTED_EMAIL);
+                }
+            }
             User newUser = userMapper.toUserFromPublic(request);
             if (request.getEmail() == null || request.getEmail().isEmpty()) {
                 newUser.setEmail(request.getPhoneNumber() + "@guest.clinic.local");
             } else {
                 newUser.setEmail(request.getEmail());
             }
-            newUser.setPasswordHash(passwordEncoder.encode(UUID.randomUUID().toString()));
+
+            rawPassword = UUID.randomUUID().toString().substring(0, 8);
+            newUser.setPasswordHash(passwordEncoder.encode(rawPassword));
+
             try {
                 newUser.setGender(Gender.valueOf(request.getGender()));
             } catch (Exception e) {
@@ -177,6 +207,7 @@ public class AppointmentService {
             if(patientRole != null) newUser.setRoles(Set.of(patientRole));
 
             userRepository.save(newUser);
+            isNewUser = true;
 
             patient = new Patient();
             patient.setUser(newUser);
@@ -193,6 +224,29 @@ public class AppointmentService {
         appointment.setDeleted(false);
 
         Appointment saved = appointmentRepository.save(appointment);
+
+        if (request.getEmail() != null && !request.getEmail().isEmpty()) {
+            String timeStr = request.getAppointmentTime().format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"));
+            String docName = doctor.getUser().getFullName();
+
+            if (isNewUser && rawPassword != null) {
+                emailService.sendBookingConfirmation(
+                        request.getEmail(),
+                        request.getFullName(),
+                        timeStr,
+                        docName,
+                        request.getEmail(),
+                        rawPassword
+                );
+            } else {
+                emailService.sendBookingNotification(
+                        request.getEmail(),
+                        request.getFullName(),
+                        timeStr,
+                        docName
+                );
+            }
+        }
         return appointmentMapper.toAppointmentResponse(saved);
     }
 
@@ -215,7 +269,7 @@ public class AppointmentService {
                 if (newStatus == AppointmentStatus.CANCELLED) {
                     LocalDateTime appointmentTime = appointment.getAppointmentTime();
 
-                    LocalDateTime restrictedTime = appointmentTime.minusHours(24);
+                    LocalDateTime restrictedTime = appointmentTime.minusHours(4);
                     LocalDateTime now = LocalDateTime.now();
 
                     if(now.isAfter(restrictedTime)) {
@@ -271,7 +325,7 @@ public class AppointmentService {
         else if (isPatient) {
             Patient patient = patientRepository.findByUser_Email(currentUsername)
                     .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-            patientId = patient.getUser().getUserId();
+            patientId = patient.getPatientId();
             doctorId = null;
         }
         else {
@@ -360,6 +414,14 @@ public class AppointmentService {
         if (appointment.getStatus() != AppointmentStatus.PENDING &&
                 appointment.getStatus() != AppointmentStatus.CONFIRMED) {
             throw new AppException(ErrorCode.STATUS_CHANGE_NOT_ALLOWED);
+        }
+
+        LocalDateTime appointmentTime = appointment.getAppointmentTime();
+        LocalDateTime restrictedTime = appointmentTime.minusHours(4); // Không được hủy trước 4 tiếng
+        LocalDateTime now = LocalDateTime.now();
+
+        if (now.isAfter(restrictedTime)) {
+            throw new AppException(ErrorCode.CANNOT_CANCEL_LATE);
         }
 
         appointment.setStatus(AppointmentStatus.CANCELLED);

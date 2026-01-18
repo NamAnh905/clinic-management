@@ -2,6 +2,7 @@ package dh12c3.DangNamAnh.clinic_management.repository.billing;
 
 import dh12c3.DangNamAnh.clinic_management.dto.response.dashboard.ChartDataResponse;
 import dh12c3.DangNamAnh.clinic_management.entity.billing.Invoice;
+import dh12c3.DangNamAnh.clinic_management.enums.InvoiceType;
 import dh12c3.DangNamAnh.clinic_management.enums.PaymentMethod;
 import dh12c3.DangNamAnh.clinic_management.enums.PaymentStatus;
 import org.springframework.data.domain.Page;
@@ -60,6 +61,8 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     Optional<Invoice> findByTransactionCode(String transactionCode);
 
     Optional<Invoice> findByAppointment_AppointmentId(Long appointmentId);
+
+    boolean existsByAppointment_AppointmentIdAndTypeAndPaymentStatus(Long appointmentId, InvoiceType type, PaymentStatus status);
 
     boolean existsByAppointment_AppointmentId(Long appointmentId);
 

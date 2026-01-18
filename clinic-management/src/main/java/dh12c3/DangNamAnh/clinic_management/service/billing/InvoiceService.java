@@ -15,6 +15,7 @@ import dh12c3.DangNamAnh.clinic_management.entity.medical.Prescription;
 import dh12c3.DangNamAnh.clinic_management.entity.medical.PrescriptionDetail;
 import dh12c3.DangNamAnh.clinic_management.entity.patient.Patient;
 import dh12c3.DangNamAnh.clinic_management.enums.AppointmentStatus;
+import dh12c3.DangNamAnh.clinic_management.enums.InvoiceType;
 import dh12c3.DangNamAnh.clinic_management.enums.PaymentMethod;
 import dh12c3.DangNamAnh.clinic_management.enums.PaymentStatus;
 import dh12c3.DangNamAnh.clinic_management.exception.AppException;
@@ -67,8 +68,57 @@ public class InvoiceService {
 
     SecurityUtils securityUtils;
 
+    // =========================================================================
+    // 1. NGHIỆP VỤ PRE-PAID (THANH TOÁN PHÍ KHÁM TRƯỚC)
+    // =========================================================================
+
     @Transactional
-    public InvoiceResponse create(InvoiceCreationRequest request) {
+    public InvoiceResponse createBookingInvoice(Long appointmentId) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
+
+        // Chỉ cho phép tạo hóa đơn cọc khi đang PENDING (chưa khám)
+        if (appointment.getStatus() != AppointmentStatus.PENDING) {
+            throw new AppException(ErrorCode.CANNOT_CREATE_INVOICE); // Hoặc lỗi INVALID_STATUS
+        }
+
+        // Lấy giá dịch vụ khám mặc định
+        Specialty specialty = appointment.getDoctor().getSpecialty();
+        ServiceEntity consultationService = specialty.getDefaultService();
+        if (consultationService == null) {
+            throw new RuntimeException("Chuyên khoa chưa cấu hình dịch vụ khám mặc định");
+        }
+
+        // Tạo Invoice
+        Invoice invoice = new Invoice();
+        invoice.setAppointment(appointment);
+        invoice.setTransactionCode(AppUtils.generateTransactionCode());
+        invoice.setPaymentStatus(PaymentStatus.PENDING);
+        invoice.setPaymentMethod(PaymentMethod.VNPAY); // Mặc định là VNPAY
+        invoice.setType(InvoiceType.BOOKING); // <--- QUAN TRỌNG
+
+        // Set tổng tiền = Giá khám
+        invoice.setTotalAmount(consultationService.getPrice());
+
+        Invoice savedInvoice = invoiceRepository.save(invoice);
+
+        // Lưu chi tiết hóa đơn (Chỉ có 1 dòng là Phí khám)
+        InvoiceDetail detail = new InvoiceDetail();
+        detail.setInvoice(savedInvoice);
+        detail.setService(consultationService);
+        detail.setQuantity(1);
+        detail.setUnitPrice(consultationService.getPrice());
+        invoiceDetailRepository.save(detail);
+
+        return invoiceMapper.toInvoiceResponse(savedInvoice);
+    }
+
+    // =========================================================================
+    // 2. NGHIỆP VỤ POST-PAID (THANH TOÁN SAU KHI KHÁM)
+    // =========================================================================
+
+    @Transactional
+    public InvoiceResponse createFinalInvoice(InvoiceCreationRequest request) { // Đã đổi tên hàm
         Appointment appointment = appointmentRepository.findById(request.getAppointmentId())
                 .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
 
@@ -76,22 +126,31 @@ public class InvoiceService {
             throw new AppException(ErrorCode.CANNOT_CREATE_INVOICE);
         }
 
-        if (invoiceRepository.existsByAppointment_AppointmentId(request.getAppointmentId())){
+        // Check xem đã có hóa đơn FINAL nào chưa (tránh tạo trùng)
+        if (invoiceRepository.existsByAppointment_AppointmentIdAndTypeAndPaymentStatus(
+                request.getAppointmentId(), InvoiceType.FINAL, PaymentStatus.PAID)) {
             throw new AppException(ErrorCode.INVOICE_ALREADY_EXISTS);
         }
 
         Invoice invoice = invoiceMapper.toInvoice(request);
         invoice.setAppointment(appointment);
-        invoice.setTotalAmount(BigDecimal.ZERO);
         invoice.setTransactionCode(AppUtils.generateTransactionCode());
         invoice.setPaymentStatus(PaymentStatus.PENDING);
+        invoice.setType(InvoiceType.FINAL); // <--- Set loại FINAL
 
         Invoice savedInvoice = invoiceRepository.save(invoice);
         BigDecimal totalAmount = BigDecimal.ZERO;
 
+        // --- LOGIC MỚI: KIỂM TRA ĐÃ THANH TOÁN PHÍ KHÁM TRƯỚC CHƯA ---
+        boolean hasPaidBooking = invoiceRepository.existsByAppointment_AppointmentIdAndTypeAndPaymentStatus(
+                request.getAppointmentId(), InvoiceType.BOOKING, PaymentStatus.PAID
+        );
+
         Specialty specialty = appointment.getDoctor().getSpecialty();
         ServiceEntity consultationService = specialty.getDefaultService();
-        if (consultationService != null) {
+
+        // Chỉ cộng tiền khám nếu CHƯA trả trước
+        if (consultationService != null && !hasPaidBooking) {
             InvoiceDetail examDetail = new InvoiceDetail();
             examDetail.setInvoice(savedInvoice);
             examDetail.setService(consultationService);
@@ -101,9 +160,11 @@ public class InvoiceService {
             totalAmount = totalAmount.add(consultationService.getPrice());
         }
 
+        // Cộng các dịch vụ phát sinh (CLS, XN...)
         if (request.getServiceIds() != null && !request.getServiceIds().isEmpty()) {
             List<ServiceEntity> services = serviceEntityRepository.findAllById(request.getServiceIds());
             for (ServiceEntity service : services) {
+                // Skip nếu trùng dịch vụ khám (đã xử lý ở trên)
                 if (consultationService != null && service.getServiceId().equals(consultationService.getServiceId())) continue;
 
                 InvoiceDetail serviceDetail = new InvoiceDetail();
@@ -116,18 +177,17 @@ public class InvoiceService {
             }
         }
 
+        // Cộng tiền thuốc
         Prescription prescription = prescriptionRepository.findByMedicalRecord_Appointment_AppointmentId(request.getAppointmentId()).orElse(null);
         if (prescription != null) {
             List<PrescriptionDetail> presDetails = presDetailRepository.findByPrescription_PrescriptionId(prescription.getPrescriptionId());
             for (PrescriptionDetail pd : presDetails) {
                 Drug drug = pd.getDrug();
-
                 InvoiceDetail drugDetail = new InvoiceDetail();
                 drugDetail.setInvoice(savedInvoice);
                 drugDetail.setDrug(drug);
                 drugDetail.setQuantity(pd.getQuantity());
                 drugDetail.setUnitPrice(drug.getPrice());
-
                 invoiceDetailRepository.save(drugDetail);
 
                 BigDecimal drugTotal = drug.getPrice().multiply(BigDecimal.valueOf(pd.getQuantity()));
@@ -256,7 +316,6 @@ public class InvoiceService {
     // --- 2. HÀM XỬ LÝ KẾT QUẢ TRẢ VỀ (Logic nghiệp vụ + Trừ kho) ---
     @Transactional
     public InvoiceResponse processVnPayCallback(Map<String, String> queryParams) {
-        // Validate chữ ký (Security check)
         if (!vnPayService.validateCallback(queryParams)) {
             throw new AppException(ErrorCode.INVALID_SIGNATURE);
         }
@@ -264,23 +323,30 @@ public class InvoiceService {
         String vnp_ResponseCode = queryParams.get("vnp_ResponseCode");
         String transactionCode = queryParams.get("vnp_TxnRef");
 
-        // Tìm hóa đơn
         Invoice invoice = invoiceRepository.findByTransactionCode(transactionCode)
                 .orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_FOUND));
 
-        // Nếu thanh toán thành công (00)
         if ("00".equals(vnp_ResponseCode)) {
             if (invoice.getPaymentStatus() != PaymentStatus.PAID) {
                 invoice.setPaymentStatus(PaymentStatus.PAID);
                 invoice.setPaymentMethod(PaymentMethod.VNPAY);
 
-                // Logic trừ kho thuốc (Copy từ hàm update xuống để tái sử dụng)
-                updateDrugStock(invoice);
+                // --- LOGIC MỚI TẠI ĐÂY ---
+                if (invoice.getType() == InvoiceType.BOOKING) {
+                    // Nếu là thanh toán Booking -> Tự động xác nhận lịch hẹn
+                    Appointment appt = invoice.getAppointment();
+                    if (appt.getStatus() == AppointmentStatus.PENDING) {
+                        appt.setStatus(AppointmentStatus.CONFIRMED);
+                        appointmentRepository.save(appt);
+                    }
+                } else {
+                    // Nếu là thanh toán Final -> Mới trừ kho thuốc
+                    updateDrugStock(invoice);
+                }
 
                 return invoiceMapper.toInvoiceResponse(invoiceRepository.save(invoice));
             }
         } else {
-            // Xử lý khi thất bại (nếu cần)
             throw new AppException(ErrorCode.PAYMENT_FAILED);
         }
         return invoiceMapper.toInvoiceResponse(invoice);

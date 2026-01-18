@@ -29,7 +29,7 @@
 
                       <div class="info-row">
                           <i class="pi pi-map-marker text-red-500"></i>
-                          <span>29 Liễu Giai, Ba Đình, Hà Nội</span>
+                          <span>Số 41 ngõ 105, Thạch bàn, Long Biên, Hà Nội</span>
                       </div>
                       <div class="info-row">
                           <i class="pi pi-clock text-green-500"></i>
@@ -238,6 +238,41 @@
                 </small>
             </div>
 
+            <div class="field col-12 md:col-6">
+                <label class="input-label">Email</label>
+                <input pInputText formControlName="email" class="modern-input" placeholder="example@gmail.com">
+            </div>
+
+            <div class="field col-12 md:col-6">
+                <label class="input-label">Ngày sinh <span class="text-red-500" *ngIf="!currentUser">*</span></label>
+                <p-calendar formControlName="dateOfBirth"
+                            [showIcon]="true"
+                            dateFormat="dd/mm/yy"
+                            [maxDate]="currentDate"
+                            placeholder="dd/mm/yyyy"
+                            styleClass="modern-calendar"></p-calendar>
+                <small class="text-red-500" *ngIf="infoForm.get('dateOfBirth')?.invalid && infoForm.get('dateOfBirth')?.touched">
+                    Vui lòng chọn ngày sinh
+                </small>
+            </div>
+
+            <div class="field col-12 md:col-6">
+                <label class="input-label">Giới tính</label>
+                <div class="flex gap-4 mt-2">
+                    <div class="flex align-items-center">
+                        <p-radioButton name="gender" value="MALE" formControlName="gender" label="Nam"></p-radioButton>
+                    </div>
+                    <div class="flex align-items-center">
+                        <p-radioButton name="gender" value="FEMALE" formControlName="gender" label="Nữ"></p-radioButton>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field col-12 md:col-6">
+                <label class="input-label">Địa chỉ</label>
+                <input pInputText formControlName="address" class="modern-input" placeholder="Địa chỉ hiện tại">
+            </div>
+
             <div class="field col-12">
                 <label class="input-label">Lý do khám <span class="text-red-500">*</span></label>
                 <textarea pInputTextarea formControlName="reason" rows="3" class="modern-input"
@@ -246,7 +281,7 @@
                     Vui lòng nhập lý do
                 </small>
             </div>
-         </div>
+        </div>
 
          <div class="flex justify-content-end gap-3 mt-4">
             <button pButton type="button" label="Quay lại" class="p-button-text p-button-secondary"

@@ -1,40 +1,27 @@
-import "./chunk-6CS4XLWG.js";
-import {
-  TimesIcon
-} from "./chunk-O2SPPSX6.js";
 import {
   ButtonDirective,
   ButtonModule
-} from "./chunk-CD2DDXKS.js";
+} from "./chunk-TTECSPTR.js";
+import "./chunk-HQBNJIAE.js";
 import "./chunk-KJ2LX3H7.js";
 import {
   Ripple,
   RippleModule
-} from "./chunk-3RXRWCEK.js";
-import "./chunk-HQBNJIAE.js";
+} from "./chunk-GTTE7RE6.js";
 import {
-  animate,
-  animation,
-  style,
-  transition,
-  trigger,
-  useAnimation
-} from "./chunk-BFE7IYWO.js";
+  FocusTrap,
+  FocusTrapModule
+} from "./chunk-SHG53U2G.js";
+import {
+  TimesIcon
+} from "./chunk-O2SPPSX6.js";
+import "./chunk-6CS4XLWG.js";
 import {
   BaseIcon
 } from "./chunk-JD6GFORM.js";
 import {
   DomHandler
 } from "./chunk-47BQQJB4.js";
-import {
-  CommonModule,
-  NgClass,
-  NgIf,
-  NgStyle,
-  NgTemplateOutlet,
-  isPlatformBrowser
-} from "./chunk-SLB4UZNK.js";
-import "./chunk-54XDLG5S.js";
 import {
   Footer,
   Header,
@@ -46,13 +33,29 @@ import {
   zindexutils
 } from "./chunk-GWKAQB5R.js";
 import {
+  animate,
+  animation,
+  style,
+  transition,
+  trigger,
+  useAnimation
+} from "./chunk-BFE7IYWO.js";
+import {
+  CommonModule,
+  NgClass,
+  NgIf,
+  NgStyle,
+  NgTemplateOutlet,
+  isPlatformBrowser
+} from "./chunk-SLB4UZNK.js";
+import "./chunk-54XDLG5S.js";
+import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   ContentChild,
   ContentChildren,
   DOCUMENT,
-  Directive,
   ElementRef,
   EventEmitter,
   Inject,
@@ -65,17 +68,14 @@ import {
   ViewChild,
   ViewEncapsulation,
   booleanAttribute,
-  inject,
   numberAttribute,
   setClassMetadata,
   ɵɵInheritDefinitionFeature,
-  ɵɵNgOnChangesFeature,
   ɵɵadvance,
   ɵɵattribute,
   ɵɵclassMap,
   ɵɵcontentQuery,
   ɵɵdefineComponent,
-  ɵɵdefineDirective,
   ɵɵdefineInjector,
   ɵɵdefineNgModule,
   ɵɵdirectiveInject,
@@ -113,141 +113,12 @@ import {
   ɵɵtextInterpolate,
   ɵɵviewQuery
 } from "./chunk-QXGWTKNC.js";
-import "./chunk-JRFR6BLO.js";
 import "./chunk-HWYXSU2G.js";
+import "./chunk-JRFR6BLO.js";
 import "./chunk-MARUHEWW.js";
 import {
   __spreadValues
 } from "./chunk-WDMUDEB6.js";
-
-// node_modules/primeng/fesm2022/primeng-focustrap.mjs
-var FocusTrap = class _FocusTrap {
-  /**
-   * When set as true, focus wouldn't be managed.
-   * @group Props
-   */
-  pFocusTrapDisabled = false;
-  platformId = inject(PLATFORM_ID);
-  host = inject(ElementRef);
-  document = inject(DOCUMENT);
-  firstHiddenFocusableElement;
-  lastHiddenFocusableElement;
-  ngOnInit() {
-    if (isPlatformBrowser(this.platformId) && !this.pFocusTrapDisabled) {
-      !this.firstHiddenFocusableElement && !this.lastHiddenFocusableElement && this.createHiddenFocusableElements();
-    }
-  }
-  ngOnChanges(changes) {
-    if (changes.pFocusTrapDisabled && isPlatformBrowser(this.platformId)) {
-      if (changes.pFocusTrapDisabled.currentValue) {
-        this.removeHiddenFocusableElements();
-      } else {
-        this.createHiddenFocusableElements();
-      }
-    }
-  }
-  removeHiddenFocusableElements() {
-    if (this.firstHiddenFocusableElement && this.firstHiddenFocusableElement.parentNode) {
-      this.firstHiddenFocusableElement.parentNode.removeChild(this.firstHiddenFocusableElement);
-    }
-    if (this.lastHiddenFocusableElement && this.lastHiddenFocusableElement.parentNode) {
-      this.lastHiddenFocusableElement.parentNode.removeChild(this.lastHiddenFocusableElement);
-    }
-  }
-  getComputedSelector(selector) {
-    return `:not(.p-hidden-focusable):not([data-p-hidden-focusable="true"])${selector ?? ""}`;
-  }
-  createHiddenFocusableElements() {
-    const tabindex = "0";
-    const createFocusableElement = (onFocus) => {
-      return DomHandler.createElement("span", {
-        class: "p-hidden-accessible p-hidden-focusable",
-        tabindex,
-        role: "presentation",
-        "data-p-hidden-accessible": true,
-        "data-p-hidden-focusable": true,
-        onFocus: onFocus?.bind(this)
-      });
-    };
-    this.firstHiddenFocusableElement = createFocusableElement(this.onFirstHiddenElementFocus);
-    this.lastHiddenFocusableElement = createFocusableElement(this.onLastHiddenElementFocus);
-    this.firstHiddenFocusableElement.setAttribute("data-pc-section", "firstfocusableelement");
-    this.lastHiddenFocusableElement.setAttribute("data-pc-section", "lastfocusableelement");
-    this.host.nativeElement.prepend(this.firstHiddenFocusableElement);
-    this.host.nativeElement.append(this.lastHiddenFocusableElement);
-  }
-  onFirstHiddenElementFocus(event) {
-    const {
-      currentTarget,
-      relatedTarget
-    } = event;
-    const focusableElement = relatedTarget === this.lastHiddenFocusableElement || !this.host.nativeElement?.contains(relatedTarget) ? DomHandler.getFirstFocusableElement(currentTarget.parentElement, ":not(.p-hidden-focusable)") : this.lastHiddenFocusableElement;
-    DomHandler.focus(focusableElement);
-  }
-  onLastHiddenElementFocus(event) {
-    const {
-      currentTarget,
-      relatedTarget
-    } = event;
-    const focusableElement = relatedTarget === this.firstHiddenFocusableElement || !this.host.nativeElement?.contains(relatedTarget) ? DomHandler.getLastFocusableElement(currentTarget.parentElement, ":not(.p-hidden-focusable)") : this.firstHiddenFocusableElement;
-    DomHandler.focus(focusableElement);
-  }
-  static ɵfac = function FocusTrap_Factory(__ngFactoryType__) {
-    return new (__ngFactoryType__ || _FocusTrap)();
-  };
-  static ɵdir = ɵɵdefineDirective({
-    type: _FocusTrap,
-    selectors: [["", "pFocusTrap", ""]],
-    hostAttrs: [1, "p-element"],
-    inputs: {
-      pFocusTrapDisabled: [2, "pFocusTrapDisabled", "pFocusTrapDisabled", booleanAttribute]
-    },
-    standalone: false,
-    features: [ɵɵNgOnChangesFeature]
-  });
-};
-(() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(FocusTrap, [{
-    type: Directive,
-    args: [{
-      selector: "[pFocusTrap]",
-      host: {
-        class: "p-element"
-      }
-    }]
-  }], null, {
-    pFocusTrapDisabled: [{
-      type: Input,
-      args: [{
-        transform: booleanAttribute
-      }]
-    }]
-  });
-})();
-var FocusTrapModule = class _FocusTrapModule {
-  static ɵfac = function FocusTrapModule_Factory(__ngFactoryType__) {
-    return new (__ngFactoryType__ || _FocusTrapModule)();
-  };
-  static ɵmod = ɵɵdefineNgModule({
-    type: _FocusTrapModule,
-    declarations: [FocusTrap],
-    imports: [CommonModule],
-    exports: [FocusTrap]
-  });
-  static ɵinj = ɵɵdefineInjector({
-    imports: [CommonModule]
-  });
-};
-(() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(FocusTrapModule, [{
-    type: NgModule,
-    args: [{
-      imports: [CommonModule],
-      exports: [FocusTrap],
-      declarations: [FocusTrap]
-    }]
-  }], null, null);
-})();
 
 // node_modules/primeng/fesm2022/primeng-icons-windowmaximize.mjs
 var WindowMaximizeIcon = class _WindowMaximizeIcon extends BaseIcon {

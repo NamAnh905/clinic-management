@@ -1,0 +1,260 @@
+$primary-color: #2563eb; // Màu xanh thương hiệu (giống trang chủ)
+$bg-color: #f8fafc;      // Màu nền đoạn chat
+$red-color: #dc2626;     // Màu đỏ thông báo
+
+// --- 1. NÚT TRÒN (LAUNCHER) ---
+.chat-launcher {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  background: $primary-color;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+  cursor: pointer;
+  z-index: 9999; // Luôn nổi trên cùng
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  &:hover {
+    transform: scale(1.1);
+  }
+
+  // Class này sẽ được kích hoạt khi có tin nhắn mới (unreadCount > 0)
+  &.shaking {
+    animation: shake 2.5s infinite; // Rung mỗi 2.5s
+    background: #ea580c; // (Tùy chọn) Đổi sang màu cam để gây chú ý hơn
+  }
+
+  // Badge số đỏ
+  .notification-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: $red-color;
+    color: white;
+    font-size: 11px;
+    font-weight: 800;
+    min-width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+}
+
+// --- 2. KHUNG CHAT (WINDOW) ---
+.chat-container {
+  position: fixed;
+  // Đã hạ thấp xuống theo yêu cầu (cách đáy 20px)
+  bottom: 20px;
+  right: 20px;
+
+  width: 360px;
+  height: 500px;
+  max-height: 80vh; // Đảm bảo không bị tràn trên màn hình nhỏ
+
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 5px 30px rgba(0,0,0,0.15);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+
+  // Hiệu ứng trồi lên
+  animation: slideUp 0.3s ease-out;
+
+  // Header
+  .chat-header {
+    background: $primary-color;
+    padding: 15px 20px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+    .header-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .avatar {
+        width: 36px; height: 36px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 14px;
+      }
+      div {
+        display: flex; flex-direction: column;
+        .bot-name { margin: 0; font-size: 1rem; font-weight: 600; line-height: 1.2; }
+        .status-text {
+          font-size: 0.75rem; opacity: 0.9;
+          display: flex; align-items: center; gap: 4px;
+          &::before {
+            content: ""; display: block; width: 6px; height: 6px;
+            background: #4ade80; border-radius: 50%;
+          }
+        }
+      }
+    }
+
+    .close-btn {
+      background: none; border: none; color: white; cursor: pointer;
+      font-size: 1.2rem; opacity: 0.8; padding: 4px;
+      transition: opacity 0.2s;
+      &:hover { opacity: 1; transform: scale(1.1); }
+    }
+  }
+
+  // Body (Nội dung chat)
+  .chat-body {
+    flex: 1;
+    padding: 20px;
+    background: $bg-color;
+    overflow-y: auto; // Cho phép cuộn
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    // Tùy chỉnh thanh cuộn cho đẹp
+    &::-webkit-scrollbar { width: 6px; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+    .message-wrapper {
+      display: flex;
+      &.user { justify-content: flex-end; }
+      &.bot { justify-content: flex-start; }
+    }
+
+    .message-bubble {
+      max-width: 85%;
+      padding: 12px 16px;
+      border-radius: 16px;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      position: relative;
+      white-space: pre-wrap; // Giữ xuống dòng
+      word-wrap: break-word;
+    }
+
+    .user .message-bubble {
+      background: $primary-color;
+      color: white;
+      border-bottom-right-radius: 4px; // Góc nhọn
+    }
+
+    .bot .message-bubble {
+      background: white;
+      color: #334155;
+      border: 1px solid #e2e8f0;
+      border-bottom-left-radius: 4px; // Góc nhọn
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    // Loading 3 chấm
+    .loading span {
+        animation: blink 1.4s infinite both;
+        font-size: 24px; margin: 0 2px; line-height: 10px;
+    }
+  }
+
+  // Footer (Input)
+  .chat-footer {
+    padding: 15px;
+    background: white;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+
+    input {
+      flex: 1;
+      padding: 10px 16px;
+      border: 1px solid #cbd5e1;
+      border-radius: 24px;
+      outline: none;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+      background: #f8fafc;
+
+      &:focus {
+        border-color: $primary-color;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      }
+    }
+
+    .send-btn {
+      width: 42px; height: 42px;
+      background: $primary-color;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+
+      &:hover:not(:disabled) { transform: scale(1.05); background: darken($primary-color, 5%); }
+      &:disabled { background: #94a3b8; cursor: not-allowed; opacity: 0.7; }
+    }
+  }
+}
+
+// --- 3. ANIMATIONS ---
+
+// Hiệu ứng trồi lên
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+// Hiệu ứng Rung (Shaking)
+@keyframes shake {
+  0% { transform: rotate(0deg) scale(1); }
+  5% { transform: rotate(10deg) scale(1.1); }
+  10% { transform: rotate(-10deg) scale(1.1); }
+  15% { transform: rotate(5deg) scale(1.1); }
+  20% { transform: rotate(-5deg) scale(1.1); }
+  25% { transform: rotate(0deg) scale(1); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+
+// Hiệu ứng nảy số (Pop In)
+@keyframes popIn {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}
+
+// Hiệu ứng nhấp nháy loading
+@keyframes blink {
+    0% { opacity: 0.2; }
+    20% { opacity: 1; }
+    100% { opacity: 0.2; }
+}
+
+// Responsive cho Mobile
+@media (max-width: 480px) {
+  .chat-container {
+    right: 0; bottom: 0;
+    width: 100%; height: 100%;
+    border-radius: 0;
+    max-height: 100vh;
+  }
+  .chat-launcher {
+    bottom: 20px; right: 20px;
+  }
+}

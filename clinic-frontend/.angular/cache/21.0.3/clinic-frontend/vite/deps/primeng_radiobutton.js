@@ -1,12 +1,15 @@
 import {
-  NG_VALUE_ACCESSOR,
-  NgControl
-} from "./chunk-EX2OLAEH.js";
-import {
   AutoFocus,
   AutoFocusModule
 } from "./chunk-HQBNJIAE.js";
 import "./chunk-47BQQJB4.js";
+import {
+  PrimeNGConfig
+} from "./chunk-GWKAQB5R.js";
+import {
+  NG_VALUE_ACCESSOR,
+  NgControl
+} from "./chunk-EX2OLAEH.js";
 import {
   CommonModule,
   NgClass,
@@ -14,9 +17,6 @@ import {
   NgStyle
 } from "./chunk-SLB4UZNK.js";
 import "./chunk-54XDLG5S.js";
-import {
-  PrimeNGConfig
-} from "./chunk-GWKAQB5R.js";
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -60,8 +60,8 @@ import {
   ɵɵtextInterpolate,
   ɵɵviewQuery
 } from "./chunk-QXGWTKNC.js";
-import "./chunk-JRFR6BLO.js";
 import "./chunk-HWYXSU2G.js";
+import "./chunk-JRFR6BLO.js";
 import "./chunk-MARUHEWW.js";
 import "./chunk-WDMUDEB6.js";
 

@@ -1,12 +1,12 @@
 import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { CommonModule, formatDate } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
-import { MedicalService } from '../../../core/services/medical.service';
-import { MasterDataService } from '../../../core/services/master-data.service';
-import { BillingService } from '../../../core/services/billing.service';
+import { MedicalService } from '../../../api/medical.service';
+import { MasterDataService } from '../../../api/master-data.service';
+import { BillingService } from '../../../api/billing.service';
 import { MedicalRecordResponse, PrescriptionResponse, PresDetailResponse } from '../../../models/medical.model';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { AuthService } from '../../../core/services/auth.service';
+import { AuthService } from '../../../api/auth.service';
 
 // PrimeNG Modules
 import { TableModule, Table } from 'primeng/table';
@@ -54,6 +54,10 @@ export class MedicalRecordComponent implements OnInit {
   eligibleAppointments: any[] = [];
 
   // --- 2. BIẾN QUẢN LÝ ĐƠN THUỐC (MỚI) ---
+
+  // [FIX 1] Thêm biến record vào đây để sửa lỗi "Property record does not exist"
+  record: MedicalRecordResponse | null = null;
+
   presDialog: boolean = false;
   hasPrescription: boolean = false;
   currentPrescription: PrescriptionResponse | null = null;
@@ -66,10 +70,13 @@ export class MedicalRecordComponent implements OnInit {
 
   currentInvoiceStatus: string | null = null;
 
+  currentInvoiceType: string = '';
+  isFinalPaid: boolean = false;
+
   // Inject Services
   private medicalService = inject(MedicalService);
   private masterDataService = inject(MasterDataService);
-  private billingService = inject(BillingService);
+  public billingService = inject(BillingService); // Public để dùng trong HTML nếu cần
   private messageService = inject(MessageService);
   public authService = inject(AuthService);
   private confirmationService = inject(ConfirmationService);
@@ -100,7 +107,7 @@ export class MedicalRecordComponent implements OnInit {
 
   ngOnInit() {
     this.loadPatients();
-    this.loadMasterDrugs(); // Load danh sách thuốc ngay khi vào trang
+    this.loadMasterDrugs();
   }
 
   // --- LOGIC LOAD DỮ LIỆU ---
@@ -117,7 +124,6 @@ export class MedicalRecordComponent implements OnInit {
   }
 
   loadMasterDrugs() {
-    // Gọi API lấy thuốc từ MasterDataService
     this.masterDataService.getDrugs(1, 1000).subscribe({
         next: (res) => {
             const list = res.result?.data || [];
@@ -131,33 +137,57 @@ export class MedicalRecordComponent implements OnInit {
   }
 
   loadMedicalHistory(event?: any) {
-    this.loading = true;
-    if (event) {
-      this.page = (event.first / event.rows) + 1;
-      this.size = event.rows;
-    }
+      this.loading = true;
 
-    let fromDateStr = '';
-    let toDateStr = '';
-    if (this.rangeDates && this.rangeDates[0]) {
-      fromDateStr = formatDate(this.rangeDates[0], 'yyyy-MM-dd', 'en-US') + 'T00:00:00';
-    }
-    if (this.rangeDates && this.rangeDates[1]) {
-      toDateStr = formatDate(this.rangeDates[1], 'yyyy-MM-dd', 'en-US') + 'T23:59:59';
-    }
+      // 1. Xử lý Phân trang (Pagination)
+      if (event) {
+        this.page = (event.first / event.rows) + 1;
+        this.size = event.rows;
+      }
 
-    this.medicalService.getMedicalRecords(this.page, this.size, this.keyword, fromDateStr, toDateStr, undefined)
-      .subscribe({
-        next: (res) => {
-          this.records = res.result?.data || [];
-          this.totalRecords = res.result?.totalElements || 0;
-          this.loading = false;
-        },
-        error: () => {
+      // 2. Xử lý Sắp xếp (Sorting) - MỚI THÊM
+      // Mặc định: Sắp theo ngày khám mới nhất
+      let sortBy = 'visitDate';
+      let sortDir = 'desc';
+
+      if (event && event.sortField) {
+        sortBy = event.sortField; // Lấy key từ pSortableColumn (vd: patientName)
+
+        // PrimeNG: 1 là ASC, -1 là DESC. Cần đổi sang chuỗi cho Backend hiểu
+        sortDir = event.sortOrder === 1 ? 'asc' : 'desc';
+      }
+
+      // 3. Xử lý Lọc ngày (Date Filter)
+      let fromDateStr = '';
+      let toDateStr = '';
+      if (this.rangeDates && this.rangeDates[0]) {
+        fromDateStr = formatDate(this.rangeDates[0], 'yyyy-MM-dd', 'en-US') + 'T00:00:00';
+      }
+      if (this.rangeDates && this.rangeDates[1]) {
+        toDateStr = formatDate(this.rangeDates[1], 'yyyy-MM-dd', 'en-US') + 'T23:59:59';
+      }
+
+      // 4. Gọi Service với đầy đủ tham số
+      this.medicalService.getMedicalRecords(
+          this.page,
+          this.size,
+          this.keyword,
+          fromDateStr,
+          toDateStr,
+          undefined,
+          sortBy,   // Truyền tham số sort mới
+          sortDir   // Truyền hướng sort
+      ).subscribe({
+          next: (res) => {
+            this.records = res.result?.data || [];
+            this.totalRecords = res.result?.totalElements || 0;
             this.loading = false;
-            this.records = [];
-        }
-    });
+          },
+          error: () => {
+              this.loading = false;
+              this.records = [];
+          }
+      });
   }
 
   onGlobalFilter(event: any) {
@@ -251,49 +281,66 @@ export class MedicalRecordComponent implements OnInit {
   // --- LOGIC ĐƠN THUỐC (MỚI) ---
 
   openPrescriptionDialog(record: MedicalRecordResponse) {
-    this.presDialog = true;
-    this.selectedRecordId = record.recordId;
+      this.record = record; // [FIX 1] Đã có biến để gán
+      this.selectedRecordId = record.recordId; // [FIX 2] Gán selectedRecordId để dùng cho hàm tạo đơn
 
-    // Reset state
-    this.hasPrescription = false;
-    this.currentPrescription = null;
-    this.currentDetails = [];
-    this.loadingDetails = true;
-    this.currentInvoiceStatus = null; // Reset trạng thái hóa đơn
-    this.drugForm.reset({ quantity: 1 });
+      this.presDialog = true;
+      this.currentDetails = [];
+      this.hasPrescription = false;
 
-    // 4. GỌI API KIỂM TRA TRẠNG THÁI HÓA ĐƠN
-    this.billingService.getInvoiceByAppointment(record.appointmentId).subscribe({
-        next: (res) => {
-            // Nếu tìm thấy hóa đơn -> Lưu trạng thái
-            this.currentInvoiceStatus = res.result?.paymentStatus || null;
-        },
-        error: () => {
-            // Nếu lỗi (vd 404 chưa có hóa đơn) -> Coi như chưa thanh toán
-            this.currentInvoiceStatus = null;
-        }
-    });
+      // Reset trạng thái cờ
+      this.isFinalPaid = false;
+      this.currentInvoiceStatus = '';
 
-    // Gọi API check xem đã có đơn thuốc chưa
-    this.medicalService.getPrescriptionByRecord(record.recordId).subscribe({
-      next: (res) => {
-        if (res.result) {
-          this.hasPrescription = true;
-          this.currentPrescription = res.result;
-          this.loadPrescriptionDetails(res.result.prescriptionId);
-        } else {
-          this.hasPrescription = false;
-          this.loadingDetails = false;
-        }
-      },
-      error: () => {
-        this.hasPrescription = false;
-        this.loadingDetails = false;
-      }
-    });
+      const appointmentId = record.appointmentId;
+
+      // 1. Kiểm tra xem đã có đơn thuốc chưa
+      this.medicalService.getPrescriptionByRecord(record.recordId).subscribe({
+          next: (res: any) => {
+              const presData = res.result || res.data;
+
+              if (presData) {
+                  this.hasPrescription = true;
+                  this.currentPrescription = presData;
+                  this.loadPrescriptionDetails(presData.prescriptionId);
+              } else {
+                  this.hasPrescription = false;
+                  this.currentPrescription = null;
+              }
+          },
+          error: () => {
+              this.hasPrescription = false;
+          }
+      });
+
+      // 2. Kiểm tra trạng thái Hóa đơn
+      this.billingService.getInvoiceByAppointment(appointmentId).subscribe({
+          next: (res: any) => {
+              const invoice = res.result || res.data;
+
+              if (invoice) {
+                  this.currentInvoiceStatus = invoice.paymentStatus;
+                  this.currentInvoiceType = invoice.type; // Lưu type để debug nếu cần
+
+                  // LOGIC QUAN TRỌNG: Chỉ chặn khi là FINAL và PAID
+                  if (invoice.type === 'FINAL' && invoice.paymentStatus === 'PAID') {
+                      this.isFinalPaid = true;
+                  } else {
+                      // BOOKING + PAID hoặc PENDING -> False (Cho phép sửa)
+                      this.isFinalPaid = false;
+                  }
+              } else {
+                  this.isFinalPaid = false;
+              }
+          },
+          error: () => {
+              this.isFinalPaid = false;
+          }
+      });
   }
 
   loadPrescriptionDetails(presId: number) {
+    this.loadingDetails = true;
     this.medicalService.getPrescriptionDetails(presId).subscribe({
         next: (res) => {
             this.currentDetails = res.result || [];
@@ -304,7 +351,10 @@ export class MedicalRecordComponent implements OnInit {
   }
 
   createPrescription() {
-    if (!this.selectedRecordId) return;
+    if (!this.selectedRecordId) {
+        this.messageService.add({ severity: 'error', summary: 'Lỗi', detail: 'Không xác định được hồ sơ bệnh án' });
+        return;
+    }
 
     const request = {
       recordId: this.selectedRecordId,

@@ -29,8 +29,8 @@ public class Invoice {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long invoiceId;
 
-    @OneToOne
-    @JoinColumn(name = "appointmentId", nullable = false, unique = true)
+    @ManyToOne
+    @JoinColumn(name = "appointmentId", nullable = false)
     Appointment appointment;
 
     @Column(nullable = false, precision = 15, scale = 2)

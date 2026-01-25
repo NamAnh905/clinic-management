@@ -39,7 +39,7 @@ public class InvoiceDetailController {
                 .build();
     }
 
-    @PreAuthorize("hasAuthority('FULL_ACCESS') or hasAuthority('READ_INVOICE')")
+    @PreAuthorize("hasAuthority('FULL_ACCESS') or hasAuthority('READ_INVOICE') or hasAuthority('READ_OWN_INVOICE')")
     @GetMapping("/by-invoice/{invoiceId}")
     public ApiResponse<List<InvoiceDetailResponse>> findDetailsByInvoiceId(@PathVariable Long invoiceId) {
         return ApiResponse.<List<InvoiceDetailResponse>>builder()

@@ -5,9 +5,9 @@ public class ChatPromptUtils {
     // Thông tin cứng (Fallback info)
     private static final String CLINIC_INFO = """
         - Tên: Phòng khám 28Care
-        - Hotline: 0349755252
+        - Hotline: 1900 9999
         - Địa chỉ: Số 41 ngõ 105, tổ 4, phường Long Biên, Hà Nội
-        - Giờ hoạt động: 7:00 - 21:30 (Tất cả các ngày trong tuần)
+        - Giờ hoạt động: 7:00 - 21:00 (Từ Thứ 2 - Thứ 7)
         """;
 
     /**

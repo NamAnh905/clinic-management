@@ -19,6 +19,8 @@ public class InvoiceResponse {
     String patientName;
     String doctorName;
     BigDecimal totalAmount;
+    BigDecimal depositAmount;
+    Long bookingInvoiceId;
     PaymentStatus paymentStatus;
     PaymentMethod paymentMethod;
     String transactionCode;

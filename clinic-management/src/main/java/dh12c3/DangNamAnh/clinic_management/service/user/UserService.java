@@ -37,6 +37,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -85,9 +86,11 @@ public class UserService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND)));
     }
 
-    public PageResponse<UserResponse> getAllUsers(Boolean status, String roleName, String keyword, int page, int size) {
-        Sort sort = Sort.by(Sort.Direction.ASC, "userId");
-        Pageable pageable = PageRequest.of(page - 1, size, sort);
+    public PageResponse<UserResponse> getAllUsers(Boolean status, String roleName, String keyword, int page, int size, String sortBy, String sortDir) {
+        String sortField = SORT_MAPPING.getOrDefault(sortBy, "fullName");
+        Sort.Direction direction = sortDir.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(direction, sortField));
 
         Specification<User> spec = (root, q, cb) -> cb.conjunction();
 
@@ -203,4 +206,10 @@ public class UserService {
 
         return excelExportService.exportToExcel(users, "Danh sách người dùng");
     }
+
+    Map<String, String> SORT_MAPPING = Map.of(
+            "fullName", "fullName",
+            "phoneNumber", "phoneNumber",
+            "dateOfBirth", "dateOfBirth"
+    );
 }

@@ -9,24 +9,16 @@ import { MenuItem, MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 
 // Services
-import { UserService } from '../../../../core/services/user.service';
-import { AuthService } from '../../../../core/services/auth.service';
+import { UserService } from '../../../../api/user.service';
+import { AuthService } from '../../../../api/auth.service';
 import { UserResponse } from '../../../../models/user.model';
-
-// Child Components
-import { ProfileUpdateDialogComponent } from '../../../../shared/components/profile-update-dialog/profile-update-dialog.component';
-import { AppointmentHistoryDialogComponent } from '../../../../shared/components/appointment-history-dialog/appointment-history-dialog.component';
-import { ChangePasswordDialogComponent } from '../../../../shared/components/change-password-dialog/change-password-dialog.component';
 
 @Component({
   selector: 'app-header',
   standalone: true,
   imports: [
     CommonModule, RouterLink, RouterLinkActive,
-    AvatarModule, MenuModule, ToastModule,
-    ProfileUpdateDialogComponent,
-    AppointmentHistoryDialogComponent,
-    ChangePasswordDialogComponent
+    AvatarModule, MenuModule, ToastModule
   ],
   providers: [MessageService],
   templateUrl: './header.component.html',
@@ -35,11 +27,6 @@ import { ChangePasswordDialogComponent } from '../../../../shared/components/cha
 export class HeaderComponent implements OnInit {
   currentUser: UserResponse | null = null;
   userMenuItems: MenuItem[] = [];
-
-  // Dialog Control Flags
-  showProfileDialog = false;
-  showHistoryDialog = false;
-  showPasswordDialog = false;
 
   private userService = inject(UserService);
   private authService = inject(AuthService);
@@ -74,17 +61,27 @@ export class HeaderComponent implements OnInit {
       {
         label: 'Hồ sơ cá nhân',
         icon: 'pi pi-user',
-        command: () => this.showProfileDialog = true
+        routerLink: '/profile/account' // Dùng routerLink thay vì command
       },
       {
         label: 'Lịch sử đặt khám',
         icon: 'pi pi-calendar',
-        command: () => this.showHistoryDialog = true
+        routerLink: '/profile/appointments'
+      },
+      {
+        label: 'Đơn thuốc',
+        icon: 'pi pi-file',
+        routerLink: '/profile/prescriptions'
+      },
+      {
+        label: 'Lịch sử thanh toán',
+        icon: 'pi pi-wallet',
+        routerLink: '/profile/invoices'
       },
       {
         label: 'Đổi mật khẩu',
         icon: 'pi pi-key',
-        command: () => this.showPasswordDialog = true
+        routerLink: '/profile/password'
       },
       { separator: true },
       {
@@ -94,10 +91,6 @@ export class HeaderComponent implements OnInit {
         command: () => this.logout()
       }
     ];
-  }
-
-  handleUserUpdate(updatedUser: UserResponse) {
-    this.currentUser = updatedUser; // Cập nhật lại UI ngay lập tức
   }
 
   logout() {

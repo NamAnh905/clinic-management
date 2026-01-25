@@ -26,7 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -94,9 +94,17 @@ public class MedicalRecordService {
         return medicalRecordMapper.toMedicalRecordResponse(record);
     }
 
-    public PageResponse<MedicalRecordResponse> findAll(Long doctorId, LocalDateTime startDate, LocalDateTime endDate, String keyword, int page, int size){
-        Sort sort = Sort.by(Sort.Direction.ASC, "recordId");
-        Pageable pageable = PageRequest.of(page - 1, size, sort);
+    public PageResponse<MedicalRecordResponse> findAll(Long doctorId,
+                                                       LocalDateTime startDate,
+                                                       LocalDateTime endDate,
+                                                       String keyword, int page,
+                                                       int size,
+                                                       String sortBy,
+                                                       String sortDir){
+        String sortField = SORT_MAPPING.getOrDefault(sortBy, "appointment.appointmentTime");
+
+        Sort.Direction direction = sortDir.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(direction, sortField));
 
         String currentUsername = securityUtils.getCurrentUserLogin();
         boolean isAdminOrDoctor = securityUtils.hasRole("READ_MEDICAL_RECORD");
@@ -136,4 +144,10 @@ public class MedicalRecordService {
             }
         }
     }
+
+    Map<String, String> SORT_MAPPING = Map.of(
+            "patientName", "appointment.patient.user.fullName",
+            "visitDate",   "appointment.appointmentTime",
+            "diagnosis",   "diagnosis"
+    );
 }

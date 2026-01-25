@@ -2,8 +2,8 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, formatDate } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { UserResponse } from '../../../models/user.model';
-import { UserService } from '../../../core/services/user.service';
-import { UploadService } from '../../../core/services/upload.service';
+import { UserService } from '../../../api/user.service';
+import { UploadService } from '../../../api/upload.service';
 
 // PrimeNG v17 Modules
 import { TableModule } from 'primeng/table';
@@ -109,22 +109,40 @@ export class UserManagementComponent implements OnInit {
 
   // 1. Load danh sách (Server-side pagination)
   loadUsers(event?: any) {
-    this.loading = true;
+      this.loading = true;
 
-    // Nếu gọi từ bảng (khi chuyển trang)
-    if (event) {
-      this.page = (event.first / event.rows) + 1;
-      this.size = event.rows;
-    }
+      // 1. Phân trang
+      if (event) {
+        this.page = (event.first / event.rows) + 1;
+        this.size = event.rows;
+      }
 
-    this.userService.getUsers(this.page, this.size,this.selectedStatus, this.selectedRole, this.keyword).subscribe({
-        next: (res) => {
-            this.users = res.result?.data || [];
-            this.totalRecords = res.result?.totalElements || 0;
-            this.loading = false;
-        },
-        error: () => this.loading = false
-    });
+      // 2. Xử lý Sắp xếp (MỚI)
+      let sortBy = 'fullName';
+      let sortDir = 'asc';
+
+      if (event && event.sortField) {
+          sortBy = event.sortField;
+          sortDir = event.sortOrder === 1 ? 'asc' : 'desc';
+      }
+
+      // 3. Gọi Service
+      this.userService.getUsers(
+          this.page,
+          this.size,
+          this.selectedStatus,
+          this.selectedRole,
+          this.keyword,
+          sortBy,   // Mới
+          sortDir   // Mới
+      ).subscribe({
+          next: (res) => {
+              this.users = res.result?.data || [];
+              this.totalRecords = res.result?.totalElements || 0;
+              this.loading = false;
+          },
+          error: () => this.loading = false
+      });
   }
 
   // 2. Mở Dialog Thêm mới

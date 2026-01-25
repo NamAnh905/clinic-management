@@ -50,7 +50,7 @@ public class InvoiceController {
                 .build();
     }
 
-    @PreAuthorize("hasAuthority('FULL_ACCESS') or hasAuthority('READ_INVOICE')")
+    @PreAuthorize("hasAuthority('FULL_ACCESS') or hasAuthority('READ_INVOICE') or hasAuthority('READ_OWN_INVOICE')")
     @GetMapping
     public ApiResponse<PageResponse<InvoiceResponse>> findAll(@RequestParam(required = false)PaymentStatus paymentStatus,
                                                               @RequestParam(required = false) PaymentMethod paymentMethod,
@@ -60,9 +60,12 @@ public class InvoiceController {
                                                                       DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
                                                               @RequestParam(required = false) String keyword,
                                                               @RequestParam(defaultValue = "1") int page,
-                                                              @RequestParam(defaultValue = "10") int size) {
+                                                              @RequestParam(defaultValue = "10") int size,
+                                                              @RequestParam(defaultValue = "createdAt") String sortBy,
+                                                              @RequestParam(defaultValue = "desc") String sortDir
+    ) {
         return ApiResponse.<PageResponse<InvoiceResponse>>builder()
-                .result(invoiceService.findAll(paymentStatus, paymentMethod, startDate, endDate, keyword, page, size))
+                .result(invoiceService.findAll(paymentStatus, paymentMethod, startDate, endDate, keyword, page, size, sortBy, sortDir))
                 .build();
     }
 

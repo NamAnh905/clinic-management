@@ -52,9 +52,11 @@ public class MedicalRecordController {
                                                                             DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
                                                                     @RequestParam(required = false) String keyword,
                                                                     @RequestParam(defaultValue = "1") int page,
-                                                                    @RequestParam(defaultValue = "10") int size) {
+                                                                    @RequestParam(defaultValue = "10") int size,
+                                                                    @RequestParam(defaultValue = "visitDate") String sortBy,
+                                                                    @RequestParam(defaultValue = "desc") String sortDir) {
         return ApiResponse.<PageResponse<MedicalRecordResponse>>builder()
-                .result(medicalRecordService.findAll(doctorId, startDate, endDate, keyword, page, size))
+                .result(medicalRecordService.findAll(doctorId, startDate, endDate, keyword, page, size, sortBy, sortDir))
                 .build();
     }
 

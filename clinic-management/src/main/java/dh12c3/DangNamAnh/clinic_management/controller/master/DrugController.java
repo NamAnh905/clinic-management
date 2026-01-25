@@ -50,9 +50,11 @@ public class DrugController {
     @GetMapping
     public ApiResponse<PageResponse<DrugResponse>> findAll(@RequestParam(required = false) String keyword,
                                                            @RequestParam(defaultValue = "1") int page,
-                                                           @RequestParam(defaultValue = "10") int size) {
+                                                           @RequestParam(defaultValue = "10") int size,
+                                                           @RequestParam(defaultValue = "stockQuantity") String sortBy,
+                                                           @RequestParam(defaultValue = "desc") String sortDir) {
         return ApiResponse.<PageResponse<DrugResponse>>builder()
-                .result(drugService.findAll(keyword, page, size))
+                .result(drugService.findAll(keyword, page, size, sortBy, sortDir))
                 .build();
     }
 

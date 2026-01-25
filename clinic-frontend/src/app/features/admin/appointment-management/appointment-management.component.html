@@ -18,7 +18,7 @@
                         [(ngModel)]="keyword"
                         (keyup.enter)="loadAppointments()"
                         placeholder="Tên BN / Bác sĩ..."
-                        class="w-full sm:w-16rem border-round-2xl pl-5" />
+                        class="w-full sm:w-16rem pl-5" />
                 </span>
 
                 <p-calendar
@@ -28,7 +28,7 @@
                     placeholder="Chọn khoảng ngày"
                     dateFormat="dd/mm/yy"
                     [showIcon]="true"
-                    styleClass="w-full sm:w-16rem border-round-2xl"
+                    styleClass="w-full sm:w-16rem"
                     (onClose)="loadAppointments()">
                 </p-calendar>
 
@@ -39,7 +39,7 @@
                     optionLabel="label"
                     optionValue="value"
                     placeholder="Trạng thái"
-                    styleClass="w-full sm:w-12rem border-round-2xl"
+                    styleClass="w-full sm:w-12rem"
                     [showClear]="true">
                 </p-dropdown>
             </div>
@@ -80,11 +80,19 @@
                 <ng-template pTemplate="header">
                     <tr>
                         <th style="min-width: 50px">ID</th>
-                        <th style="min-width: 180px">Bệnh nhân</th>
-                        <th style="min-width: 180px">Bác sĩ</th>
-                        <th style="min-width: 140px">Thời gian hẹn</th>
+                        <th style="min-width: 180px" pSortableColumn="patientName">
+                            Bệnh nhân <p-sortIcon field="patientName"></p-sortIcon>
+                        </th>
+                        <th style="min-width: 180px" pSortableColumn="doctorName">
+                            Bác sĩ <p-sortIcon field="doctorName"></p-sortIcon>
+                        </th>
+                        <th style="min-width: 140px" pSortableColumn="appointmentTime">
+                            Thời gian hẹn <p-sortIcon field="appointmentTime"></p-sortIcon>
+                        </th>
                         <th style="min-width: 200px">Lý do khám</th>
-                        <th style="min-width: 120px" class="text-center">Trạng thái</th>
+                        <th style="min-width: 120px" class="text-center" pSortableColumn="status">
+                            Trạng thái <p-sortIcon field="status"></p-sortIcon>
+                        </th>
                         <th class="text-center" style="min-width: 160px" *ngIf="!isDoctor">Thao tác</th>
                     </tr>
                 </ng-template>

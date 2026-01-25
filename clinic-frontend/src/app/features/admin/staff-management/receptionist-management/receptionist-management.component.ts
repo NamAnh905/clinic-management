@@ -1,8 +1,8 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, formatDate } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
-import { StaffService } from '../../../../core/services/staff.service';
-import { UserService } from '../../../../core/services/user.service';
+import { StaffService } from '../../../../api/staff.service';
+import { UserService } from '../../../../api/user.service';
 import { ReceptionistResponse } from '../../../../models/staff.model';
 
 // PrimeNG Modules (Giữ nguyên như user-management)

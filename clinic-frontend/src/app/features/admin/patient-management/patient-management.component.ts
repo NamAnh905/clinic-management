@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, formatDate } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
-import { PatientService } from '../../../core/services/patient.service';
+import { PatientService } from '../../../api/patient.service';
 import { PatientUpdationRequest, PatientResponse } from '../../../models/patient.model';
 
 import { ConfirmationService, MessageService } from 'primeng/api';

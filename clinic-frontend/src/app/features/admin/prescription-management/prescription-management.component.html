@@ -16,7 +16,7 @@
                     <input pInputText type="text"
                         (input)="onGlobalFilter($event)"
                         placeholder="Tìm bệnh nhân, chẩn đoán..."
-                        class="w-full sm:w-16rem border-round-2xl pl-5" />
+                        class="w-full sm:w-16rem pl-5" />
                 </span>
 
                 <p-calendar
@@ -26,12 +26,12 @@
                     placeholder="Chọn ngày khám"
                     dateFormat="dd/mm/yy"
                     [showIcon]="true"
-                    styleClass="w-full sm:w-16rem border-round-2xl"
+                    styleClass="w-full sm:w-16rem"
                     (onClose)="loadRecords()"> </p-calendar>
             </div>
 
             <div class="flex flex-column sm:flex-row gap-2 w-full xl:w-auto">
-                <button pButton icon="pi pi-refresh" class="p-button-outlined p-button-rounded border-round-2xl"
+                <button pButton icon="pi pi-refresh" class="p-button-outlined p-button-rounded"
                         (click)="loadRecords()" pTooltip="Tải lại"></button>
             </div>
         </div>
@@ -41,6 +41,8 @@
                 [value]="records"
                 [lazy]="true"
                 (onLazyLoad)="loadRecords($event)"
+                sortField="visitDate"
+                [sortOrder]="-1"
                 [totalRecords]="totalRecords"
                 [rows]="size"
                 [loading]="loading"
@@ -55,8 +57,12 @@
                 <ng-template pTemplate="header">
                     <tr>
                         <th style="min-width: 80px">ID</th>
-                        <th style="min-width: 180px">Bệnh nhân</th>
-                        <th style="width: 150px">Ngày khám</th>
+                        <th style="min-width: 180px" pSortableColumn="patientName">
+                            Bệnh nhân <p-sortIcon field="patientName"></p-sortIcon>
+                        </th>
+                        <th style="width: 150px" pSortableColumn="visitDate">
+                            Ngày khám <p-sortIcon field="visitDate"></p-sortIcon>
+                        </th>
                         <th style="min-width: 250px">Chẩn đoán</th>
                         <th class="text-center" style="width: 140px">Thao tác</th>
                     </tr>

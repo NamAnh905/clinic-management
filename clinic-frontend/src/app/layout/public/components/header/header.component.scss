@@ -1,6 +1,8 @@
 @use "sass:color";
 $primary-color: #007bff;
+$dark-primary: #0056b3; /* Màu đậm hơn cho Topbar */
 $text-dark: #2d3436;
+$text-light: #636e72;
 $bg-light: #f8f9fa;
 
 .container {
@@ -9,12 +11,11 @@ $bg-light: #f8f9fa;
   padding: 0 15px;
 }
 
-/* --- Main Header --- */
+/* --- Main Header Container --- */
 .main-header {
   background: #fff;
-  height: 80px;
   display: flex;
-  align-items: center;
+  flex-direction: column; /* Xếp dọc: Topbar trên, Nav dưới */
   position: fixed;
   top: 0;
   left: 0;
@@ -22,11 +23,54 @@ $bg-light: #f8f9fa;
   z-index: 900;
   box-shadow: 0 2px 15px rgba(0,0,0,0.05);
 
-  .header-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  /* 1. Style cho Topbar mới */
+  .top-bar {
+    background-color: $dark-primary;
+    color: #fff;
+    font-size: 13px;
+    padding: 8px 0;
+
+    .top-bar-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .contact-info, .social-links {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+
+        a {
+          color: #fff;
+          text-decoration: none;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          transition: opacity 0.2s;
+          &:hover { opacity: 0.8; }
+        }
+
+        i { font-size: 12px; }
+
+        .divider {
+          opacity: 0.5;
+          font-size: 12px;
+        }
+      }
+    }
+  }
+
+  /* 2. Style cho Header chính (Logo + Menu) */
+  .header-inner {
+    background: #fff;
     width: 100%;
+
+    .header-wrapper {
+      height: 70px; /* Chiều cao cố định cho phần này */
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
   }
 
   .brand-logo {
@@ -34,25 +78,39 @@ $bg-light: #f8f9fa;
       display: flex;
       align-items: center;
       img {
-          height: 55px;
+          height: 50px;
           width: auto;
           object-fit: contain;
       }
   }
 
+  /* 3. Nâng cấp Menu: Thêm hiệu ứng Hover Pill */
   .nav-menu ul {
     display: flex;
     list-style: none;
-    gap: 30px;
+    gap: 10px; /* Giảm gap một chút để các item gần nhau hơn */
     margin: 0;
     padding: 0;
+
     a {
       text-decoration: none;
       color: $text-dark;
       font-weight: 600;
-      font-size: 16px;
-      transition: color 0.3s;
-      &:hover, &.active { color: $primary-color; }
+      font-size: 15px;
+      padding: 8px 16px; /* Tạo không gian cho background */
+      border-radius: 50px; /* Bo tròn kiểu viên thuốc */
+      display: flex;
+      align-items: center;
+      gap: 8px; /* Khoảng cách giữa icon và chữ */
+      transition: all 0.3s ease;
+
+      i { font-size: 14px; color: $text-light; transition: color 0.3s; }
+
+      &:hover, &.active {
+        color: $primary-color;
+        background-color: rgba(0, 123, 255, 0.08); /* Nền xanh nhạt */
+        i { color: $primary-color; }
+      }
     }
   }
 
@@ -60,6 +118,7 @@ $bg-light: #f8f9fa;
     display: flex;
     align-items: center;
     gap: 20px;
+
     .auth-buttons {
       display: flex;
       align-items: center;
@@ -78,6 +137,7 @@ $bg-light: #f8f9fa;
         border-radius: 30px;
         text-decoration: none;
         font-weight: 600;
+        font-size: 14px;
         box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
         transition: transform 0.2s;
         &:hover {

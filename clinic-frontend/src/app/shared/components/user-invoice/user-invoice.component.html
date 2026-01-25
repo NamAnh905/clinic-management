@@ -1,0 +1,97 @@
+<div class="p-4 md:p-5">
+    <div class="border-bottom-1 surface-border mb-4 pb-3">
+        <h2 class="text-xl font-bold m-0 text-900">Lịch sử thanh toán</h2>
+    </div>
+
+    <p-table
+        [value]="invoices"
+        [lazy]="true"
+        (onLazyLoad)="onPageChange($event)"
+        [paginator]="true"
+        [rows]="size"
+        [totalRecords]="totalRecords"
+        [loading]="loading"
+        responsiveLayout="scroll"
+        styleClass="p-datatable-clean">
+
+        <ng-template pTemplate="body" let-invoice>
+            <tr>
+                <td>
+                    <div class="invoice-card" [ngClass]="'status-' + invoice.paymentStatus.toLowerCase()">
+                        <div class="date-box">
+                            <span class="day">{{ invoice.createdAt | date:'dd' }}</span>
+                            <span class="month">Th{{ invoice.createdAt | date:'MM' }}</span>
+                        </div>
+
+                        <div class="info-section">
+                            <div class="invoice-id">
+                                <i class="pi pi-hashtag"></i>
+                                <span class="font-bold text-900 ml-1">{{ invoice.transactionCode }}</span>
+                            </div>
+                            <div class="invoice-type">
+                                {{ invoice.type === 'BOOKING' ? 'Thanh toán Đặt cọc' : 'Thanh toán Tất toán' }}
+                            </div>
+                            <div class="payment-method">
+                                <i class="pi pi-wallet"></i>
+                                {{ invoice.paymentMethod === 'VNPAY' ? 'Cổng VNPay' : 'Tiền mặt' }}
+                            </div>
+                        </div>
+
+                        <div class="action-section">
+                            <span class="amount-text">
+                                {{ invoice.totalAmount | currency:'VND':'symbol':'1.0-0' }}
+                            </span>
+                            <span class="status-badge" [ngClass]="'badge-' + invoice.paymentStatus.toLowerCase()">
+                                {{ getStatusLabel(invoice.paymentStatus) }}
+                            </span>
+                            <p-button icon="pi pi-eye" label="Chi tiết" [rounded]="true" [text]="true" size="small" (click)="viewDetail(invoice)"></p-button>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td class="text-center p-5">
+                    <div class="flex flex-column align-items-center opacity-50">
+                        <i class="pi pi-receipt text-6xl mb-3"></i>
+                        <span>Chưa có giao dịch thanh toán nào.</span>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+
+    <p-dialog header="Chi tiết hóa đơn" [(visible)]="showDetailDialog" [modal]="true" [style]="{width: '600px'}" [draggable]="false" [resizable]="false" appendTo="body">
+        <div *ngIf="selectedInvoice" class="mb-3">
+            <p class="m-0 text-600">Mã giao dịch: <span class="font-bold text-900">{{ selectedInvoice.transactionCode }}</span></p>
+        </div>
+        <p-table [value]="invoiceDetails" [loading]="loadingDetails" styleClass="p-datatable-sm p-datatable-gridlines">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Nội dung</th> <th class="text-center" style="width: 80px">SL</th> <th class="text-right" style="width: 120px">Đơn giá</th> <th class="text-right" style="width: 120px">Thành tiền</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-detail>
+                <tr>
+                    <td>
+                        <span *ngIf="detail.serviceName" class="font-medium text-blue-600">{{ detail.serviceName }}</span>
+                        <span *ngIf="detail.drugName" class="font-medium text-green-600">{{ detail.drugName }}</span>
+                    </td>
+                    <td class="text-center">{{ detail.quantity }}</td>
+                    <td class="text-right">{{ detail.unitPrice | currency:'VND':'symbol':'1.0-0' }}</td>
+                    <td class="text-right font-bold text-900">{{ (detail.quantity * detail.unitPrice) | currency:'VND':'symbol':'1.0-0' }}</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="footer">
+                <tr>
+                    <td colspan="3" class="text-right font-bold">Tổng cộng:</td>
+                    <td class="text-right font-bold text-primary text-lg">{{ selectedInvoice?.totalAmount | currency:'VND':'symbol':'1.0-0' }}</td>
+                </tr>
+            </ng-template>
+        </p-table>
+        <ng-template pTemplate="footer">
+            <p-button label="Đóng" icon="pi pi-times" (click)="showDetailDialog = false" styleClass="p-button-text"></p-button>
+        </ng-template>
+    </p-dialog>
+</div>

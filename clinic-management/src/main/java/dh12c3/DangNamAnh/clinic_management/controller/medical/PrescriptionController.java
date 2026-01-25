@@ -44,9 +44,11 @@ public class PrescriptionController {
     @PreAuthorize("hasAuthority('READ_PRESCRIPTION') or hasAuthority('FULL_ACCESS') or hasAuthority('READ_OWN_PRESCRIPTION')")
     @GetMapping
     public ApiResponse<PageResponse<PrescriptionResponse>> findAll(@RequestParam(defaultValue = "1") int page,
-                                                                   @RequestParam(defaultValue = "10") int size) {
+                                                                   @RequestParam(defaultValue = "10") int size,
+                                                                   @RequestParam(defaultValue = "visitDate") String sortBy,
+                                                                   @RequestParam(defaultValue = "desc") String sortDir) {
         return ApiResponse.<PageResponse<PrescriptionResponse>>builder()
-                .result(prescriptionService.findAll(page, size))
+                .result(prescriptionService.findAll(page, size, sortBy, sortDir))
                 .build();
     }
 
@@ -58,7 +60,7 @@ public class PrescriptionController {
                 .build();
     }
 
-    @PreAuthorize("hasAuthority('READ_PRESCRIPTION') or hasAuthority('FULL_ACCESS')")
+    @PreAuthorize("hasAuthority('READ_PRESCRIPTION') or hasAuthority('FULL_ACCESS') or hasAuthority('READ_OWN_PRESCRIPTION')")
     @GetMapping("/record/{recordId}")
     public ApiResponse<PrescriptionResponse> getByRecordId(@PathVariable Long recordId) {
         return ApiResponse.<PrescriptionResponse>builder()

@@ -1,49 +1,67 @@
 <p-toast></p-toast>
 
 <header class="main-header">
-  <div class="container header-wrapper">
-
-    <a routerLink="/" class="brand-logo">
-       <img src="assets/icons/logo_real.png" alt="28Care Logo">
-    </a>
-
-    <nav class="nav-menu">
-      <ul>
-        <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Trang chủ</a></li>
-        <li><a routerLink="/specialties" routerLinkActive="active">Chuyên khoa</a></li>
-        <li><a routerLink="/doctors" routerLinkActive="active">Bác sĩ</a></li>
-        <li><a routerLink="/services" routerLinkActive="active">Dịch vụ</a></li>
-      </ul>
-    </nav>
-
-    <div class="header-actions">
-      <div class="auth-buttons" *ngIf="!currentUser">
-        <a routerLink="/login" class="btn-login">Đăng nhập</a>
-        <a routerLink="/booking" class="btn-booking">Đặt lịch ngay</a>
+  <div class="top-bar">
+    <div class="container top-bar-content">
+      <div class="contact-info">
+        <span><i class="pi pi-phone"></i> Hotline: 1900 9999</span>
+        <span class="divider">|</span>
+        <span><i class="pi pi-clock"></i> 07:00 - 21:00 (Thứ 2 - Thứ 7)</span>
       </div>
-
-      <div class="user-profile relative inline-block cursor-pointer" *ngIf="currentUser" (click)="menu.toggle($event)">
-          <p-avatar
-            [image]="currentUser.image || 'https://ui-avatars.com/api/?background=007bff&color=fff&name=' + currentUser.fullName"
-            shape="circle" [style]="{'width': '45px', 'height': '45px'}">
-          </p-avatar>
-          <div class="avatar-badge"><i class="pi pi-angle-down"></i></div>
+      <div class="social-links">
+        <a href="mailto:namanhdang0905@gmail.com"><i class="pi pi-envelope"></i> namanhdang0905@gmail.com</a>
+        <span class="divider">|</span>
+        <a href="https://www.facebook.com/nam.anh.235085"><i class="pi pi-facebook"></i></a>
       </div>
-      <p-menu #menu [model]="userMenuItems" [popup]="true" appendTo="body"></p-menu>
+    </div>
+  </div>
+
+  <div class="header-inner">
+    <div class="container header-wrapper">
+      <a routerLink="/" class="brand-logo">
+         <img src="assets/icons/logo_real.png" alt="28Care Logo" onError="this.src='https://placehold.co/100x40?text=Logo'">
+      </a>
+
+      <nav class="nav-menu">
+        <ul>
+          <li>
+            <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+              Trang chủ
+            </a>
+          </li>
+          <li>
+            <a routerLink="/specialties" routerLinkActive="active">
+              Chuyên khoa
+            </a>
+          </li>
+          <li>
+            <a routerLink="/doctors" routerLinkActive="active">
+              Bác sĩ
+            </a>
+          </li>
+          <li>
+            <a routerLink="/services" routerLinkActive="active">
+              Dịch vụ
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        <div class="auth-buttons" *ngIf="!currentUser">
+          <a routerLink="/login" class="btn-login">Đăng nhập</a>
+          <a routerLink="/booking" class="btn-booking">Đặt lịch ngay</a>
+        </div>
+
+        <div class="user-profile relative inline-block cursor-pointer" *ngIf="currentUser" (click)="menu.toggle($event)">
+            <p-avatar
+              [image]="currentUser.image || 'https://ui-avatars.com/api/?background=007bff&color=fff&name=' + currentUser.fullName"
+              shape="circle" [style]="{'width': '45px', 'height': '45px'}">
+            </p-avatar>
+            <div class="avatar-badge"><i class="pi pi-angle-down"></i></div>
+        </div>
+        <p-menu #menu [model]="userMenuItems" [popup]="true" appendTo="body"></p-menu>
+      </div>
     </div>
   </div>
 </header>
-
-<app-profile-update-dialog
-    [(visible)]="showProfileDialog"
-    [currentUser]="currentUser"
-    (onUpdateSuccess)="handleUserUpdate($event)">
-</app-profile-update-dialog>
-
-<app-appointment-history-dialog
-    [(visible)]="showHistoryDialog">
-</app-appointment-history-dialog>
-
-<app-change-password-dialog
-    [(visible)]="showPasswordDialog">
-</app-change-password-dialog>

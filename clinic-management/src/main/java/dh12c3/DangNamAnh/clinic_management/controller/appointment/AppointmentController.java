@@ -91,10 +91,12 @@ public class AppointmentController {
                                                                   DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
                                                           @RequestParam(required = false) String keyword,
                                                           @RequestParam(defaultValue = "1") int page,
-                                                          @RequestParam(defaultValue = "10") int size
+                                                          @RequestParam(defaultValue = "10") int size,
+                                                          @RequestParam(defaultValue = "appointmentTime") String sortBy,
+                                                          @RequestParam(defaultValue = "desc") String sortDir
     ){
         return ApiResponse.<PageResponse<AppointmentResponse>>builder()
-                .result(appointmentService.findAll(doctorId, patientId, status, startDate, endDate, keyword, page, size))
+                .result(appointmentService.findAll(doctorId, patientId, status, startDate, endDate, keyword, page, size, sortBy, sortDir))
                 .build();
     }
 

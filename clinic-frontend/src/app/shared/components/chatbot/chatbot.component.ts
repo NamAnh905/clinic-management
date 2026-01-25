@@ -1,7 +1,7 @@
 import { Component, ElementRef, ViewChild, AfterViewChecked, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ChatbotService } from '../../../core/services/chatbot.service'; // Import Service vừa tạo
+import { ChatbotService } from '../../../api/chatbot.service'; // Import Service vừa tạo
 
 interface ChatMessage {
   text: string;

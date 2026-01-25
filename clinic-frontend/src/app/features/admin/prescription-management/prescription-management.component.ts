@@ -1,12 +1,12 @@
 import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule, formatDate } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MedicalService } from '../../../core/services/medical.service';
-import { MasterDataService } from '../../../core/services/master-data.service';
-import { BillingService } from '../../../core/services/billing.service';
+import { MedicalService } from '../../../api/medical.service';
+import { MasterDataService } from '../../../api/master-data.service';
+import { BillingService } from '../../../api/billing.service';
 import { MedicalRecordResponse, PresDetailResponse, PrescriptionResponse } from '../../../models/medical.model';
 import { MessageService, ConfirmationService } from 'primeng/api';
-import { AuthService } from '../../../core/services/auth.service';
+import { AuthService } from '../../../api/auth.service';
 
 // PrimeNG Modules
 import { TableModule, Table } from 'primeng/table';
@@ -87,33 +87,60 @@ export class PrescriptionComponent implements OnInit {
 
   // --- 1. LOAD DATA CHO BẢNG CHÍNH ---
   loadRecords(event?: any) {
-    this.loading = true;
-    if (event) {
-      this.page = (event.first / event.rows) + 1;
-      this.size = event.rows;
-    }
+      this.loading = true;
 
-    let fromDateStr = '';
-    let toDateStr = '';
-    // Format ngày gửi xuống BE: yyyy-MM-ddTHH:mm:ss
-    if (this.rangeDates && this.rangeDates[0]) {
-      fromDateStr = formatDate(this.rangeDates[0], 'yyyy-MM-dd', 'en-US') + 'T00:00:00';
-    }
-    if (this.rangeDates && this.rangeDates[1]) {
-      toDateStr = formatDate(this.rangeDates[1], 'yyyy-MM-dd', 'en-US') + 'T23:59:59';
-    }
+      // 1. Xử lý Phân trang (Pagination)
+      if (event) {
+          // PrimeNG gửi lên 'first' (index dòng đầu) -> Chia cho 'rows' để ra số trang (bắt đầu từ 1)
+          this.page = (event.first / event.rows) + 1;
+          this.size = event.rows;
+      }
 
-    this.medicalService.getMedicalRecords(this.page, this.size, this.keyword, fromDateStr, toDateStr)
-      .subscribe({
-        next: (res) => {
-          this.records = res.result?.data || [];
-          this.totalRecords = res.result?.totalElements || 0;
-          this.loading = false;
-        },
-        error: () => {
-            this.loading = false;
-            this.records = [];
-        }
+      // 2. Xử lý Sắp xếp (Sorting) - MỚI THÊM
+      // Mặc định: Sắp xếp theo ngày khám (visitDate) giảm dần (desc - mới nhất trước)
+      let sortBy = 'visitDate';
+      let sortDir = 'desc';
+
+      if (event && event.sortField) {
+          sortBy = event.sortField;
+          // PrimeNG quy ước: 1 là ASC (Tăng dần), -1 là DESC (Giảm dần)
+          sortDir = event.sortOrder === 1 ? 'asc' : 'desc';
+      }
+
+      // 3. Xử lý Bộ lọc ngày (Date Filter)
+      let fromDateStr = '';
+      let toDateStr = '';
+
+      // Format ngày gửi xuống BE chuẩn: yyyy-MM-ddTHH:mm:ss
+      if (this.rangeDates && this.rangeDates[0]) {
+          fromDateStr = formatDate(this.rangeDates[0], 'yyyy-MM-dd', 'en-US') + 'T00:00:00';
+      }
+      if (this.rangeDates && this.rangeDates[1]) {
+          toDateStr = formatDate(this.rangeDates[1], 'yyyy-MM-dd', 'en-US') + 'T23:59:59';
+      }
+
+      // 4. Gọi Service
+      // Lưu ý: Cần cập nhật hàm getMedicalRecords trong Service để nhận thêm sortBy và sortDir
+      this.medicalService.getMedicalRecords(
+          this.page,
+          this.size,
+          this.keyword,
+          fromDateStr,
+          toDateStr,
+          undefined, // doctorId (để trống/undefined nếu không lọc theo bác sĩ cụ thể ở đây)
+          sortBy,    // Tham số mới: Tên cột cần sắp xếp
+          sortDir    // Tham số mới: Hướng sắp xếp (asc/desc)
+      ).subscribe({
+          next: (res) => {
+              this.records = res.result?.data || [];
+              this.totalRecords = res.result?.totalElements || 0;
+              this.loading = false;
+          },
+          error: (err) => {
+              console.error('Lỗi tải danh sách:', err);
+              this.loading = false;
+              this.records = [];
+          }
       });
   }
 

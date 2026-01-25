@@ -15,9 +15,9 @@ import { TagModule } from 'primeng/tag';
 import { MessageService, ConfirmationService } from 'primeng/api';
 
 // Services & Models
-import { MasterDataService } from '../../../../core/services/master-data.service';
+import { MasterDataService } from '../../../../api/master-data.service';
 import { ServiceEntityResponse } from '../../../../models/master-data.model';
-import { UploadService } from '../../../../core/services/upload.service'; // <--- 1. Import Service Upload
+import { UploadService } from '../../../../api/upload.service'; // <--- 1. Import Service Upload
 
 @Component({
   selector: 'app-service-management',

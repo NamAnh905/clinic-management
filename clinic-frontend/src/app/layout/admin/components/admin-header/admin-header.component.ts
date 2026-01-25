@@ -15,10 +15,10 @@ import { CalendarModule } from 'primeng/calendar';
 import { DropdownModule } from 'primeng/dropdown';
 import { ToastModule } from 'primeng/toast';
 
-import { AuthService } from '../../../../core/services/auth.service';
+import { AuthService } from '../../../../api/auth.service';
 import { BreadcrumbService } from '../../../../core/services/breadcrumb.service';
-import { UserService } from '../../../../core/services/user.service';
-import { UploadService } from '../../../../core/services/upload.service';
+import { UserService } from '../../../../api/user.service';
+import { UploadService } from '../../../../api/upload.service';
 import { UserResponse } from '../../../../models/user.model';
 
 @Component({

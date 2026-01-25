@@ -1,0 +1,71 @@
+<div class="p-4 md:p-5">
+    <div class="border-bottom-1 surface-border mb-4 pb-3">
+        <h2 class="text-xl font-bold m-0 text-900">Lịch sử đặt khám</h2>
+    </div>
+
+    <p-table
+        [value]="myAppointments"
+        [loading]="loadingHistory"
+        [paginator]="true"
+        [rows]="size"
+        [totalRecords]="totalRecords"
+        [lazy]="true"
+        (onLazyLoad)="onPageChange($event)"
+        responsiveLayout="scroll"
+        styleClass="p-datatable-clean">
+
+        <ng-template pTemplate="body" let-appt>
+            <tr>
+                <td>
+                    <div class="appointment-card" [ngClass]="'status-' + appt.status.toLowerCase()">
+
+                        <div class="date-box">
+                            <span class="day">{{ appt.appointmentTime | date:'dd' }}</span>
+                            <span class="month">Th{{ appt.appointmentTime | date:'MM' }}</span>
+                        </div>
+
+                        <div class="info-section">
+                            <div class="time-slot">
+                                <i class="pi pi-clock"></i>
+                                {{ appt.appointmentTime | date:'HH:mm' }} - {{ appt.appointmentTime | date:'dd/MM/yyyy' }}
+                            </div>
+                            <div class="doctor-name">BS. {{ appt.doctorName }}</div>
+                            <div class="reason" title="{{ appt.reason }}">
+                                Lý do: {{ appt.reason }}
+                            </div>
+                        </div>
+
+                        <div class="action-section">
+                            <span class="status-badge" [ngClass]="'badge-' + appt.status.toLowerCase()">
+                                {{ getStatusLabel(appt.status) }}
+                            </span>
+
+                            <button *ngIf="appt.status === 'PENDING'"
+                                    pButton type="button"
+                                    label="Thanh toán ngay"
+                                    class="p-button-sm p-button-rounded p-button-warning shadow-2"
+                                    (click)="payBooking(appt.appointmentId)">
+                            </button>
+
+                            <span *ngIf="appt.status === 'CONFIRMED'" class="text-green-600 text-sm font-bold flex align-items-center gap-1">
+                                <i class="pi pi-check-circle"></i> Đã cọc
+                            </span>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td class="text-center p-5">
+                    <div class="flex flex-column align-items-center opacity-50">
+                        <i class="pi pi-calendar-times text-6xl mb-3"></i>
+                        <span>Bạn chưa có lịch hẹn nào.</span>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+
+    </p-table>
+</div>

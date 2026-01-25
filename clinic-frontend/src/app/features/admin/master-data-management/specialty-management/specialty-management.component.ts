@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 
 // Services
-import { MasterDataService } from '../../../../core/services/master-data.service';
-import { UploadService } from '../../../../core/services/upload.service'; // <--- Import UploadService
+import { MasterDataService } from '../../../../api/master-data.service';
+import { UploadService } from '../../../../api/upload.service'; // <--- Import UploadService
 import { SpecialtyResponse } from '../../../../models/master-data.model';
 
 // PrimeNG Modules

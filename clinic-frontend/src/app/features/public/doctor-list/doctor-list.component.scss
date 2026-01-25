@@ -14,7 +14,7 @@ $card-radius: 20px;
   padding-bottom: 60px;
 }
 
-// --- 1. HERO SECTION (COPY TỪ SERVICE-LIST) ---
+// --- 1. HERO SECTION ---
 .hero-section {
   position: relative;
   background: $primary-gradient;
@@ -59,25 +59,6 @@ $card-radius: 20px;
       line-height: 1.7;
       font-weight: 400;
     }
-
-    .btn-hero {
-      background: $button-color;
-      color: $button-text;
-      border: none;
-      padding: 14px 40px;
-      border-radius: 50px;
-      font-weight: 700;
-      font-size: 1rem;
-      cursor: pointer;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-      transition: all 0.3s ease;
-
-      &:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
-        background: #f1f5f9;
-      }
-    }
   }
 
   .wave-bottom {
@@ -103,7 +84,7 @@ $card-radius: 20px;
   padding: 0 20px;
 }
 
-// === 2. INTEGRATED SEARCH BAR (COPY TỪ SERVICE-LIST) ===
+// === 2. INTEGRATED SEARCH BAR ===
 .search-container-wrapper {
   display: flex;
   justify-content: center;
@@ -121,7 +102,7 @@ $card-radius: 20px;
   align-items: center;
   padding: 5px;
   width: 100%;
-  max-width: 800px;
+  max-width: 700px;
   height: 65px;
   position: relative;
   transition: box-shadow 0.3s;
@@ -158,7 +139,7 @@ $card-radius: 20px;
     padding: 10px 15px;
     display: flex;
     align-items: center;
-    min-width: 200px; // Rộng hơn chút vì tên chuyên khoa dài
+    min-width: 200px;
     justify-content: space-between;
     user-select: none;
 
@@ -247,100 +228,136 @@ $card-radius: 20px;
   gap: 30px;
 }
 
+// --- NEW PROFILE CARD STYLE ---
 .doctor-card {
   background: white;
-  border-radius: 20px;
+  border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-  transition: all 0.3s ease;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   position: relative;
+  border: 1px solid #f1f5f9;
   display: flex;
   flex-direction: column;
-  border: 1px solid transparent;
-  padding-bottom: 20px;
 
   &:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 20px 40px rgba(15, 76, 117, 0.15);
-    border-color: rgba(50, 130, 184, 0.3);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 50px rgba(15, 76, 117, 0.12);
+    border-color: rgba(50, 130, 184, 0.2);
 
     .btn-book-doc {
       background: $primary-gradient;
       color: white;
+      border-color: transparent;
+      transform: scale(1.02);
     }
   }
 
-  // Hình nền lượn sóng nhỏ trong card
-  .card-bg-shape {
-    height: 80px;
-    overflow: hidden;
-    svg {
-      width: 100%; height: 100%;
-      path { fill: #f1f5f9; }
+  // Header Gradient
+  .card-header-gradient {
+    height: 100px;
+    background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+    position: relative;
+
+    .btn-wishlist {
+      position: absolute; top: 15px; right: 15px;
+      width: 35px; height: 35px;
+      border-radius: 50%; border: none; background: white;
+      color: #94a3b8; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+      &:hover { color: #ef4444; transform: scale(1.1); }
     }
   }
 
+  // Avatar Wrapper
   .avatar-wrapper {
-    width: 100px; height: 100px;
-    margin: -50px auto 15px; // Kéo avatar lên đè vào shape
+    width: 110px; height: 110px;
+    margin: -55px auto 15px;
     position: relative;
     border-radius: 50%;
     border: 4px solid white;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    overflow: hidden;
     background: white;
+    z-index: 2;
 
-    img { width: 100%; height: 100%; object-fit: cover; }
+    img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+    .status-dot {
+       position: absolute; bottom: 5px; right: 5px;
+       width: 18px; height: 18px;
+       background-color: #22c55e;
+       border: 3px solid white;
+       border-radius: 50%;
+    }
   }
 
+  // Card Body
   .card-body {
     padding: 0 20px;
     text-align: center;
     flex-grow: 1;
 
     .doc-name {
-      font-size: 1.2rem; font-weight: 700; color: $text-dark;
-      margin-bottom: 5px;
-    }
-    .doc-specialty {
-      color: #0f4c75; font-weight: 600; font-size: 0.9rem;
-      margin-bottom: 15px;
+      font-size: 1.25rem; font-weight: 700; color: $text-dark;
+      margin-bottom: 8px;
     }
 
-    .workplace-info {
-      text-align: left;
-      background: #f8faff;
-      padding: 12px;
-      border-radius: 12px;
-      margin-bottom: 15px;
+    .badge-specialty {
+      display: inline-block;
+      padding: 6px 14px;
+      background-color: #f0f9ff;
+      color: #0369a1;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
 
-      .wp-item {
-        display: flex; align-items: center;
-        margin-bottom: 5px; font-size: 0.85rem; color: #64748b;
-        &:last-child { margin-bottom: 0; }
-        i { color: #3282b8; margin-right: 8px; width: 16px; }
+    .info-row {
+      display: flex; justify-content: center; align-items: center;
+      gap: 15px; margin-bottom: 20px;
+
+      .info-item {
+         display: flex; align-items: center; gap: 6px;
+         font-size: 0.9rem; font-weight: 500; color: #475569;
+         i { font-size: 1rem; }
       }
+
+      .divider-vertical {
+         width: 1px; height: 15px; background: #e2e8f0;
+      }
+    }
+
+    .location-text {
+       color: #94a3b8; font-size: 0.85rem;
+       display: flex; align-items: center; justify-content: center; gap: 5px;
+       margin-bottom: 15px;
     }
   }
 
+  // Footer & Button
   .card-footer {
-    text-align: center;
-    padding: 0 20px;
+    padding: 0 25px 25px;
 
     .btn-book-doc {
       width: 100%;
-      padding: 10px;
-      border-radius: 25px;
+      padding: 12px;
+      border-radius: 50px;
       border: 1px solid #0f4c75;
       background: transparent;
       color: #0f4c75;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.3s;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.3s ease;
+      font-size: 0.95rem;
+
+      i { font-size: 0.9rem; transition: transform 0.3s; }
+      &:hover i { transform: translateX(5px); }
     }
   }
 }
 
+// === 4. EMPTY STATE ===
 .empty-state {
   text-align: center;
   padding: 60px 0;

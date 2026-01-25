@@ -2,8 +2,8 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { StaffService } from '../../../core/services/staff.service';
-import { MasterDataService } from '../../../core/services/master-data.service';
+import { StaffService } from '../../../api/staff.service';
+import { MasterDataService } from '../../../api/master-data.service';
 import { DoctorResponse } from '../../../models/staff.model';
 import { SpecialtyResponse } from '../../../models/master-data.model';
 

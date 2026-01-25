@@ -19,7 +19,7 @@
                         [(ngModel)]="keyword"
                         (keyup.enter)="loadMedicalHistory()"
                         placeholder="Tìm tên, chẩn đoán..."
-                        class="w-full sm:w-16rem border-round-2xl pl-5" />
+                        class="w-full sm:w-16rem pl-5" />
                 </span>
 
                 <p-calendar
@@ -29,7 +29,7 @@
                     placeholder="Chọn khoảng ngày"
                     dateFormat="dd/mm/yy"
                     [showIcon]="true"
-                    styleClass="w-full sm:w-16rem border-round-2xl"
+                    styleClass="w-full sm:w-16rem"
                     (onClose)="loadMedicalHistory()">
                 </p-calendar>
             </div>
@@ -62,17 +62,22 @@
                 paginatorTemplate="PrevPageLink PageLinks NextPageLink CurrentPageReport RowsPerPageDropdown">
 
                 <ng-template pTemplate="header">
-                    <tr>
-                        <th style="min-width: 80px">ID</th>
-                        <th style="min-width: 150px">Bệnh nhân</th>
-                        <th style="width: 150px">Ngày khám</th>
-                        <th style="min-width: 200px">Triệu chứng</th>
-                        <th style="min-width: 200px">Chẩn đoán</th>
-                        <th style="min-width: 200px">Hướng điều trị</th>
-
-                        <th class="text-center" style="min-width: 200px">Thao tác</th>
-                    </tr>
-                </ng-template>
+                  <tr>
+                      <th style="min-width: 80px">ID</th>
+                      <th style="min-width: 150px" pSortableColumn="patientName">
+                          Bệnh nhân <p-sortIcon field="patientName"></p-sortIcon>
+                      </th>
+                      <th style="width: 150px" pSortableColumn="visitDate">
+                          Ngày khám <p-sortIcon field="visitDate"></p-sortIcon>
+                      </th>
+                      <th style="min-width: 200px">Triệu chứng</th>
+                      <th style="min-width: 200px" pSortableColumn="diagnosis">
+                          Chẩn đoán <p-sortIcon field="diagnosis"></p-sortIcon>
+                      </th>
+                      <th style="min-width: 200px">Hướng điều trị</th>
+                      <th class="text-center" style="min-width: 200px">Thao tác</th>
+                  </tr>
+              </ng-template>
 
                 <ng-template pTemplate="body" let-rec>
                     <tr>
@@ -187,7 +192,7 @@
 
     <ng-template pTemplate="content">
         <div *ngIf="!hasPrescription" class="flex flex-column align-items-center justify-content-center p-5 text-center surface-ground border-round-xl">
-            <ng-container *ngIf="currentInvoiceStatus !== 'PAID'; else paidMessage">
+            <ng-container *ngIf="!isFinalPaid; else paidMessage">
                 <i class="pi pi-file-edit text-500 text-6xl mb-3"></i>
                 <span class="text-xl text-900 font-bold mb-2">Chưa có đơn thuốc</span>
                 <p class="text-500 mb-4">Bệnh nhân này chưa được kê đơn cho lần khám này.</p>
@@ -214,7 +219,7 @@
                     <strong class="text-900">{{ currentPrescription.doctorName }}</strong>
                 </div>
                 <div *ngIf="currentInvoiceStatus === 'PAID'">
-                    <span class="px-3 py-1 bg-green-100 text-green-700 font-bold border-round-2xl text-sm">
+                    <span class="px-3 py-1 bg-green-100 text-green-700 font-bold text-sm">
                         <i class="pi pi-lock mr-1"></i>Đã thanh toán
                     </span>
                 </div>
@@ -240,9 +245,9 @@
                         <td>{{item.unit}}</td>
                         <td>{{item.dosage}}</td>
                         <td>
-                            <button *ngIf="currentInvoiceStatus !== 'PAID'"
-                                    pButton icon="pi pi-trash" class="p-button-text p-button-danger p-button-sm"
-                                    (click)="removeDrug(item.detailId)" pTooltip="Xóa"></button>
+                            <button *ngIf="!isFinalPaid"
+                                pButton icon="pi pi-trash" class="p-button-text p-button-danger p-button-sm"
+                                (click)="removeDrug(item.detailId)" pTooltip="Xóa"></button>
                         </td>
                     </tr>
                 </ng-template>
@@ -251,7 +256,7 @@
                 </ng-template>
             </p-table>
 
-            <div *ngIf="currentInvoiceStatus !== 'PAID'" class="p-3 surface-50 border-round-xl border-1 surface-border">
+            <div *ngIf="!isFinalPaid" class="p-3 surface-50 border-round-xl border-1 surface-border">
                 <div class="text-900 font-bold mb-3"><i class="pi pi-plus-circle mr-2"></i>Thêm thuốc vào đơn</div>
                 <form [formGroup]="drugForm" class="formgrid grid mb-0">
                     <div class="field col-5 organic-field mb-0">

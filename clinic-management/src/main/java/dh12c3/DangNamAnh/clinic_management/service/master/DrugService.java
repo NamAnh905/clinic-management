@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -53,9 +54,11 @@ public class DrugService {
         return drugMapper.toDrugResponse(saved);
     }
 
-    public PageResponse<DrugResponse> findAll(String keyword, int page, int size) {
-        Sort sort = Sort.by(Sort.Direction.ASC, "drugId");
-        Pageable pageable = PageRequest.of(page - 1, size, sort);
+    public PageResponse<DrugResponse> findAll(String keyword, int page, int size, String sortBy, String sortDir) {
+        String sortField = SORT_MAPPING.getOrDefault(sortBy, "stockQuantity");
+        Sort.Direction direction = sortDir.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(direction, sortField));
 
         Page<Drug> drugs = drugRepository.getAllDrugs(keyword, pageable);
 
@@ -87,4 +90,10 @@ public class DrugService {
 
         return excelExportService.exportToExcel(drugResponses, "Danh sách thuốc");
     }
+
+    Map<String, String> SORT_MAPPING = Map.of(
+            "name", "name",
+            "stockQuantity", "stockQuantity",
+            "price", "price"
+    );
 }

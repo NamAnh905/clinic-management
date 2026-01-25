@@ -2,7 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { LayoutService } from '../../../../core/services/layout.service';
-import { AuthService } from '../../../../core/services/auth.service';
+import { AuthService } from '../../../../api/auth.service';
 
 // 1. Định nghĩa Interface cho nhóm
 interface MenuSection {

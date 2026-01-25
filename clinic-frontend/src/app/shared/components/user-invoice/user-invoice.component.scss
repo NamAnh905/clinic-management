@@ -1,0 +1,207 @@
+/* Reset Table Style */
+::ng-deep .p-datatable-clean {
+    .p-datatable-thead {
+        display: none;
+    }
+
+    .p-datatable-tbody > tr {
+        background: transparent !important;
+        display: block;
+        margin-bottom: 1rem;
+        border: none !important;
+
+        > td {
+            display: block;
+            padding: 0;
+            border: none !important;
+            background: transparent !important;
+        }
+    }
+
+    .p-paginator {
+        background-color: transparent;
+        border: none;
+    }
+}
+
+/* Invoice Card Styling */
+.invoice-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    transition: all 0.3s ease;
+    border: 1px solid #edf2f7;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+
+    /* Hiệu ứng Hover: Đổi màu nền, không nổi lên */
+    &:hover {
+        background-color: #f1f5f9;
+        border-color: #cbd5e1;
+        transform: none;
+    }
+
+    /* Đường kẻ màu trạng thái bên trái */
+    &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 6px;
+    }
+
+    &.status-paid::before {
+        background-color: #10b981;
+    }
+
+    &.status-unpaid::before {
+        background-color: #f59e0b;
+    }
+
+    &.status-refunded::before {
+        background-color: #8b5cf6;
+    }
+
+    &.status-cancelled::before {
+        background-color: #ef4444;
+    }
+
+    /* Cột 1: Ngày tháng */
+    .date-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 70px;
+        height: 70px;
+        background: #f8f9fa;
+        border-radius: 12px;
+        margin-right: 20px;
+        flex-shrink: 0;
+
+        .day {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #2d3436;
+            line-height: 1;
+        }
+
+        .month {
+            font-size: 0.85rem;
+            color: #636e72;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+    }
+
+    /* Cột 2: Thông tin chính */
+    .info-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+
+        .invoice-id {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.9rem;
+            color: #636e72;
+            font-weight: 500;
+
+            i {
+                margin-right: 6px;
+                color: #007bff;
+            }
+        }
+
+        .invoice-type {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #2d3436;
+        }
+
+        .payment-method {
+            font-size: 0.85rem;
+            color: #636e72;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+    }
+
+    /* Cột 3: Hành động & Giá tiền */
+    .action-section {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+        min-width: 140px;
+
+        .amount-text {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #007bff;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+            text-transform: uppercase;
+        }
+
+        .badge-paid {
+            background: #ecfdf5;
+            color: #047857;
+        }
+
+        .badge-unpaid {
+            background: #fff7ed;
+            color: #c2410c;
+        }
+
+        .badge-refunded {
+            background: #f5f3ff;
+            color: #7c3aed;
+        }
+
+        .badge-cancelled {
+            background: #fef2f2;
+            color: #b91c1c;
+        }
+    }
+
+    /* Responsive Mobile */
+    @media (max-width: 600px) {
+        flex-direction: column;
+        align-items: flex-start;
+
+        .date-box {
+            margin-bottom: 15px;
+            width: 100%;
+            flex-direction: row;
+            justify-content: flex-start;
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .action-section {
+            width: 100%;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+    }
+}

@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ChartModule } from 'primeng/chart';
 import { CalendarModule } from 'primeng/calendar';
 import { TableModule } from 'primeng/table';
-import { StatisticService } from '../../../core/services/statistic.service';
+import { StatisticService } from '../../../api/statistic.service';
 import { DashboardSummary } from '../../../models/dashboard.model';
 
 @Component({

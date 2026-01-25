@@ -52,9 +52,11 @@ public class UserController {
                                                            @RequestParam(required = false) String roleName,
                                                            @RequestParam(required = false) String keyword,
                                                            @RequestParam(defaultValue = "1") int page,
-                                                           @RequestParam(defaultValue = "10") int size) {
+                                                           @RequestParam(defaultValue = "10") int size,
+                                                           @RequestParam(defaultValue = "fullName") String sortBy,
+                                                           @RequestParam(defaultValue = "asc") String sortDir) {
         return ApiResponse.<PageResponse<UserResponse>>builder()
-                .result(userService.getAllUsers(status, roleName, keyword, page, size))
+                .result(userService.getAllUsers(status, roleName, keyword, page, size, sortBy, sortDir))
                 .build();
     }
 

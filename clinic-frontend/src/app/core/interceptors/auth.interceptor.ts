@@ -2,7 +2,7 @@ import { HttpErrorResponse, HttpInterceptorFn, HttpRequest, HttpHandlerFn } from
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, catchError, filter, switchMap, take, throwError, Observable } from 'rxjs';
-import { AuthService } from '../services/auth.service'; // Đảm bảo đường dẫn đúng
+import { AuthService } from '../../api/auth.service'; // Đảm bảo đường dẫn đúng
 import { ApiResponse } from '../../models/core.model'; // Đảm bảo đường dẫn đúng
 import { AuthenticationResponse } from '../../models/auth.model'; // Đảm bảo đường dẫn đúng
 

@@ -9,9 +9,12 @@ import dh12c3.DangNamAnh.clinic_management.entity.medical.MedicalRecord;
 import dh12c3.DangNamAnh.clinic_management.entity.medical.Prescription;
 import dh12c3.DangNamAnh.clinic_management.entity.patient.Patient;
 import dh12c3.DangNamAnh.clinic_management.entity.staff.Doctor;
+import dh12c3.DangNamAnh.clinic_management.enums.InvoiceType;
+import dh12c3.DangNamAnh.clinic_management.enums.PaymentStatus;
 import dh12c3.DangNamAnh.clinic_management.exception.AppException;
 import dh12c3.DangNamAnh.clinic_management.exception.ErrorCode;
 import dh12c3.DangNamAnh.clinic_management.mapper.medical.PrescriptionMapper;
+import dh12c3.DangNamAnh.clinic_management.repository.billing.InvoiceRepository;
 import dh12c3.DangNamAnh.clinic_management.repository.medical.MedicalRecordRepository;
 import dh12c3.DangNamAnh.clinic_management.repository.medical.PrescriptionRepository;
 import dh12c3.DangNamAnh.clinic_management.repository.patient.PatientRepository;
@@ -35,6 +38,7 @@ public class PrescriptionService {
 
     PrescriptionRepository prescriptionRepository;
     MedicalRecordRepository medicalRecordRepository;
+    InvoiceRepository invoiceRepository;
     PrescriptionMapper prescriptionMapper;
     PatientRepository patientRepository;
     DoctorRepository doctorRepository;
@@ -47,6 +51,7 @@ public class PrescriptionService {
                     .orElseThrow(() -> new AppException(ErrorCode.RECORD_NOT_FOUND));
 
         checkDoctorAuthorization(medicalRecord);
+        validateInvoiceStatus(medicalRecord.getAppointment().getAppointmentId());
 
         Prescription prescription = prescriptionMapper.toPrescription(request);
         prescription.setMedicalRecord(medicalRecord);
@@ -62,6 +67,7 @@ public class PrescriptionService {
 
         MedicalRecord record = prescription.getMedicalRecord();
         checkDoctorAuthorization(record);
+        validateInvoiceStatus(record.getAppointment().getAppointmentId());
 
         prescriptionMapper.update(request, prescription);
 
@@ -69,8 +75,30 @@ public class PrescriptionService {
         return prescriptionMapper.toPrescriptionResponse(saved);
     }
 
-    public PageResponse<PrescriptionResponse> findAll(int page, int size) {
-        Sort sort = Sort.by(Sort.Direction.ASC, "prescriptionId");
+    public PageResponse<PrescriptionResponse> findAll(int page, int size, String sortBy, String sortDir) {
+        String sortField = "medicalRecord.appointment.appointmentTime";
+
+        switch (sortBy) {
+            case "patientName":
+                sortField = "medicalRecord.appointment.patient.user.fullName";
+                break;
+            case "visitDate":
+                sortField = "medicalRecord.appointment.appointmentTime";
+                break;
+            case "symptoms":
+                sortField = "medicalRecord.symptoms";
+                break;
+            case "diagnosis":
+                sortField = "medicalRecord.diagnosis";
+                break;
+            case "treatmentPlan":
+                sortField = "medicalRecord.treatmentPlan";
+                break;
+        }
+
+        Sort.Direction direction = sortDir.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, sortField);
+
         Pageable pageable = PageRequest.of(page - 1, size, sort);
 
         String currentUsername = securityUtils.getCurrentUserLogin();
@@ -154,5 +182,18 @@ public class PrescriptionService {
                 throw new AppException(ErrorCode.UNAUTHORIZED);
             }
         }
+    }
+
+    private void validateInvoiceStatus(Long appointmentId) {
+        boolean isFinalInvoicePaid = invoiceRepository.existsByAppointment_AppointmentIdAndTypeAndPaymentStatus(
+                appointmentId,
+                InvoiceType.FINAL,
+                PaymentStatus.PAID
+        );
+
+        if (isFinalInvoicePaid) {
+            throw new AppException(ErrorCode.INVOICE_ALREADY_PAID);
+        }
+
     }
 }

@@ -14,10 +14,10 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 import { MessageService } from 'primeng/api';
 
 // Services
-import { MasterDataService } from '../../../core/services/master-data.service';
-import { StaffService } from '../../../core/services/staff.service';
-import { AppointmentService } from '../../../core/services/appointment.service';
-import { UserService } from '../../../core/services/user.service';
+import { MasterDataService } from '../../../api/master-data.service';
+import { StaffService } from '../../../api/staff.service';
+import { AppointmentService } from '../../../api/appointment.service';
+import { UserService } from '../../../api/user.service';
 
 @Component({
   selector: 'app-booking',

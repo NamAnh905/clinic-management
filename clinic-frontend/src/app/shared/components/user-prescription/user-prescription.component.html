@@ -1,0 +1,103 @@
+<p-toast></p-toast>
+<div class="p-4 md:p-5">
+    <div class="border-bottom-1 surface-border mb-4 pb-3">
+        <h2 class="text-xl font-bold m-0 text-900">Đơn thuốc</h2>
+    </div>
+
+    <p-table
+        [value]="records"
+        [lazy]="true"
+        (onLazyLoad)="onPageChange($event)"
+        [paginator]="true"
+        [rows]="size"
+        [totalRecords]="totalRecords"
+        [loading]="loading"
+        responsiveLayout="scroll"
+        styleClass="p-datatable-clean">
+
+        <ng-template pTemplate="body" let-record>
+            <tr>
+                <td>
+                    <div class="record-card">
+                        <div class="date-box">
+                            <span class="day">{{ record.visitDate | date:'dd' }}</span>
+                            <span class="month">Th{{ record.visitDate | date:'MM' }}</span>
+                        </div>
+
+                        <div class="info-section">
+                            <div class="doctor-name">BS. {{ record.doctorName }}</div>
+                            <div class="diagnosis">
+                                <span class="font-bold text-700">Chẩn đoán:</span> {{ record.diagnosis }}
+                            </div>
+                            <div class="symptoms text-sm text-500">
+                                <i class="pi pi-info-circle mr-1"></i> {{ record.symptoms }}
+                            </div>
+                        </div>
+
+                        <div class="action-section">
+                            <p-button
+                                label="Xem đơn thuốc"
+                                icon="pi pi-file"
+                                styleClass="p-button-outlined p-button-sm"
+                                (click)="viewPrescription(record)">
+                            </p-button>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td class="text-center p-5">
+                    <div class="flex flex-column align-items-center opacity-50">
+                        <i class="pi pi-folder-open text-6xl mb-3"></i>
+                        <span>Bạn chưa có hồ sơ bệnh án nào.</span>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+
+    <p-dialog
+        [(visible)]="showPrescriptionDialog"
+        [modal]="true"
+        [style]="{width: '700px'}"
+        header="Chi tiết đơn thuốc"
+        [draggable]="false"
+        [resizable]="false"
+        [dismissableMask]="true">
+
+        <div *ngIf="selectedPrescription">
+            <div class="mb-3 p-3 surface-50 border-round">
+                <p class="m-0 mb-2"><span class="font-bold">Bác sĩ kê đơn:</span> {{ selectedPrescription.doctorName }}</p>
+                <p class="m-0 text-600 font-italic"><span class="font-bold text-900">Ghi chú:</span> {{ selectedPrescription.note || 'Không có ghi chú' }}</p>
+            </div>
+
+            <p-table [value]="selectedPrescription.prescriptionDetails" styleClass="p-datatable-sm p-datatable-gridlines">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 50px" class="text-center">#</th>
+                        <th>Tên thuốc</th>
+                        <th style="width: 100px" class="text-center">Số lượng</th>
+                        <th style="width: 80px" class="text-center">Đơn vị</th>
+                        <th>Cách dùng</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-item let-i="rowIndex">
+                    <tr>
+                        <td class="text-center">{{ i + 1 }}</td>
+                        <td class="font-medium text-primary">{{ item.drugName }}</td>
+                        <td class="text-center font-bold">{{ item.quantity }}</td>
+                        <td class="text-center">{{ item.unit }}</td>
+                        <td>{{ item.dosage }}</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+
+        <ng-template pTemplate="footer">
+            <p-button label="Đóng" icon="pi pi-times" (click)="showPrescriptionDialog = false" styleClass="p-button-text"></p-button>
+        </ng-template>
+    </p-dialog>
+</div>

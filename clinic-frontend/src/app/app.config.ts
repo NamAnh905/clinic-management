@@ -8,7 +8,7 @@ import localeVi from '@angular/common/locales/vi';
 
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
-import { AuthService } from './core/services/auth.service';
+import { AuthService } from './api/auth.service';
 
 registerLocaleData(localeVi);
 

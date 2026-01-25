@@ -113,7 +113,7 @@ $card-radius: 20px;
   justify-content: center;
 
   // --- CHỈNH SỬA QUAN TRỌNG ĐỂ ĐÈ LÊN SÓNG ---
-  margin-top: -100px; // Kéo ngược lên trên (Negative Margin)
+  margin-top: -115px; // Kéo ngược lên trên (Negative Margin)
   position: relative; // Để dùng z-index
   z-index: 10;        // Nổi lên trên layer sóng
   padding: 0 15px;    // Padding an toàn cho mobile
@@ -127,7 +127,7 @@ $card-radius: 20px;
   align-items: center;
   padding: 5px;
   width: 100%;
-  max-width: 800px;
+  max-width: 700px;
   height: 65px;
   position: relative;
   transition: box-shadow 0.3s;

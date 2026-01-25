@@ -30,8 +30,8 @@ public class ChatService {
         // Thay đổi: Giảm số lượng, tăng độ chính xác.
         List<EmbeddingMatch<TextSegment>> allMatches = embeddingStore.findRelevant(
                 embeddingModel.embed(userMessage).content(),
-                25,   // Giảm từ 70 -> 25
-                0.65  // Tăng từ 0.4 -> 0.65 (Chỉ lấy tin tin cậy)
+                60,   // Tăng lên để bác sĩ không bị Dịch vụ đẩy ra khỏi top
+                0.55  // Hạ xuống để bắt được các kết quả khớp lỏng hơn
         );
 
         // 2. SÀNG LỌC THÔNG MINH (Smart Filtering)
@@ -49,10 +49,10 @@ public class ChatService {
 
             // Cấu hình giới hạn trần (Max Limit) - Không phải mục tiêu bắt buộc
             int maxLimit = switch (type) {
-                case "drug" -> 5;      // Chỉ lấy tối đa 5 thuốc
-                case "service" -> 3;   // Chỉ lấy tối đa 3 dịch vụ sát nhất
-                case "doctor" -> 2;    // Chỉ lấy 2 bác sĩ sát nhất
-                case "specialty" -> 2; // Chỉ lấy 2 chuyên khoa
+                case "drug" -> 5;
+                case "service" -> 3; // Giữ mức thấp để tránh spam dịch vụ
+                case "doctor" -> 5;  // Tăng bác sĩ lên
+                case "specialty" -> 3;
                 default -> 2;
             };
 
@@ -61,13 +61,12 @@ public class ChatService {
             // LOGIC QUYẾT ĐỊNH:
             // 1. Nếu chưa chạm trần -> Lấy.
             // 2. Nếu điểm cực cao (>0.85) -> Vẫn lấy thêm dù đã chạm trần (Ưu tiên tuyệt đối).
-            boolean isSuperRelevant = match.score() > 0.85;
+            boolean isSuperRelevant = match.score() > 0.92;
+            int hardCap = maxLimit + 2; // Cho phép vượt quota tối đa 2 đơn vị
 
-            if (currentCount < maxLimit || isSuperRelevant) {
+            if (currentCount < maxLimit || (isSuperRelevant && currentCount < hardCap)) {
                 contextBuilder.append(text).append("\n---\n");
                 typeCounters.put(type, currentCount + 1);
-
-                // Log kiểm tra
                 System.out.printf("[%s] Score: %.4f | %s...%n", type.toUpperCase(), match.score(), text.substring(0, Math.min(text.length(), 50)));
             }
         }

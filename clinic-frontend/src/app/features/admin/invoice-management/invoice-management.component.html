@@ -13,13 +13,13 @@
             <div class="flex flex-column sm:flex-row gap-2 w-full xl:w-auto">
                 <span class="p-input-icon-left w-full sm:w-auto">
                     <i class="pi pi-search text-500"></i>
-                    <input pInputText type="text" (input)="onGlobalFilter($event)" placeholder="Mã GD, Tên BN..." class="w-full sm:w-16rem border-round-2xl pl-5" />
+                    <input pInputText type="text" (input)="onGlobalFilter($event)" placeholder="Mã GD, Tên BN..." class="w-full sm:w-16rem pl-5" />
                 </span>
-                <p-calendar [(ngModel)]="rangeDates" selectionMode="range" [readonlyInput]="true" placeholder="Lọc theo ngày" dateFormat="dd/mm/yy" [showIcon]="true" styleClass="w-full sm:w-16rem border-round-2xl" (onClose)="loadInvoices()"></p-calendar>
-                <p-dropdown [options]="statusOptions" [(ngModel)]="selectedStatus" (onChange)="onStatusChange()" placeholder="Trạng thái" styleClass="w-full sm:w-12rem border-round-2xl"></p-dropdown>
+                <p-calendar [(ngModel)]="rangeDates" selectionMode="range" [readonlyInput]="true" placeholder="Lọc theo ngày" dateFormat="dd/mm/yy" [showIcon]="true" styleClass="w-full sm:w-16rem" (onClose)="loadInvoices()"></p-calendar>
+                <p-dropdown [options]="statusOptions" [(ngModel)]="selectedStatus" (onChange)="onStatusChange()" placeholder="Trạng thái" styleClass="w-full sm:w-12rem"></p-dropdown>
             </div>
             <div class="flex flex-column sm:flex-row gap-2 w-full xl:w-auto">
-                <button pButton icon="pi pi-refresh" class="p-button-outlined p-button-rounded border-round-2xl" (click)="loadInvoices()" pTooltip="Tải lại"></button>
+                <button pButton icon="pi pi-refresh" class="p-button-outlined p-button-rounded" (click)="loadInvoices()" pTooltip="Tải lại"></button>
             </div>
         </div>
 
@@ -35,13 +35,19 @@
                     <tr>
                         <th style="width: 80px">ID</th>
                         <th style="width: 150px">Mã GD</th>
-                        <th style="min-width: 180px">Bệnh nhân</th>
+                        <th style="min-width: 180px" pSortableColumn="patientName">
+                            Bệnh nhân <p-sortIcon field="patientName"></p-sortIcon>
+                        </th>
 
                         <th style="width: 130px" class="text-center">Loại</th>
 
-                        <th style="min-width: 150px">Tổng tiền</th>
+                        <th style="min-width: 150px" pSortableColumn="totalAmount">
+                            Tổng tiền <p-sortIcon field="totalAmount"></p-sortIcon>
+                        </th>
                         <th style="min-width: 150px">Trạng thái</th>
-                        <th style="min-width: 150px">Ngày tạo</th>
+                        <th style="min-width: 150px" pSortableColumn="createdAt">
+                            Ngày tạo <p-sortIcon field="createdAt"></p-sortIcon>
+                        </th>
                         <th style="min-width: 150px">Phương thức</th>
                         <th class="text-center" style="width: 140px">Thao tác</th>
                     </tr>
@@ -144,8 +150,7 @@
                         </div>
                     </div>
 
-                    <div class="field col-12 md:col-5 mb-0">
-                        <label class="font-bold text-sm">Tên {{ addItemType === 'SERVICE' ? 'Dịch vụ' : 'Thuốc' }}</label>
+                    <div class="field col-12 md:col-5 mb-0">  <label class="font-bold text-sm">Tên {{ addItemType === 'SERVICE' ? 'Dịch vụ' : 'Thuốc' }}</label>
                         <p-dropdown [options]="addItemType === 'SERVICE' ? servicesList : drugsList"
                                     [(ngModel)]="selectedItemId"
                                     placeholder="Tìm kiếm và chọn..."
@@ -155,11 +160,10 @@
                         </p-dropdown>
                     </div>
 
-                    <div class="field col-6 md:col-2 mb-0">
-                        <label class="font-bold text-sm">Số lượng</label>
+                    <div class="field col-6 md:col-2 mb-0">   <label class="font-bold text-sm">Số lượng</label>
                         <p-inputNumber [(ngModel)]="addItemQuantity" [min]="1" [showButtons]="true"
-                                       buttonLayout="horizontal" inputStyleClass="text-center w-full"
-                                       decrementButtonClass="p-button-secondary" incrementButtonClass="p-button-secondary">
+                                      buttonLayout="horizontal" inputStyleClass="text-center w-full"
+                                      decrementButtonClass="p-button-secondary" incrementButtonClass="p-button-secondary">
                         </p-inputNumber>
                     </div>
 
@@ -204,27 +208,31 @@
                 </ng-template>
 
                 <ng-template pTemplate="body" let-item let-i="rowIndex">
-                    <tr>
+                    <tr [ngClass]="{'bg-yellow-50': item.isPrePaid, 'bg-red-50': item.isDeduction}">
                         <td>
-                            <p-tableCheckbox [value]="item"></p-tableCheckbox>
+                            <p-tableCheckbox *ngIf="item.detailId > 0" [value]="item"></p-tableCheckbox>
+                            <i *ngIf="item.detailId <= 0" class="pi pi-lock text-300 ml-2" pTooltip="Mục cố định"></i>
                         </td>
                         <td class="text-center">{{i + 1}}</td>
                         <td>
-                            <div class="font-medium text-900">{{ getItemName(item) }}</div>
-                            <div class="text-xs text-500" *ngIf="item.serviceName">Dịch vụ khám</div>
+                            <div class="font-medium text-900" [ngClass]="{'text-red-500 font-italic': item.isDeduction}">
+                                {{ getItemName(item) }}
+                            </div>
+                            <div class="text-xs text-500" *ngIf="item.serviceName && !item.isDeduction && !item.isPrePaid">Dịch vụ khám</div>
                             <div class="text-xs text-500" *ngIf="item.drugName">Thuốc</div>
                         </td>
                         <td class="text-center font-bold">{{ item.quantity }}</td>
                         <td class="text-right">{{ formatCurrency(item.unitPrice) }}</td>
-                        <td class="text-right font-bold text-900">
+                        <td class="text-right font-bold text-900" [ngClass]="{'text-red-500': item.isDeduction}">
                             {{ formatCurrency(item.quantity * item.unitPrice) }}
                         </td>
                         <td class="text-center" *ngIf="currentInvoice.paymentStatus !== 'PAID' && currentInvoice.type === 'FINAL'">
-                             <button pButton icon="pi pi-trash"
-                                     class="p-button-text p-button-danger p-button-sm p-0"
-                                     (click)="deleteInvoiceDetail(item.detailId)"
-                                     pTooltip="Xóa dòng này">
-                             </button>
+                            <button *ngIf="item.detailId > 0"
+                                    pButton icon="pi pi-trash"
+                                    class="p-button-text p-button-danger p-button-sm p-0"
+                                    (click)="deleteInvoiceDetail(item.detailId)"
+                                    pTooltip="Xóa dòng này">
+                            </button>
                         </td>
                     </tr>
                 </ng-template>

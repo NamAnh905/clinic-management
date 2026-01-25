@@ -227,4 +227,33 @@ $border-color: #e2e8f0;
 
         .thank-you { margin-top: 40px; text-align: center; font-style: italic; font-size: 13px; }
     }
+
+    .p-inputnumber-buttons-horizontal {
+        width: 100% !important;
+        display: flex;
+        height: 38px !important; /* [QUAN TRỌNG] Set chiều cao bằng với Dropdown/Button */
+        align-items: stretch;    /* Kéo dãn các phần tử con cho bằng nhau */
+
+        /* 1. Nút cộng trừ */
+        .p-button {
+            width: 2rem !important;
+            padding: 0 !important;
+            flex: 0 0 auto;
+            height: 100% !important; /* Full chiều cao cha */
+        }
+
+        /* 2. Ô nhập số ở giữa */
+        .p-inputnumber-input {
+            width: 100% !important;
+            flex: 1 1 auto;
+
+            /* Padding: Giữ số 0 ở trên/dưới để text căn giữa, chỉ giảm trái/phải */
+            padding: 0 2px !important;
+
+            height: 100% !important; /* Full chiều cao cha */
+            text-align: center;
+            border-radius: 0;
+            margin: 0; /* Xóa margin thừa nếu có */
+        }
+    }
 }

@@ -1,13 +1,14 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, formatDate } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
-import { AppointmentService } from '../../../core/services/appointment.service';
+import { AppointmentService } from '../../../api/appointment.service';
 import { AppointmentResponse } from '../../../models/appointment.model';
 import { AppointmentStatus } from '../../../models/core.model';
-import { UserService } from '../../../core/services/user.service';
-import { BillingService } from '../../../core/services/billing.service';
-import { AuthService } from '../../../core/services/auth.service';
-import { InvoiceResponse, InvoiceDetailResponse } from '../../../models/billing.model';
+import { UserService } from '../../../api/user.service';
+import { BillingService } from '../../../api/billing.service';
+import { AuthService } from '../../../api/auth.service';
+import { InvoiceResponse, InvoiceDetailResponse, InvoiceDetailCreationRequest } from '../../../models/billing.model';
+import { MasterDataService } from '../../../api/master-data.service'; // [NEW] Import MasterData
 
 // PrimeNG Modules
 import { TableModule } from 'primeng/table';
@@ -21,6 +22,8 @@ import { CalendarModule } from 'primeng/calendar';
 import { TagModule } from 'primeng/tag';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { RadioButtonModule } from 'primeng/radiobutton';
+import { InputNumberModule } from 'primeng/inputnumber';
 
 @Component({
   selector: 'app-appointment-management',
@@ -29,7 +32,8 @@ import { ConfirmationService, MessageService } from 'primeng/api';
     CommonModule, ReactiveFormsModule, FormsModule,
     TableModule, ButtonModule, InputTextModule,
     DialogModule, ToastModule, ConfirmDialogModule,
-    DropdownModule, CalendarModule, TagModule, InputTextareaModule
+    DropdownModule, CalendarModule, TagModule, InputTextareaModule,
+    RadioButtonModule, InputNumberModule
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './appointment-management.component.html',
@@ -48,16 +52,15 @@ export class AppointmentManagementComponent implements OnInit {
   selectedStatus: AppointmentStatus | null = null;
   rangeDates: Date[] | undefined;
 
-  // Dropdown Options: Đã cập nhật đủ trạng thái
   statusOptions = [
     { label: 'Tất cả trạng thái', value: null },
     { label: 'Chờ xác nhận', value: 'PENDING' },
     { label: 'Đã xác nhận', value: 'CONFIRMED' },
-    { label: 'Đã check-in', value: 'CHECKED_IN' },    // MỚI
-    { label: 'Đang khám', value: 'IN_PROGRESS' },     // MỚI
+    { label: 'Đã check-in', value: 'CHECKED_IN' },
+    { label: 'Đang khám', value: 'IN_PROGRESS' },
     { label: 'Đã hoàn thành', value: 'COMPLETED' },
     { label: 'Đã hủy', value: 'CANCELLED' },
-    { label: 'Vắng mặt (No-show)', value: 'NO_SHOW' } // MỚI
+    { label: 'Vắng mặt (No-show)', value: 'NO_SHOW' }
   ];
 
   doctors: any[] = [];
@@ -68,10 +71,18 @@ export class AppointmentManagementComponent implements OnInit {
   submitted: boolean = false;
   isEditMode: boolean = false;
 
+  // --- INVOICE VARIABLES ---
   invoiceDialog: boolean = false;
   currentInvoice: InvoiceResponse | null = null;
   invoiceDetails: InvoiceDetailResponse[] = [];
   loadingDetails: boolean = false;
+
+  // --- ADD ITEM VARIABLES (MỚI - Để thêm thuốc/dịch vụ) ---
+  addItemType: 'SERVICE' | 'DRUG' = 'SERVICE';
+  servicesList: any[] = [];
+  drugsList: any[] = [];
+  selectedItemId: number | null = null;
+  addItemQuantity: number = 1;
 
   currentUser: any = null;
 
@@ -79,6 +90,7 @@ export class AppointmentManagementComponent implements OnInit {
   private appointmentService = inject(AppointmentService);
   private userService = inject(UserService);
   private billingService = inject(BillingService);
+  private masterDataService = inject(MasterDataService); // [NEW]
   public authService = inject(AuthService);
   private messageService = inject(MessageService);
   private confirmationService = inject(ConfirmationService);
@@ -107,43 +119,73 @@ export class AppointmentManagementComponent implements OnInit {
 
     this.loadAppointments();
     this.loadDoctorsAndPatients();
+    this.loadMasterData(); // [NEW] Tải danh sách thuốc/dịch vụ
+  }
+
+  // --- 1. LOGIC LOAD DỮ LIỆU ---
+  loadMasterData() {
+      // Load Dịch vụ
+      this.masterDataService.getAllServices(1, 1000).subscribe({
+          next: (res) => {
+              this.servicesList = res.result?.data.map((s: any) => ({
+                  label: `${s.name} (${this.formatCurrency(s.price)})`,
+                  value: s.serviceId,
+                  price: s.price
+              })) || [];
+          }
+      });
+
+      // Load Thuốc
+      this.masterDataService.getDrugs(1, 1000).subscribe({
+          next: (res) => {
+              this.drugsList = res.result?.data.map((d: any) => ({
+                  label: `${d.name} - ${d.unit} (${this.formatCurrency(d.price)})`,
+                  value: d.drugId,
+                  price: d.price
+              })) || [];
+          }
+      });
   }
 
   loadAppointments(event?: any) {
-    this.loading = true;
-    if (event) {
-      this.page = (event.first / event.rows) + 1;
-      this.size = event.rows;
-    }
+      this.loading = true;
 
-    let fromDateStr = '';
-    let toDateStr = '';
-    if (this.rangeDates && this.rangeDates[0]) {
-      fromDateStr = formatDate(this.rangeDates[0], 'yyyy-MM-dd', 'en-US') + 'T00:00:00';
-    }
-    if (this.rangeDates && this.rangeDates[1]) {
-      toDateStr = formatDate(this.rangeDates[1], 'yyyy-MM-dd', 'en-US') + 'T23:59:59';
-    }
+      if (event) {
+        this.page = (event.first / event.rows) + 1;
+        this.size = event.rows;
+      }
 
-    const myDoctorId = this.isDoctor ? (this.authService.currentDoctorIdSubject.value || undefined) : undefined;
+      let sortBy = 'appointmentTime';
+      let sortDir = 'desc';
 
-    this.appointmentService.getAppointments(
-      this.page,
-      this.size,
-      myDoctorId,
-      undefined,
-      this.keyword,
-      this.selectedStatus || undefined,
-      fromDateStr || undefined,
-      toDateStr || undefined
-    ).subscribe({
-        next: (res) => {
-            this.appointments = res.result?.data || [];
-            this.totalRecords = res.result?.totalElements || 0;
-            this.loading = false;
-        },
-        error: () => this.loading = false
-    });
+      if (event && event.sortField) {
+          sortBy = event.sortField;
+          sortDir = event.sortOrder === 1 ? 'asc' : 'desc';
+      }
+
+      let fromDateStr = '';
+      let toDateStr = '';
+      if (this.rangeDates && this.rangeDates[0]) {
+        fromDateStr = formatDate(this.rangeDates[0], 'yyyy-MM-dd', 'en-US') + 'T00:00:00';
+      }
+      if (this.rangeDates && this.rangeDates[1]) {
+        toDateStr = formatDate(this.rangeDates[1], 'yyyy-MM-dd', 'en-US') + 'T23:59:59';
+      }
+
+      const myDoctorId = this.isDoctor ? (this.authService.currentDoctorIdSubject.value || undefined) : undefined;
+
+      this.appointmentService.getAppointments(
+        this.page, this.size, myDoctorId, undefined, this.keyword,
+        this.selectedStatus || undefined, fromDateStr || undefined, toDateStr || undefined,
+        sortBy, sortDir
+      ).subscribe({
+          next: (res) => {
+              this.appointments = res.result?.data || [];
+              this.totalRecords = res.result?.totalElements || 0;
+              this.loading = false;
+          },
+          error: () => this.loading = false
+      });
   }
 
   loadDoctorsAndPatients() {
@@ -155,6 +197,7 @@ export class AppointmentManagementComponent implements OnInit {
     });
   }
 
+  // --- 2. LOGIC LỊCH HẸN (CRUD) ---
   openNew() {
     this.isEditMode = false;
     this.apptForm.reset({ status: 'PENDING' });
@@ -261,26 +304,7 @@ export class AppointmentManagementComponent implements OnInit {
     });
   }
 
-  hideDialog() { this.apptDialog = false; this.submitted = false; }
-
-  showError(err: any) {
-    const msg = err.error?.message || 'Có lỗi xảy ra!';
-    this.messageService.add({ severity: 'error', summary: 'Lỗi', detail: msg });
-  }
-
-  // --- CẬP NHẬT MÀU SẮC CHO CÁC TRẠNG THÁI MỚI ---
-  getSeverity(status: string) {
-    switch (status) {
-        case 'CONFIRMED': return 'success';   // Xanh lá
-        case 'PENDING': return 'warning';     // Vàng
-        case 'COMPLETED': return 'info';      // Xanh dương
-        case 'CHECKED_IN': return 'secondary'; // Xám/Tím nhạt (MỚI)
-        case 'IN_PROGRESS': return 'warning';  // Cam/Vàng (MỚI - Đang diễn ra)
-        case 'CANCELLED': return 'danger';    // Đỏ
-        case 'NO_SHOW': return 'danger';      // Đỏ (MỚI)
-        default: return 'contrast';
-    }
-  }
+  // --- 3. LOGIC HÓA ĐƠN & THANH TOÁN (QUAN TRỌNG) ---
 
   handlePayment(appt: AppointmentResponse) {
     if (appt.status !== 'COMPLETED') {
@@ -288,10 +312,22 @@ export class AppointmentManagementComponent implements OnInit {
         return;
     }
     this.loading = true;
+
     this.billingService.getInvoiceByAppointment(appt.appointmentId).subscribe({
         next: (res) => {
-            this.loading = false;
-            if (res.result) this.openInvoiceDialog(res.result);
+            const invoice = res.result;
+
+            if (invoice && invoice.type === 'BOOKING') {
+                // Nếu chỉ có BOOKING -> Tạo mới FINAL
+                this.createAutoInvoice(appt.appointmentId);
+            }
+            else if (invoice && invoice.type === 'FINAL') {
+                this.loading = false;
+                this.openInvoiceDialog(invoice);
+            }
+            else {
+                this.createAutoInvoice(appt.appointmentId);
+            }
         },
         error: (err) => {
             if (err.status === 404 || err.status === 400 || err.error?.code === 1008) {
@@ -309,7 +345,7 @@ export class AppointmentManagementComponent implements OnInit {
       this.billingService.createInvoice(request as any).subscribe({
           next: (res) => {
               this.loading = false;
-              this.messageService.add({ severity: 'success', summary: 'Đã tạo hóa đơn', detail: 'Hóa đơn được tạo tự động.' });
+              this.messageService.add({ severity: 'success', summary: 'Đã tạo hóa đơn', detail: 'Hóa đơn tất toán đã được tạo.' });
               if (res.result) this.openInvoiceDialog(res.result);
           },
           error: (err) => {
@@ -320,16 +356,105 @@ export class AppointmentManagementComponent implements OnInit {
   }
 
   openInvoiceDialog(invoice: InvoiceResponse) {
-      this.currentInvoice = invoice;
-      this.invoiceDialog = true;
-      this.loadingDetails = true;
-      this.invoiceDetails = [];
-      this.billingService.getDetailsByInvoice(invoice.invoiceId).subscribe({
-          next: (res) => {
-              this.invoiceDetails = res.result || [];
-              this.loadingDetails = false;
+      // Gọi API lấy thông tin mới nhất (để cập nhật TotalAmount chính xác)
+      this.billingService.getInvoiceById(invoice.invoiceId).subscribe(res => {
+          this.currentInvoice = res.result;
+          this.invoiceDialog = true;
+          this.loadingDetails = true;
+          this.invoiceDetails = [];
+
+          // Reset form thêm item
+          this.selectedItemId = null;
+          this.addItemQuantity = 1;
+
+          this.billingService.getDetailsByInvoice(invoice.invoiceId).subscribe({
+              next: (detailRes) => {
+                  let realDetails = detailRes.result || [];
+
+                  // --- [LOGIC MỚI] DÒNG ẢO HIỂN THỊ CỌC ---
+                  // Nếu là Hóa đơn FINAL và chưa thanh toán
+                  if (this.currentInvoice?.type === 'FINAL' && this.currentInvoice.paymentStatus === 'PENDING') {
+
+                      // Nếu danh sách chi tiết RỖNG (nghĩa là backend không tự cộng tiền khám do đã trả cọc)
+                      // Hoặc bạn có thể check chính xác hơn nếu muốn
+                      if (realDetails.length === 0) {
+                          const consultationPrice = 200000; // Giá khám (Cấu hình hoặc lấy từ DB)
+
+                          const depositLine = {
+                              detailId: -1, // ID âm để nhận biết là dòng ảo
+                              serviceName: 'Phí đặt lịch (Đã thanh toán)',
+                              quantity: 1,
+                              unitPrice: consultationPrice,
+                              drugName: null
+                          } as any;
+
+                          const deductionLine = {
+                              detailId: -2,
+                              serviceName: 'Khấu trừ cọc',
+                              quantity: 1,
+                              unitPrice: -consultationPrice, // Giá âm
+                              drugName: null
+                          } as any;
+
+                          // Chèn vào đầu danh sách
+                          realDetails = [depositLine, deductionLine, ...realDetails];
+                      }
+                  }
+                  // ----------------------------------------
+
+                  this.invoiceDetails = realDetails;
+                  this.loadingDetails = false;
+              },
+              error: () => this.loadingDetails = false
+          });
+      });
+  }
+
+  // --- 4. LOGIC THÊM/XÓA ITEM VÀO HÓA ĐƠN ---
+  addItemToInvoice() {
+      if (!this.currentInvoice || !this.selectedItemId) return;
+
+      const request: InvoiceDetailCreationRequest = {
+          invoiceId: this.currentInvoice.invoiceId,
+          quantity: this.addItemQuantity,
+          serviceId: this.addItemType === 'SERVICE' ? this.selectedItemId : undefined,
+          drugId: this.addItemType === 'DRUG' ? this.selectedItemId : undefined
+      };
+
+      this.billingService.addInvoiceDetail(request).subscribe({
+          next: () => {
+              this.messageService.add({ severity: 'success', summary: 'Thành công', detail: 'Đã thêm vào hóa đơn' });
+              this.selectedItemId = null;
+              this.addItemQuantity = 1;
+              if (this.currentInvoice) this.openInvoiceDialog(this.currentInvoice);
           },
-          error: () => this.loadingDetails = false
+          error: (err) => this.showError(err)
+      });
+  }
+
+  deleteInvoiceDetail(detailId: number) {
+      // Chặn xóa dòng ảo
+      if (detailId < 0) {
+          this.messageService.add({severity: 'warn', summary: 'Không thể xóa', detail: 'Đây là dòng thông tin cọc, không thể xóa.'});
+          return;
+      }
+
+      this.confirmationService.confirm({
+          message: 'Xóa mục này khỏi hóa đơn?',
+          header: 'Xác nhận xóa',
+          icon: 'pi pi-trash',
+          acceptLabel: 'Xóa',
+          acceptButtonStyleClass: 'p-button-danger',
+          rejectLabel: 'Hủy',
+          accept: () => {
+              this.billingService.deleteInvoiceDetail(detailId).subscribe({
+                  next: () => {
+                      this.messageService.add({ severity: 'success', summary: 'Đã xóa', detail: 'Đã cập nhật hóa đơn' });
+                      if (this.currentInvoice) this.openInvoiceDialog(this.currentInvoice);
+                  },
+                  error: (err) => this.showError(err)
+              });
+          }
       });
   }
 
@@ -344,8 +469,7 @@ export class AppointmentManagementComponent implements OnInit {
         rejectLabel: 'Hủy',
         acceptButtonStyleClass: 'p-button-success',
         accept: () => {
-          // Gọi API Update trạng thái thành PAID + CASH
-          const request: any = { // Dùng any hoặc import InvoiceUpdateRequest
+          const request: any = {
             paymentStatus: 'PAID',
             paymentMethod: 'CASH'
           };
@@ -353,12 +477,10 @@ export class AppointmentManagementComponent implements OnInit {
           this.billingService.updateInvoice(this.currentInvoice!.invoiceId, request).subscribe({
             next: () => {
               this.messageService.add({ severity: 'success', summary: 'Thành công', detail: 'Thanh toán thành công!' });
-              this.invoiceDialog = false; // Đóng popup
-              this.loadAppointments();    // Load lại lịch hẹn để cập nhật trạng thái
+              this.invoiceDialog = false;
+              this.loadAppointments();
             },
-            error: (err) => {
-              this.showError(err);
-            }
+            error: (err) => this.showError(err)
           });
         }
       });
@@ -371,7 +493,6 @@ export class AppointmentManagementComponent implements OnInit {
       this.billingService.initiateVnPayPayment(this.currentInvoice.invoiceId).subscribe({
           next: (res) => {
               if (res.result) {
-                  // Backend trả về URL -> Redirect user sang VNPay
                   window.location.href = res.result;
               } else {
                   this.messageService.add({ severity: 'error', summary: 'Lỗi', detail: 'Không lấy được link thanh toán' });
@@ -385,11 +506,32 @@ export class AppointmentManagementComponent implements OnInit {
       });
   }
 
+  // --- HELPERS ---
+  hideDialog() { this.apptDialog = false; this.submitted = false; }
+
+  showError(err: any) {
+    const msg = err.error?.message || 'Có lỗi xảy ra!';
+    this.messageService.add({ severity: 'error', summary: 'Lỗi', detail: msg });
+  }
+
   formatCurrency(amount: number): string {
       return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
   }
 
   getItemName(item: InvoiceDetailResponse): string { return item.serviceName || item.drugName || 'Không xác định'; }
+
+  getSeverity(status: string) {
+    switch (status) {
+        case 'CONFIRMED': return 'success';
+        case 'PENDING': return 'warning';
+        case 'COMPLETED': return 'info';
+        case 'CHECKED_IN': return 'secondary';
+        case 'IN_PROGRESS': return 'warning';
+        case 'CANCELLED': return 'danger';
+        case 'NO_SHOW': return 'danger';
+        default: return 'contrast';
+    }
+  }
 
   getStatusClass(status: string): string {
       switch (status) {

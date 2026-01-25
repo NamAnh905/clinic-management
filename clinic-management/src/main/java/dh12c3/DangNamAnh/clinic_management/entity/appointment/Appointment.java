@@ -52,7 +52,7 @@ public class Appointment {
     @OneToOne(mappedBy = "appointment")
     MedicalRecord medicalRecord;
 
-    @OneToOne(mappedBy = "appointment")
-    Invoice invoice;
+//    @OneToOne(mappedBy = "appointment")
+//    Invoice invoice;
 }
 

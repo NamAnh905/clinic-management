@@ -1,7 +1,7 @@
 // src/app/core/guards/admin-redirect.guard.ts
 import { inject } from '@angular/core';
 import { Router, CanActivateFn } from '@angular/router';
-import { AuthService } from '../services/auth.service';
+import { AuthService } from '../../api/auth.service';
 
 export const AdminRedirectGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);

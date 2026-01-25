@@ -9,8 +9,8 @@ import { ToastModule } from 'primeng/toast';
 import { CalendarModule } from 'primeng/calendar'; // <--- Dùng Module
 import { DropdownModule } from 'primeng/dropdown';
 
-import { UserService } from '../../../core/services/user.service';
-import { AuthService } from '../../../core/services/auth.service';
+import { UserService } from '../../../api/user.service';
+import { AuthService } from '../../../api/auth.service';
 
 @Component({
   selector: 'app-register',

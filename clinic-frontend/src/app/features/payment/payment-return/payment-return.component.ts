@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BillingService } from '../../../core/services/billing.service'; // Chỉnh lại đường dẫn nếu cần
+import { BillingService } from '../../../api/billing.service'; // Chỉnh lại đường dẫn nếu cần
 import { MessageService } from 'primeng/api';
 
 // PrimeNG Modules
@@ -11,7 +11,7 @@ import { ButtonModule } from 'primeng/button';
 
 import { ApiResponse } from '../../../models/core.model';
 import { InvoiceResponse } from '../../../models/billing.model';
-import { UserService } from '../../../core/services/user.service';
+import { UserService } from '../../../api/user.service';
 
 @Component({
   selector: 'app-payment-return',

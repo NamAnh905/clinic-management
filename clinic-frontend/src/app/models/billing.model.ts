@@ -23,6 +23,8 @@ export interface InvoiceResponse {
   transactionCode?: string;
   createdAt?: string;
   type: InvoiceType;
+  depositAmount?: number;
+  bookingInvoiceId?: number;
 }
 
 export interface InvoiceCreationRequest {

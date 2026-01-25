@@ -19,7 +19,7 @@
                       [(ngModel)]="keyword"
                       (keyup.enter)="loadUsers()"
                       placeholder="Tìm theo tên, email..."
-                      class="w-full sm:w-20rem border-round-2xl pl-5" />
+                      class="w-full sm:w-20rem pl-5" />
               </span>
 
               <p-dropdown
@@ -29,7 +29,7 @@
                   optionLabel="label"
                   optionValue="value"
                   placeholder="Vai trò"
-                  styleClass="w-full sm:w-11rem border-round-2xl"
+                  styleClass="w-full sm:w-11rem"
                   [showClear]="true">
               </p-dropdown>
 
@@ -40,7 +40,7 @@
                   optionLabel="label"
                   optionValue="value"
                   placeholder="Trạng thái"
-                  styleClass="w-full sm:w-12rem border-round-2xl"
+                  styleClass="w-full sm:w-12rem"
                   [showClear]="true">
               </p-dropdown>
           </div>
@@ -85,13 +85,18 @@
                   <tr>
                       <th style="min-width: 80px">ID</th>
                       <th style="min-width: 80px">Ảnh</th>
-                      <th style="min-width: 180px">Họ và tên</th>
-
+                      <th style="min-width: 180px" pSortableColumn="fullName">
+                          Họ và tên <p-sortIcon field="fullName"></p-sortIcon>
+                      </th>
                       <th style="min-width: 200px">Email</th>
                       <th style="min-width: 120px">Số điện thoại</th>
-                      <th style="min-width: 200px">Địa chỉ</th>
+                      <th style="min-width: 200px" pSortableColumn="address">
+                        Địa chỉ <p-sortIcon field="address"></p-sortIcon>
+                      </th>
                       <th style="min-width: 100px">Vai trò</th>
-                      <th style="min-width: 120px">Ngày sinh</th>
+                      <th style="min-width: 120px" pSortableColumn="dateOfBirth">
+                          Ngày sinh <p-sortIcon field="dateOfBirth"></p-sortIcon>
+                      </th>
                       <th style="min-width: 100px">Giới tính</th>
                       <th style="min-width: 120px">Trạng thái</th>
                       <th class="text-center" style="min-width: 100px">Thao tác</th>

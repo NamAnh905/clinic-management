@@ -40,7 +40,7 @@ public class PresDetailController {
                 .build();
     }
 
-    @PreAuthorize("hasAuthority('READ_PRESCRIPTION') or hasAuthority('FULL_ACCESS')")
+    @PreAuthorize("hasAuthority('READ_PRESCRIPTION') or hasAuthority('FULL_ACCESS') or hasAuthority('READ_OWN_PRESCRIPTION')")
     @GetMapping("/by-prescription/{prescriptionId}")
     public ApiResponse<List<PresDetailResponse>> getDetailsByPrescriptionId(@PathVariable Long prescriptionId) {
         return ApiResponse.<List<PresDetailResponse>>builder()

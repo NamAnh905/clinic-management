@@ -1,0 +1,32 @@
+<div class="dashboard-wrapper">
+    <div class="container">
+        <div class="grid-layout">
+
+            <aside class="sidebar">
+                <div class="user-info-mini">
+                    <div class="avatar-circle">
+                        <i class="pi pi-user"></i>
+                    </div>
+                    <span class="username">Tài khoản của tôi</span>
+                </div>
+
+                <ul class="menu-list">
+                    <li *ngFor="let item of menuItems">
+                        <a [routerLink]="item.route"
+                           routerLinkActive="active-link"
+                           [routerLinkActiveOptions]="{exact: false}"
+                           class="menu-link cursor-pointer">
+                            <i [class]="item.icon"></i>
+                            <span>{{ item.label }}</span>
+                        </a>
+                    </li>
+                </ul>
+            </aside>
+
+            <main class="main-content">
+                <router-outlet></router-outlet>
+            </main>
+
+        </div>
+    </div>
+</div>

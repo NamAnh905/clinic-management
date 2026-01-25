@@ -14,10 +14,10 @@ import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
 
-import { ScheduleService } from '../../../core/services/schedule.service';
-import { MasterDataService } from '../../../core/services/master-data.service';
-import { StaffService } from '../../../core/services/staff.service';
-import { AuthService } from '../../../core/services/auth.service';
+import { ScheduleService } from '../../../api/schedule.service';
+import { MasterDataService } from '../../../api/master-data.service';
+import { StaffService } from '../../../api/staff.service';
+import { AuthService } from '../../../api/auth.service';
 import { ScheduleResponse } from '../../../models/schedule.model';
 
 @Component({

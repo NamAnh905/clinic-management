@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { MasterDataService } from '../../../core/services/master-data.service';
+import { MasterDataService } from '../../../api/master-data.service';
 import { ServiceEntityResponse } from '../../../models/master-data.model';
 
 @Component({

@@ -1,6 +1,6 @@
 $primary-color: #2563eb;
 $text-color: #334155;
-$text-muted: #94a3b8; // Màu xám nhạt cho header
+$text-muted: #94a3b8;
 $hover-bg: #f8fafc;
 $border-color: #e2e8f0;
 
@@ -14,68 +14,80 @@ $border-color: #e2e8f0;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
 
-  /* --- TRẠNG THÁI THU GỌN (SỬA ĐOẠN NÀY) --- */
+  /* --- TRẠNG THÁI THU GỌN (COLLAPSED) --- */
+  /* Đã tinh chỉnh để các icon dính gần nhau hơn, bớt rời rạc */
   &.collapsed {
     width: 80px;
-    padding: 1.5rem 0.5rem;
+    padding: 0.75rem 0.5rem; /* Giảm khoảng thừa trên/dưới sidebar */
 
     .logo-area { justify-content: center; }
 
-    /* 1. Ẩn hoàn toàn tên nhóm khi thu gọn */
-    .menu-header {
-        display: none !important;
-    }
+    /* 1. Ẩn tên nhóm khi thu gọn */
+    .menu-header { display: none !important; }
 
-    /* 2. Hiện vạch kẻ khi thu gọn */
+    /* 2. Tinh chỉnh vạch kẻ phân cách khi thu gọn */
     .menu-divider {
         display: block !important;
-        margin: 1rem auto; /* Căn giữa */
-        width: 40px;       /* Độ dài vạch kẻ ngắn lại cho đẹp */
+        margin: 0.5rem auto; /* Khoảng cách giữa các nhóm icon chỉ còn 0.5rem */
+        width: 48px;         /* Vạch kẻ dài hơn chút cho cân đối */
+        height: 1px;
+        background-color: $border-color;
+        opacity: 0.6;        /* Làm mờ nhẹ */
+
+        &:first-of-type {
+            display: none !important;
+        }
     }
 
     .brand-name, .submenu-wrapper, .layout-menuitem-toggler { display: none !important; }
 
+    /* Style riêng cho nút icon khi thu gọn */
     .nav-link {
         justify-content: center;
-        padding: 0.8rem;
-        .layout-menuitem-icon { margin-right: 0; font-size: 1.4rem; }
+        padding: 0.5rem;     /* Icon gọn hơn */
+        margin-bottom: 2px;
+
+        .layout-menuitem-icon {
+            margin-right: 0;
+            font-size: 1.4rem;
+        }
         .layout-menuitem-text { display: none; }
     }
   }
 }
 
 .logo-area {
-  height: 90px; // Giảm xuống 1 chút cho cân đối
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 1.25rem;
   border-bottom: 1px solid $border-color;
-  flex-shrink: 0; // Không cho co lại
+  flex-shrink: 0;
 
   .logo-icon img {
-      height: 60px; // Logo vừa phải
+      height: 40px;
       width: auto;
       object-fit: contain;
   }
 
   .toggle-btn {
-    width: 36px; height: 36px;
+    width: 32px; height: 32px;
     border: none; background: transparent; color: $text-muted;
-    cursor: pointer; border-radius: 8px;
+    cursor: pointer; border-radius: 6px;
     display: flex; align-items: center; justify-content: center;
     &:hover { background: $hover-bg; color: $primary-color; }
-    i { font-size: 1.2rem; }
+    i { font-size: 1.1rem; }
   }
 }
 
 .menu-section {
   flex-grow: 1;
-  overflow-y: auto; // Scroll nếu menu quá dài
-  padding: 1.5rem 1rem;
+  overflow-y: auto;
+  padding: 1rem 0.75rem;
 
-  // Custom scrollbar cho đẹp
-  &::-webkit-scrollbar { width: 5px; }
+  /* Custom scrollbar */
+  &::-webkit-scrollbar { width: 4px; }
   &::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
   &::-webkit-scrollbar-track { background: transparent; }
 }
@@ -84,18 +96,18 @@ $border-color: #e2e8f0;
   list-style: none; padding: 0; margin: 0;
 }
 
-/* --- SECTION HEADER (MỚI) --- */
+/* --- SECTION HEADER (Khi mở rộng) --- */
 .menu-header {
     font-size: 0.75rem;
     text-transform: uppercase;
     color: $text-muted;
     font-weight: 700;
     letter-spacing: 0.05em;
-    margin-top: 1.5rem;
-    margin-bottom: 0.75rem;
-    padding-left: 0.5rem;
 
-    /* 3. Thêm thuộc tính này để chống vỡ dòng khi animation đang chạy */
+    margin-top: 1rem;
+    margin-bottom: 0.25rem;
+
+    padding-left: 0.75rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -103,6 +115,7 @@ $border-color: #e2e8f0;
     &:first-child { margin-top: 0; }
 }
 
+/* Vạch kẻ mặc định (Khi mở rộng - thường ẩn hoặc hiện tùy logic của bạn, ở đây giữ nguyên style gốc) */
 .menu-divider {
     height: 1px;
     background-color: $border-color;
@@ -112,23 +125,28 @@ $border-color: #e2e8f0;
 /* --- STYLE ITEM MENU --- */
 .nav-link {
     display: flex; align-items: center;
-    padding: 0.75rem 1rem;
-    border-radius: 12px; // Bo tròn mềm hơn
+    padding: 0.6rem 0.75rem;
+
+    border-radius: 8px;
     color: $text-color;
-    text-decoration: none; font-weight: 500; font-size: 0.95rem;
+    text-decoration: none; font-weight: 500;
+    font-size: 0.9rem;
     transition: all 0.2s ease;
-    cursor: pointer; margin-bottom: 4px;
+    cursor: pointer;
+    margin-bottom: 2px;
     position: relative; overflow: hidden;
 
     .layout-menuitem-icon {
-        margin-right: 12px; font-size: 1.2rem; color: #64748b;
-        width: 24px; text-align: center; transition: color 0.2s;
+        margin-right: 10px;
+        font-size: 1.1rem;
+        color: #64748b;
+        width: 20px; text-align: center; transition: color 0.2s;
     }
 
     .layout-menuitem-text { flex-grow: 1; white-space: nowrap; }
 
     .layout-menuitem-toggler {
-        margin-left: auto; font-size: 0.8rem; color: $text-muted; transition: transform 0.3s;
+        margin-left: auto; font-size: 0.75rem; color: $text-muted; transition: transform 0.3s;
         &.rotated { transform: rotate(-180deg); }
     }
 
@@ -137,14 +155,14 @@ $border-color: #e2e8f0;
       .layout-menuitem-icon { color: $primary-color; transform: scale(1.1); }
     }
 
+    /* Active State */
     &.active, &.active-parent {
-      background-color: fade-out($primary-color, 0.9); // Màu nền xanh rất nhạt
+      background-color: rgba($primary-color, 0.08); /* Thay fade-out bằng rgba cho chuẩn mới */
       color: $primary-color; font-weight: 600;
 
-      // Thêm vạch màu xanh bên trái để nhấn mạnh
       &::before {
           content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-          height: 20px; width: 4px; border-radius: 0 4px 4px 0;
+          height: 16px; width: 3px; border-radius: 0 4px 4px 0;
           background-color: $primary-color;
       }
 
@@ -161,12 +179,14 @@ $border-color: #e2e8f0;
 
 .sub-link {
     display: flex; align-items: center;
-    padding: 0.6rem 1rem 0.6rem 3.2rem; // Thụt đầu dòng sâu hơn
-    text-decoration: none; color: #64748b; font-size: 0.9rem;
-    border-radius: 10px; margin-top: 2px;
+    padding: 0.5rem 1rem 0.5rem 2.8rem;
+
+    text-decoration: none; color: #64748b;
+    font-size: 0.85rem;
+    border-radius: 8px; margin-top: 1px;
     transition: all 0.2s;
 
-    .sub-icon { margin-right: 8px; font-size: 0.5rem; opacity: 0.7; } // Icon chấm tròn nhỏ
+    .sub-icon { margin-right: 8px; font-size: 0.4rem; opacity: 0.7; }
 
     &:hover { color: $text-color; background-color: $hover-bg; }
 

@@ -60,7 +60,9 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
     Optional<Invoice> findByTransactionCode(String transactionCode);
 
-    Optional<Invoice> findByAppointment_AppointmentId(Long appointmentId);
+    Optional<Invoice> findByAppointment_AppointmentIdAndType(Long appointmentId, InvoiceType type);
+
+    List<Invoice> findByAppointment_AppointmentId(Long appointmentId);
 
     boolean existsByAppointment_AppointmentIdAndTypeAndPaymentStatus(Long appointmentId, InvoiceType type, PaymentStatus status);
 

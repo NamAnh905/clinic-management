@@ -46,6 +46,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -138,6 +139,8 @@ public class InvoiceService {
         invoice.setPaymentStatus(PaymentStatus.PENDING);
         invoice.setType(InvoiceType.FINAL); // <--- Set loại FINAL
 
+        invoice.setTotalAmount(BigDecimal.ZERO);
+
         Invoice savedInvoice = invoiceRepository.save(invoice);
         BigDecimal totalAmount = BigDecimal.ZERO;
 
@@ -220,7 +223,7 @@ public class InvoiceService {
                 .orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_FOUND));
 
         String currentUsername = securityUtils.getCurrentUserLogin();
-        boolean canSeeAll = securityUtils.hasRole("READ_INVOICE");
+        boolean canSeeAll = securityUtils.hasRole("READ_INVOICE") || securityUtils.hasRole("FULL_ACCESS");
 
         if (!canSeeAll) {
             String ownerEmail = invoice.getAppointment().getPatient().getUser().getEmail();
@@ -228,7 +231,8 @@ public class InvoiceService {
                 throw new AppException(ErrorCode.UNAUTHORIZED);
             }
         }
-        return invoiceMapper.toInvoiceResponse(invoice);
+
+        return toInvoiceResponseWithDeposit(invoice);
     }
 
     public PageResponse<InvoiceResponse> findAll(PaymentStatus paymentStatus,
@@ -236,9 +240,15 @@ public class InvoiceService {
                                                  LocalDateTime startDate,
                                                  LocalDateTime endDate,
                                                  String keyword,
-                                                 int page, int size) {
-        Sort sort = Sort.by(Sort.Direction.ASC, "invoiceId");
-        Pageable pageable = PageRequest.of(page - 1, size, sort);
+                                                 int page,
+                                                 int size,
+                                                 String sortBy,
+                                                 String sortDir
+    ) {
+        String sortField = SORT_MAPPING.getOrDefault(sortBy, "createdAt");
+        Sort.Direction direction = sortDir.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(direction, sortField ));
 
         String currentUsername = securityUtils.getCurrentUserLogin();
         boolean isAdminOrReceptionist = securityUtils.hasRole("READ_INVOICE");
@@ -259,23 +269,41 @@ public class InvoiceService {
             pageData = Page.empty();
         }
 
-        return invoiceMapper.toInvoicePage(pageData);
+        List<InvoiceResponse> responseList = pageData.getContent().stream()
+                .map(this::toInvoiceResponseWithDeposit)
+                .toList();
+
+        return PageResponse.<InvoiceResponse>builder()
+                .currentPage(page)
+                .pageSize(pageData.getSize())
+                .totalPages(pageData.getTotalPages())
+                .totalElements(pageData.getTotalElements())
+                .data(responseList)
+                .build();
     }
 
     public InvoiceResponse findByAppointmentId(Long appointmentId) {
-        Invoice invoice = invoiceRepository.findByAppointment_AppointmentId(appointmentId)
-                .orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_FOUND));
+        List<Invoice> invoices = invoiceRepository.findByAppointment_AppointmentId(appointmentId);
+
+        if (invoices.isEmpty()) {
+            throw new AppException(ErrorCode.INVOICE_NOT_FOUND);
+        }
+
+        Invoice selectedInvoice = invoices.stream()
+                .filter(i -> i.getType() == InvoiceType.FINAL)
+                .findFirst()
+                .orElse(invoices.get(0));
 
         String currentUsername = securityUtils.getCurrentUserLogin();
-        boolean canSeeAll = securityUtils.hasRole("READ_INVOICE");
+        boolean canSeeAll = securityUtils.hasRole("READ_INVOICE") || securityUtils.hasRole("FULL_ACCESS");
 
         if (!canSeeAll) {
-            String ownerEmail = invoice.getAppointment().getPatient().getUser().getEmail();
+            String ownerEmail = selectedInvoice.getAppointment().getPatient().getUser().getEmail();
             if (!ownerEmail.equals(currentUsername)) {
                 throw new AppException(ErrorCode.UNAUTHORIZED);
             }
         }
-        return invoiceMapper.toInvoiceResponse(invoice);
+        return toInvoiceResponseWithDeposit(selectedInvoice);
     }
 
     @Transactional
@@ -287,25 +315,22 @@ public class InvoiceService {
             throw new AppException(ErrorCode.CANNOT_DELETE_PAID_INVOICE);
         }
 
-        Appointment appointment = invoice.getAppointment();
-        if (appointment != null) {
-            appointment.setInvoice(null);
-        }
+//        Appointment appointment = invoice.getAppointment();
+//        if (appointment != null) {
+//            appointment.setInvoice(null);
+//        }
         invoiceRepository.delete(invoice);
     }
 
-    // --- 1. HÀM TẠO URL THANH TOÁN (Logic nghiệp vụ) ---
     public String createVnPayUrl(Long invoiceId, HttpServletRequest request) {
         // Lấy hóa đơn từ DB
         Invoice invoice = invoiceRepository.findById(invoiceId)
                 .orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_FOUND));
 
-        // Kiểm tra logic nghiệp vụ
         if (invoice.getPaymentStatus() == PaymentStatus.PAID) {
             throw new AppException(ErrorCode.INVOICE_ALREADY_PAID);
         }
 
-        // Gọi VnPayService để lấy String URL (chỉ xử lý chuỗi)
         return vnPayService.createPaymentUrl(
                 invoice.getTotalAmount().longValue(),
                 invoice.getTransactionCode(),
@@ -313,7 +338,6 @@ public class InvoiceService {
         );
     }
 
-    // --- 2. HÀM XỬ LÝ KẾT QUẢ TRẢ VỀ (Logic nghiệp vụ + Trừ kho) ---
     @Transactional
     public InvoiceResponse processVnPayCallback(Map<String, String> queryParams) {
         if (!vnPayService.validateCallback(queryParams)) {
@@ -331,16 +355,13 @@ public class InvoiceService {
                 invoice.setPaymentStatus(PaymentStatus.PAID);
                 invoice.setPaymentMethod(PaymentMethod.VNPAY);
 
-                // --- LOGIC MỚI TẠI ĐÂY ---
                 if (invoice.getType() == InvoiceType.BOOKING) {
-                    // Nếu là thanh toán Booking -> Tự động xác nhận lịch hẹn
                     Appointment appt = invoice.getAppointment();
                     if (appt.getStatus() == AppointmentStatus.PENDING) {
                         appt.setStatus(AppointmentStatus.CONFIRMED);
                         appointmentRepository.save(appt);
                     }
                 } else {
-                    // Nếu là thanh toán Final -> Mới trừ kho thuốc
                     updateDrugStock(invoice);
                 }
 
@@ -352,8 +373,7 @@ public class InvoiceService {
         return invoiceMapper.toInvoiceResponse(invoice);
     }
 
-    // Hàm phụ trợ trừ kho (được tách ra từ logic update cũ để code gọn hơn)
-    private void updateDrugStock(Invoice invoice) {
+    void updateDrugStock(Invoice invoice) {
         Set<InvoiceDetail> details = invoice.getInvoiceDetails();
         if (details != null) {
             for (InvoiceDetail detail : details) {
@@ -369,4 +389,37 @@ public class InvoiceService {
             }
         }
     }
+
+    InvoiceResponse toInvoiceResponseWithDeposit(Invoice invoice) {
+        InvoiceResponse response = invoiceMapper.toInvoiceResponse(invoice);
+
+        // Logic cũ: Chỉ tính tiền. Logic mới: Lấy cả ID.
+        if (invoice.getType() == InvoiceType.FINAL) {
+            Optional<Invoice> bookingInvoice = invoiceRepository.findByAppointment_AppointmentIdAndType(
+                    invoice.getAppointment().getAppointmentId(),
+                    InvoiceType.BOOKING
+            );
+
+            if (bookingInvoice.isPresent()) {
+                response.setDepositAmount(bookingInvoice.get().getTotalAmount());
+
+                // [QUAN TRỌNG] Gán ID hóa đơn cọc vào response
+                response.setBookingInvoiceId(bookingInvoice.get().getInvoiceId());
+            } else {
+                response.setDepositAmount(BigDecimal.ZERO);
+                response.setBookingInvoiceId(null);
+            }
+        } else {
+            response.setDepositAmount(BigDecimal.ZERO);
+            response.setBookingInvoiceId(null);
+        }
+
+        return response;
+    }
+
+    Map<String, String> SORT_MAPPING = Map.of(
+            "patientName", "appointment.patient.user.fullName",
+            "totalAmount", "totalAmount",
+            "createdAt", "createdAt"
+    );
 }

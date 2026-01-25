@@ -304,10 +304,14 @@ public class AppointmentService {
                                                      LocalDateTime endDate,
                                                      String keyword,
                                                      int page,
-                                                     int size
+                                                     int size,
+                                                     String sortBy,
+                                                     String sortDir
     ) {
-        Sort sort = Sort.by(Sort.Direction.DESC, "appointmentTime");
-        Pageable pageable = PageRequest.of(page - 1, size, sort);
+        String sortField = SORT_MAPPING.getOrDefault(sortBy, "appointmentTime");
+        Sort.Direction direction = sortDir.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(direction, sortField));
+
         Page<Appointment> pageData;
         String currentUsername = securityUtils.getCurrentUserLogin();
 
@@ -417,7 +421,7 @@ public class AppointmentService {
         }
 
         LocalDateTime appointmentTime = appointment.getAppointmentTime();
-        LocalDateTime restrictedTime = appointmentTime.minusHours(4); // Không được hủy trước 4 tiếng
+        LocalDateTime restrictedTime = appointmentTime.minusHours(4);
         LocalDateTime now = LocalDateTime.now();
 
         if (now.isAfter(restrictedTime)) {
@@ -427,4 +431,10 @@ public class AppointmentService {
         appointment.setStatus(AppointmentStatus.CANCELLED);
         appointmentRepository.save(appointment);
     }
+
+    Map<String, String> SORT_MAPPING = Map.of(
+        "patientName", "patient.user.fullName",
+        "doctorName", "doctor.user.fullName",
+        "appointmentTime", "appointmentTime"
+    );
 }

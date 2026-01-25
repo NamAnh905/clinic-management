@@ -49,9 +49,11 @@ public class RagDataIngestor {
         List<DoctorResponse> doctors = doctorPage.getData();
 
         for (DoctorResponse doc : doctors) {
-            String text = String.format("Bác sĩ: %s. Chuyên khoa: %s. Giới tính: %s.",
+            String text = String.format(
+                    "Bác sĩ %s. Chuyên khoa %s. Bác sĩ chuyên khám, chữa trị, tư vấn các bệnh về %s. Giới tính: %s.",
                     doc.getFullName(),
                     doc.getSpecialtyName(),
+                    doc.getSpecialtyName(), // <--- Thêm dòng này (Lặp lại tên chuyên khoa để khớp ngữ cảnh)
                     doc.getGender()
             );
 
@@ -77,17 +79,17 @@ public class RagDataIngestor {
         // SỬA: .getItems() -> .getData()
         PageResponse<ServiceEntityResponse> servicePage = seService.findAll(null, "", 1, 1000);
         for (ServiceEntityResponse ser : servicePage.getData()) {
-            String text = String.format("Dịch vụ: %s. Loại dịch vụ: %s. Giá tiền: %s VNĐ.",
+            String text = String.format("Gói dịch vụ y tế: %s. Chi phí/Giá tiền: %s VNĐ. Loại: %s.",
                     ser.getName(),
-                    ser.getType(),
-                    ser.getPrice()
+                    ser.getPrice(), // Đưa giá tiền lên trước
+                    ser.getType()   // Đưa loại xuống sau
             );
 
             Metadata metadata = Metadata.from("type", "service").add("id", ser.getServiceId());
             embedAndStore(text, metadata);
         }
 
-        PageResponse<DrugResponse> drugPage = drugService.findAll("", 1, 1000);
+        PageResponse<DrugResponse> drugPage = drugService.findAll("", 1, 1000, "", "");
         List<DrugResponse> drugs = drugPage.getData(); // Lưu ý: check xem PageResponse dùng .getData() hay .getContent()
 
         for (DrugResponse drug : drugs) {

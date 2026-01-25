@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
-import { MasterDataService } from '../../../../core/services/master-data.service';
+import { MasterDataService } from '../../../../api/master-data.service';
 import { DrugResponse } from '../../../../models/master-data.model';
 
 // PrimeNG Modules
@@ -67,23 +67,38 @@ export class DrugManagementComponent implements OnInit {
 
   // 1. Load danh sách (Server-side pagination)
   loadDrugs(event?: any) {
-    this.loading = true;
+      this.loading = true;
 
-    // Logic tính trang dựa trên PrimeNG Table event
-    if (event) {
-      this.page = (event.first / event.rows) + 1;
-      this.size = event.rows;
-    }
+      // 1. Phân trang
+      if (event) {
+        this.page = (event.first / event.rows) + 1;
+        this.size = event.rows;
+      }
 
-    // Gọi API (Đã bỏ activeOnly theo yêu cầu của bạn)
-    this.masterDataService.getDrugs(this.page, this.size, this.keyword).subscribe({
-        next: (res) => {
-            this.drugs = res.result?.data || [];
-            this.totalRecords = res.result?.totalElements || 0;
-            this.loading = false;
-        },
-        error: () => this.loading = false
-    });
+      // 2. Xử lý Sắp xếp (MỚI)
+      let sortBy = 'name'; // Mặc định sắp tên
+      let sortDir = 'asc'; // Mặc định A->Z
+
+      if (event && event.sortField) {
+          sortBy = event.sortField;
+          sortDir = event.sortOrder === 1 ? 'asc' : 'desc';
+      }
+
+      // 3. Gọi Service
+      this.masterDataService.getDrugs(
+          this.page,
+          this.size,
+          this.keyword,
+          sortBy,   // Mới
+          sortDir   // Mới
+      ).subscribe({
+          next: (res) => {
+              this.drugs = res.result?.data || [];
+              this.totalRecords = res.result?.totalElements || 0;
+              this.loading = false;
+          },
+          error: () => this.loading = false
+      });
   }
 
   // 2. Mở Dialog Thêm mới

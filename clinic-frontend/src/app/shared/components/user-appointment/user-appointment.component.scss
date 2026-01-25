@@ -1,0 +1,167 @@
+/* --- RESET STYLE BẢNG (Cho giao diện Dashboard) --- */
+/* Áp dụng khi bảng có class styleClass="p-datatable-clean" */
+::ng-deep .p-datatable-clean {
+  /* Ẩn Header của bảng đi cho giống danh sách Card */
+  .p-datatable-thead {
+    display: none;
+  }
+
+  /* Reset style mặc định của bảng để các dòng trôi tự do */
+  .p-datatable-tbody > tr {
+    background: transparent !important;
+    display: block;
+    margin-bottom: 1rem;
+    border: none !important;
+
+    > td {
+      display: block;
+      padding: 0;
+      border: none !important;
+      background: transparent !important;
+    }
+  }
+
+  /* Style cho phân trang - bỏ viền, làm nền trong suốt */
+  .p-paginator {
+    background-color: transparent;
+    border: none;
+    .p-paginator-page.p-highlight {
+      background: #e3f2fd;
+      color: #007bff;
+      border-radius: 50%;
+    }
+  }
+}
+
+/* --- TICKET CARD DESIGN (Giữ nguyên như cũ) --- */
+.appointment-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease-in-out;
+  border: 1px solid #edf2f7;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
+    transform: none;
+  }
+
+  /* Đường line màu bên trái thể hiện trạng thái */
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+  }
+
+  &.status-pending::before { background-color: #f59e0b; } /* Cam */
+  &.status-confirmed::before { background-color: #10b981; } /* Xanh lá */
+  &.status-cancelled::before { background-color: #ef4444; } /* Đỏ */
+  &.status-completed::before { background-color: #3b82f6; } /* Xanh dương */
+
+  /* --- CỘT 1: NGÀY THÁNG --- */
+  .date-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 70px;
+    height: 70px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    margin-right: 20px;
+    flex-shrink: 0;
+
+    .day {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #2d3436;
+      line-height: 1;
+    }
+    .month {
+      font-size: 0.85rem;
+      color: #636e72;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+  }
+
+  /* --- CỘT 2: THÔNG TIN CHÍNH --- */
+  .info-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    .time-slot {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.9rem;
+      color: #007bff;
+      font-weight: 600;
+
+      i { margin-right: 6px; }
+    }
+
+    .doctor-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #2d3436;
+    }
+
+    .reason {
+      font-size: 0.9rem;
+      color: #636e72;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  /* --- CỘT 3: TRẠNG THÁI & ACTION --- */
+  .action-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    min-width: 140px;
+
+    .status-badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: inline-block;
+    }
+
+    /* Màu Badge */
+    .badge-pending { background: #fff7ed; color: #c2410c; }
+    .badge-confirmed { background: #ecfdf5; color: #047857; }
+    .badge-cancelled { background: #fef2f2; color: #b91c1c; }
+    .badge-completed { background: #eff6ff; color: #1d4ed8; }
+  }
+}
+
+/* Responsive cho mobile */
+@media (max-width: 600px) {
+  .appointment-card {
+    flex-direction: column;
+    align-items: flex-start;
+
+    .date-box { margin-bottom: 15px; flex-direction: row; width: 100%; height: auto; padding: 10px; justify-content: flex-start; gap: 10px; background: transparent; }
+    .action-section { width: 100%; flex-direction: row; justify-content: space-between; margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;}
+  }
+}

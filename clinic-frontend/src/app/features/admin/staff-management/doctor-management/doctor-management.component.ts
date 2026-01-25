@@ -3,9 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 
 // Services
-import { StaffService } from '../../../../core/services/staff.service';
-import { UserService } from '../../../../core/services/user.service';
-import { MasterDataService } from '../../../../core/services/master-data.service'; //
+import { StaffService } from '../../../../api/staff.service';
+import { UserService } from '../../../../api/user.service';
+import { MasterDataService } from '../../../../api/master-data.service'; //
 
 // Models
 import { DoctorResponse } from '../../../../models/staff.model';

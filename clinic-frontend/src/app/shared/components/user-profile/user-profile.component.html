@@ -1,0 +1,60 @@
+<div class="p-4 md:p-5">
+    <div class="border-bottom-1 surface-border mb-4 pb-3">
+        <h2 class="text-xl font-bold m-0 text-900">Hồ sơ cá nhân</h2>
+        <span class="text-500 text-sm">Quản lý thông tin hồ sơ để bảo mật tài khoản</span>
+    </div>
+
+    <form [formGroup]="profileForm">
+        <div class="flex flex-column md:flex-row gap-5">
+            <div class="flex flex-column align-items-center md:w-15rem border-right-1 surface-border pr-0 md:pr-4">
+                 <div class="avatar-upload-container mb-3">
+                    <img [src]="uploadedImageUrl || 'https://ui-avatars.com/api/?background=random&name=' + (currentUser?.fullName || 'U')" class="avatar-preview">
+                    <label for="fileUpload" class="upload-btn">
+                        <i class="pi pi-camera" *ngIf="!isUploading"></i>
+                        <i class="pi pi-spin pi-spinner" *ngIf="isUploading"></i>
+                    </label>
+                    <input type="file" id="fileUpload" (change)="onFileSelected($event)" accept="image/*" hidden>
+                </div>
+                <div class="text-center text-500 text-sm">
+                    Dụng lượng file tối đa 1 MB<br>Định dạng: .JPEG, .PNG
+                </div>
+            </div>
+
+            <div class="flex-1 w-full">
+                 <div class="field mb-3">
+                    <label class="font-bold block mb-2 text-900">Email</label>
+                    <input pInputText formControlName="email" class="bg-gray-100 w-full surface-100" />
+                </div>
+                <div class="field mb-3">
+                    <label class="font-bold block mb-2 text-900">Họ và tên <span class="text-red-500">*</span></label>
+                    <input pInputText formControlName="fullName" class="w-full" />
+                </div>
+
+                 <div class="formgrid grid">
+                    <div class="field col-12 md:col-6 mb-3">
+                        <label class="font-bold block mb-2 text-900">Số điện thoại</label>
+                        <input pInputText formControlName="phoneNumber" class="w-full" />
+                    </div>
+                    <div class="field col-12 md:col-6 mb-3">
+                        <label class="font-bold block mb-2 text-900">Ngày sinh</label>
+                        <p-calendar formControlName="dateOfBirth" dateFormat="dd/mm/yy" [showIcon]="true" styleClass="w-full" appendTo="body"></p-calendar>
+                    </div>
+                </div>
+
+                <div class="field mb-3">
+                    <label class="font-bold block mb-2 text-900">Giới tính</label>
+                    <p-dropdown [options]="genderOptions" formControlName="gender" optionLabel="label" optionValue="value" placeholder="Chọn giới tính" styleClass="w-full"></p-dropdown>
+                </div>
+
+                <div class="field mb-4">
+                    <label class="font-bold block mb-2 text-900">Địa chỉ</label>
+                    <input pInputText formControlName="address" class="w-full" />
+                </div>
+
+                <div class="flex justify-content-end">
+                    <button pButton label="Lưu thay đổi" icon="pi pi-save" (click)="saveProfile()" [loading]="isUploading" [disabled]="profileForm.invalid" class="px-4"></button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

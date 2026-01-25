@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { Router, CanActivateFn } from '@angular/router';
-import { AuthService } from '../services/auth.service'; // Sửa lại đường dẫn import cho đúng
+import { AuthService } from '../../api/auth.service'; // Sửa lại đường dẫn import cho đúng
 
 export const RoleGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);

@@ -8,8 +8,8 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
 // Services
-import { AuthService } from '../../../core/services/auth.service';
-import { UserService } from '../../../core/services/user.service';
+import { AuthService } from '../../../api/auth.service';
+import { UserService } from '../../../api/user.service';
 
 @Component({
   selector: 'app-login',

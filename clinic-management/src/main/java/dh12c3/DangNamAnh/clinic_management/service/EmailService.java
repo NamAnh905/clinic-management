@@ -99,4 +99,34 @@ public class EmailService {
             log.error("Failed to send email", e);
         }
     }
+
+    @Async
+    public void sendOtpResetPassword(String toEmail, String otp) {
+        try {
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
+
+            helper.setTo(toEmail);
+            helper.setSubject("Mã OTP khôi phục mật khẩu - 28Care");
+
+            String htmlContent = String.format("""
+            <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; border: 1px solid #eee; padding: 20px;">
+                <h2 style="color: #0ea5e9; text-align: center;">Khôi phục mật khẩu</h2>
+                <p>Chào bạn,</p>
+                <p>Bạn đã yêu cầu mã OTP để đặt lại mật khẩu cho tài khoản 28Care.</p>
+                <div style="background: #f0f9ff; padding: 15px; text-align: center; border-radius: 8px;">
+                    <span style="font-size: 24px; font-weight: bold; letter-spacing: 5px; color: #0369a1;">%s</span>
+                </div>
+                <p style="color: #666; font-size: 13px; margin-top: 20px;">
+                    Mã này có hiệu lực trong vòng 5 phút. Nếu bạn không yêu cầu, vui lòng bỏ qua email này.
+                </p>
+            </div>
+            """, otp);
+
+            helper.setText(htmlContent, true);
+            javaMailSender.send(message);
+        } catch (MessagingException e) {
+            log.error("Lỗi gửi mail OTP: {}", e.getMessage());
+        }
+    }
 }

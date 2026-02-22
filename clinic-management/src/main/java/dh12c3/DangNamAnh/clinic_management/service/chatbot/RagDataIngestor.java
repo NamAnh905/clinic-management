@@ -45,7 +45,7 @@ public class RagDataIngestor {
 
         // 1. Nạp Bác sĩ
         // SỬA: .getItems() -> .getData()
-        PageResponse<DoctorResponse> doctorPage = doctorService.findAllDoctors(null, "", 1, 1000);
+        PageResponse<DoctorResponse> doctorPage = doctorService.findAllDoctors(null, "", 1, 1000, "", "");
         List<DoctorResponse> doctors = doctorPage.getData();
 
         for (DoctorResponse doc : doctors) {

@@ -42,36 +42,36 @@
 
         <div class="flex-1 min-h-0 w-full relative">
           <p-table
-            [value]="drugs"
-            [lazy]="true"
-            (onLazyLoad)="loadDrugs($event)"
-            [totalRecords]="totalRecords"
-            [rows]="size"
-            [loading]="loading"
-            [rowHover]="true"
-            styleClass="p-datatable-sm custom-table h-full"
-            [paginator]="true"
-            [rowsPerPageOptions]="[10, 20, 50]"
-            [showCurrentPageReport]="true"
-            currentPageReportTemplate="Hiển thị {first} đến {last} trong tổng số {totalRecords} thuốc"
-            paginatorTemplate="PrevPageLink PageLinks NextPageLink CurrentPageReport RowsPerPageDropdown"
-        >
+              [value]="drugs"
+              [lazy]="true"
+              (onLazyLoad)="loadDrugs($event)"
+              [totalRecords]="totalRecords"
+              [rows]="size"
+              [loading]="loading"
+              [rowHover]="true"
+              styleClass="p-datatable-sm custom-table h-full"
+              [tableStyle]="{'table-layout': 'fixed', 'width': '100%'}" [paginator]="true"
+              [rowsPerPageOptions]="[10, 20, 50]"
+              [showCurrentPageReport]="true"
+              currentPageReportTemplate="Hiển thị {first} đến {last} trong tổng số {totalRecords} thuốc"
+              paginatorTemplate="PrevPageLink PageLinks NextPageLink CurrentPageReport RowsPerPageDropdown"
+          >
 
               <ng-template pTemplate="header">
                   <tr>
-                      <th style="min-width: 50px">ID</th>
-                      <th style="min-width: 200px" pSortableColumn="name">
+                      <th style="width: 5%">ID</th>
+                      <th style="width: 22%" class="white-space-nowrap" pSortableColumn="name">
                           Tên thuốc <p-sortIcon field="name"></p-sortIcon>
                       </th>
-                      <th style="min-width: 70px">Đơn vị</th>
-                      <th style="min-width: 90px" class="text-right" pSortableColumn="stockQuantity">
+                      <th style="width: 8%">Đơn vị</th>
+                      <th style="width: 8%" class="text-right white-space-nowrap" pSortableColumn="stockQuantity">
                           Số lượng <p-sortIcon field="stockQuantity"></p-sortIcon>
                       </th>
-                      <th style="min-width: 110px" class="text-right" pSortableColumn="price">
+                      <th style="width: 10%" class="text-right white-space-nowrap" pSortableColumn="price">
                           Đơn giá <p-sortIcon field="price"></p-sortIcon>
                       </th>
-                      <th style="min-width: 400px">Hướng dẫn sử dụng</th>
-                      <th class="text-center" style="min-width: 110px">Thao tác</th>
+                      <th style="width: 37%">Hướng dẫn sử dụng</th>
+                      <th class="text-center" style="width: 10%">Thao tác</th>
                   </tr>
               </ng-template>
 

@@ -17,7 +17,8 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 // Services & Models
 import { MasterDataService } from '../../../../api/master-data.service';
 import { ServiceEntityResponse } from '../../../../models/master-data.model';
-import { UploadService } from '../../../../api/upload.service'; // <--- 1. Import Service Upload
+import { UploadService } from '../../../../api/upload.service';
+import { AuthService } from '../../../../api/auth.service';
 
 @Component({
   selector: 'app-service-management',
@@ -52,6 +53,8 @@ export class ServiceManagementComponent implements OnInit {
   uploadedImageUrl: string = '';
   isUploading: boolean = false;
 
+  isAdmin: boolean = false;
+
   serviceTypes = [
     { label: 'Khám bệnh', value: 'CONSULTATION' },
     { label: 'Khám cận lâm sàng', value: 'PARACLINICAL' },
@@ -61,6 +64,7 @@ export class ServiceManagementComponent implements OnInit {
   private uploadService = inject(UploadService); // <--- 3. Inject UploadService
   private messageService = inject(MessageService);
   private confirmationService = inject(ConfirmationService);
+  private authService = inject(AuthService);
   private fb = inject(FormBuilder);
 
   constructor() {
@@ -72,6 +76,7 @@ export class ServiceManagementComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.isAdmin = this.authService.isAdmin;
     this.loadServices();
   }
 

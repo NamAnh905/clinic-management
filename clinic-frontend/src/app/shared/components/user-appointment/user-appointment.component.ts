@@ -5,8 +5,9 @@ import { Router } from '@angular/router';
 // PrimeNG
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
-import { MessageService } from 'primeng/api';
+import { MessageService, ConfirmationService } from 'primeng/api'; // Thêm ConfirmationService
 import { ToastModule } from 'primeng/toast';
+import { ConfirmDialogModule } from 'primeng/confirmdialog'; // Thêm ConfirmDialogModule
 
 // Services & Models
 import { AppointmentService } from '../../../api/appointment.service';
@@ -16,8 +17,10 @@ import { AppointmentResponse } from '../../../models/appointment.model';
 @Component({
   selector: 'app-user-appointment',
   standalone: true,
-  imports: [CommonModule, TableModule, ButtonModule, ToastModule],
-  providers: [MessageService],
+  // Bổ sung ConfirmDialogModule vào imports
+  imports: [CommonModule, TableModule, ButtonModule, ToastModule, ConfirmDialogModule],
+  // Bổ sung ConfirmationService vào providers
+  providers: [MessageService, ConfirmationService],
   templateUrl: './user-appointment.component.html',
   styleUrls: ['./user-appointment.component.scss']
 })
@@ -26,7 +29,6 @@ export class UserAppointmentComponent implements OnInit {
   myAppointments: AppointmentResponse[] = [];
   loadingHistory: boolean = false;
 
-  // THÊM: Các biến phục vụ phân trang
   totalRecords: number = 0;
   page: number = 0;
   size: number = 5;
@@ -35,17 +37,16 @@ export class UserAppointmentComponent implements OnInit {
   private billingService = inject(BillingService);
   private messageService = inject(MessageService);
   private router = inject(Router);
+  private confirmationService = inject(ConfirmationService); // Inject ConfirmationService
 
   ngOnInit() {
     this.loadMyAppointments();
   }
 
   loadMyAppointments() {
-    // 1. Logic Cache (Giống InvoiceComponent)
-    // Nếu có cache và đang ở trang đầu tiên thì hiển thị ngay
+    // 1. Logic Cache
     if (this.appointmentService.appointmentsCache && this.appointmentService.appointmentsCache.length > 0 && this.page === 0) {
       this.myAppointments = this.appointmentService.appointmentsCache;
-      // Lưu ý: Nếu service có lưu totalRecords thì lấy ra, tạm thời giả định cache chỉ lưu data trang đầu
       this.loadingHistory = false;
     } else {
       this.loadingHistory = true;
@@ -55,11 +56,9 @@ export class UserAppointmentComponent implements OnInit {
     this.appointmentService.getAppointments(this.page + 1, this.size).subscribe({
       next: (res) => {
         if (res.result) {
-            // Cập nhật data và tổng số bản ghi từ server
             this.myAppointments = (res.result as any).data || [];
             this.totalRecords = res.result.totalElements;
 
-            // Cập nhật lại cache nếu đang ở trang 1 (tuỳ chọn)
             if (this.page === 0) {
                 this.appointmentService.appointmentsCache = this.myAppointments;
             }
@@ -76,7 +75,6 @@ export class UserAppointmentComponent implements OnInit {
     });
   }
 
-  // THÊM: Hàm xử lý khi người dùng bấm chuyển trang
   onPageChange(event: any) {
     this.page = event.first / event.rows;
     this.size = event.rows;
@@ -93,7 +91,6 @@ export class UserAppointmentComponent implements OnInit {
             if (res.result) this.initiateVnPay(res.result.invoiceId);
         },
         error: (err) => {
-             // ... (Giữ nguyên logic xử lý lỗi cũ) ...
              if (err.error?.code === 1008 || err.status === 400) {
                  this.billingService.getInvoiceByAppointment(appointmentId).subscribe({
                      next: (invRes) => {
@@ -127,6 +124,38 @@ export class UserAppointmentComponent implements OnInit {
               this.messageService.add({ severity: 'error', summary: 'Lỗi', detail: 'Lỗi kết nối VNPay.' });
           }
       });
+  }
+
+  // LOGIC HỦY LỊCH HẸN
+  cancelAppointment(appointmentId: number) {
+    this.confirmationService.confirm({
+      message: 'Bạn có chắc chắn muốn hủy lịch hẹn này không? Lưu ý: Bạn chỉ có thể hủy trước giờ khám 4 tiếng.',
+      header: 'Xác nhận hủy lịch',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Có, hủy lịch',
+      rejectLabel: 'Không',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.loadingHistory = true;
+        this.appointmentService.cancelMyAppointment(appointmentId).subscribe({
+          next: (res) => {
+            this.messageService.add({ severity: 'success', summary: 'Thành công', detail: 'Đã hủy lịch hẹn.' });
+
+            // Xóa cache và gọi API tải lại danh sách mới nhất
+            this.appointmentService.appointmentsCache = null;
+            this.loadMyAppointments();
+          },
+          error: (err) => {
+            this.loadingHistory = false;
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Lỗi',
+              detail: err.error?.message || 'Không thể hủy lịch hẹn lúc này.'
+            });
+          }
+        });
+      }
+    });
   }
 
   getStatusLabel(status: string): string {

@@ -41,14 +41,15 @@ $scrollbar-width: 8px;
 
 /* --- GANTT CHART STYLES --- */
 .calendar-wrapper {
-
     .gantt-header {
+      padding-right: $scrollbar-width;
         .time-track-header {
             overflow: hidden; /* Cố định */
         }
     }
 
     .gantt-body {
+        overflow-y: scroll !important;
         /* Style cho Scrollbar */
         &::-webkit-scrollbar { width: $scrollbar-width; height: $scrollbar-width; }
         &::-webkit-scrollbar-track { background: #f1f5f9; }

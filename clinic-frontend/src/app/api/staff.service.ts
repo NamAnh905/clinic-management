@@ -17,10 +17,18 @@ export class StaffService {
   constructor(private http: HttpClient) { }
 
   // ============ DOCTORS ============
-  getAllDoctors(page: number, size: number, keyword?: string): Observable<ApiResponse<PageResponse<DoctorResponse>>> {
+  getAllDoctors(
+    page: number,
+    size: number,
+    keyword?: string,
+    sortBy: string = 'employeeCode',
+    sortDir: string = 'asc'
+  ): Observable<ApiResponse<PageResponse<DoctorResponse>>> {
     let params = new HttpParams()
       .set('page', page)
-      .set('size', size);
+      .set('size', size)
+      .set('sortBy', sortBy) // Truyền tham số sort
+      .set('sortDir', sortDir);
 
     if (keyword) {
       params = params.set('keyword', keyword);

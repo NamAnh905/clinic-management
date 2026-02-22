@@ -60,7 +60,7 @@ public class RagConfiguration {
                 .apiKey(geminiApiKey)
                 .modelName(chatModelName)
                 .temperature(temperature)
-                .timeout(Duration.ofSeconds(60))
+                .timeout(Duration.ofSeconds(300))
                 .maxRetries(3)
                 .build();
     }

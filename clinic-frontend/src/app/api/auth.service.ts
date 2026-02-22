@@ -164,4 +164,12 @@ export class AuthService {
   introspect(token: string): Observable<ApiResponse<IntrospectResponse>> {
     return this.http.post<ApiResponse<IntrospectResponse>>(`${this.authUrl}/introspect`, { token });
   }
+
+  forgotPassword(email: string): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${this.authUrl}/forgot-password`, { email });
+  }
+
+  resetPassword(data: any): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${this.authUrl}/reset-password`, data);
+  }
 }

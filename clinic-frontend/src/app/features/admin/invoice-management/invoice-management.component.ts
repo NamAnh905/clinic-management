@@ -51,6 +51,9 @@ export class InvoiceManagementComponent implements OnInit {
   rangeDates: Date[] | undefined;
   typingTimer: any;
 
+  sortBy: string = 'createdAt';
+  sortDir: string = 'desc';
+
   // Lọc Loại hóa đơn
   selectedType: string | null = null;
   typeOptions = [
@@ -103,6 +106,12 @@ export class InvoiceManagementComponent implements OnInit {
     if (event) {
       this.page = (event.first / event.rows) + 1;
       this.size = event.rows;
+
+      // BẮT SỰ KIỆN SORT TỪ PRIME NG
+      if (event.sortField) {
+        this.sortBy = event.sortField;
+        this.sortDir = event.sortOrder === 1 ? 'asc' : 'desc';
+      }
     }
 
     let fromDateStr = '';
@@ -119,7 +128,9 @@ export class InvoiceManagementComponent implements OnInit {
       this.selectedStatus || undefined,
       undefined,
       fromDateStr, toDateStr,
-      this.keyword
+      this.keyword,
+      this.sortBy, // TRUYỀN BIẾN SORT VÀO ĐÂY
+      this.sortDir // TRUYỀN BIẾN SORT VÀO ĐÂY
     ).subscribe({
       next: (res) => {
         let data = res.result?.data || [];

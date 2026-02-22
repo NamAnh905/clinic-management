@@ -2,10 +2,7 @@ package dh12c3.DangNamAnh.clinic_management.controller.auth;
 
 import java.text.ParseException;
 
-import dh12c3.DangNamAnh.clinic_management.dto.request.auth.AuthenticationRequest;
-import dh12c3.DangNamAnh.clinic_management.dto.request.auth.IntrospectRequest;
-import dh12c3.DangNamAnh.clinic_management.dto.request.auth.LogoutRequest;
-import dh12c3.DangNamAnh.clinic_management.dto.request.auth.RefreshRequest;
+import dh12c3.DangNamAnh.clinic_management.dto.request.auth.*;
 import dh12c3.DangNamAnh.clinic_management.dto.response.ApiResponse;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -56,5 +53,17 @@ public class AuthenticationController {
     ApiResponse<Void> logout(@RequestBody LogoutRequest request) throws ParseException, JOSEException {
         authenticationService.logout(request);
         return ApiResponse.<Void>builder().build();
+    }
+
+    @PostMapping("/forgot-password")
+    ApiResponse<Void> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        authenticationService.sendOtp(request);
+        return ApiResponse.<Void>builder().message("OTP đã được gửi thành công").build();
+    }
+
+    @PostMapping("/reset-password")
+    ApiResponse<Void> resetPassword(@RequestBody ResetPasswordRequest request) {
+        authenticationService.resetPassword(request);
+        return ApiResponse.<Void>builder().message("Đổi mật khẩu thành công").build();
     }
 }

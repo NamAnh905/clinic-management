@@ -246,10 +246,10 @@ export class UserManagementComponent implements OnInit {
 
     // 2. Cập nhật thông báo Confirm Dialog cho đúng nghiệp vụ Soft Delete
     this.confirmationService.confirm({
-      message: `Bạn có chắc chắn muốn <b>vô hiệu hóa</b> tài khoản <b>${user.email}</b>?<br>Người dùng sẽ không thể đăng nhập hệ thống.`,
-      header: 'Xác nhận vô hiệu hóa', // Đổi từ "Xác nhận xóa"
+      message: `Bạn có chắc chắn muốn <b>xóa</b> tài khoản <b>${user.email}</b>?<br>Người dùng sẽ không thể đăng nhập hệ thống.`,
+      header: 'Xác nhận xóa', // Đổi từ "Xác nhận xóa"
       icon: 'pi pi-lock', // Đổi icon từ cảnh báo sang icon khóa cho hợp ngữ cảnh
-      acceptLabel: 'Vô hiệu hóa',
+      acceptLabel: 'Xóa',
       rejectLabel: 'Hủy',
       acceptButtonStyleClass: 'p-button-danger',
       rejectButtonStyleClass: 'p-button-text',
@@ -259,7 +259,7 @@ export class UserManagementComponent implements OnInit {
             this.messageService.add({
               severity: 'success',
               summary: 'Thành công',
-              detail: 'Đã vô hiệu hóa tài khoản người dùng' // Thông báo chính xác
+              detail: 'Đã xóa tài khoản người dùng' // Thông báo chính xác
             });
             this.loadUsers(); // Tải lại bảng để cập nhật trạng thái (Active -> Locked)
           },

@@ -6,6 +6,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } 
 import { MasterDataService } from '../../../../api/master-data.service';
 import { UploadService } from '../../../../api/upload.service'; // <--- Import UploadService
 import { SpecialtyResponse } from '../../../../models/master-data.model';
+import { AuthService } from '../../../../api/auth.service';
 
 // PrimeNG Modules
 import { TableModule } from 'primeng/table';
@@ -48,10 +49,13 @@ export class SpecialtyManagementComponent implements OnInit {
   uploadedImageUrl: string = '';
   isUploading: boolean = false;
 
+  isAdmin: boolean = false;
+
   private masterDataService = inject(MasterDataService);
   private uploadService = inject(UploadService); // <--- Inject
   private messageService = inject(MessageService);
   private confirmationService = inject(ConfirmationService);
+  private authService = inject(AuthService);
   private fb = inject(FormBuilder);
 
   constructor() {
@@ -63,6 +67,7 @@ export class SpecialtyManagementComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.isAdmin = this.authService.isAdmin;
     this.loadSpecialties();
   }
 

@@ -24,14 +24,6 @@ import java.util.List;
 public class PatientController {
     PatientService patientService;
 
-//    @PreAuthorize("hasAuthority('FULL_ACCESS')")
-//    @PostMapping
-//    public ApiResponse<PatientResponse> create(@RequestBody PatientCreationRequest request) {
-//        return ApiResponse.<PatientResponse>builder()
-//                .result(patientService.create(request))
-//                .build();
-//    }
-
     @PreAuthorize("hasAuthority('READ_ALL_PATIENT') or hasAuthority('FULL_ACCESS')")
     @GetMapping
     public ApiResponse<PageResponse<PatientResponse>> findAll(@RequestParam(required = false) String keyword,

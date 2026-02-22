@@ -1,3 +1,6 @@
+<p-toast></p-toast>
+<p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>
+
 <div class="p-4 md:p-5">
     <div class="border-bottom-1 surface-border mb-4 pb-3">
         <h2 class="text-xl font-bold m-0 text-900">Lịch sử đặt khám</h2>
@@ -43,13 +46,21 @@
                             <button *ngIf="appt.status === 'PENDING'"
                                     pButton type="button"
                                     label="Thanh toán ngay"
-                                    class="p-button-sm p-button-rounded p-button-warning shadow-2"
+                                    class="p-button-sm p-button-rounded p-button-warning"
                                     (click)="payBooking(appt.appointmentId)">
                             </button>
 
                             <span *ngIf="appt.status === 'CONFIRMED'" class="text-green-600 text-sm font-bold flex align-items-center gap-1">
                                 <i class="pi pi-check-circle"></i> Đã cọc
                             </span>
+
+                            <button *ngIf="appt.status === 'PENDING' || appt.status === 'CONFIRMED'"
+                                        pButton type="button"
+                                        label="Hủy lịch"
+                                        icon="pi pi-times"
+                                        class="p-button-sm p-button-rounded p-button-danger p-button-outlined w-full"
+                                        (click)="cancelAppointment(appt.appointmentId)">
+                                </button>
                         </div>
                     </div>
                 </td>

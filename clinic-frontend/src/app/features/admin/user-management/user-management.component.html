@@ -7,8 +7,7 @@
         <h2 class="text-2xl font-bold text-900 m-0">Quản lý người dùng</h2>
     </div>
 
-    <div class="surface-card shadow-1 border-round-xl flex flex-column bg-white overflow-hidden"
-         style="height: calc(100vh - 180px);">
+    <div class="surface-card shadow-1 border-round-xl flex flex-column bg-white overflow-hidden flex-auto min-h-0">
 
         <div class="flex flex-column sm:flex-row justify-content-between align-items-center p-3 border-bottom-1 surface-border flex-none gap-3">
 
@@ -64,7 +63,7 @@
 
         </div>
 
-        <div class="flex-1 min-h-0 w-full relative">
+        <div class="flex-1 w-full relative overflow-hidden">
           <p-table
             [value]="users"
             [lazy]="true"
@@ -73,12 +72,14 @@
             [rows]="size"
             [loading]="loading"
             [rowHover]="true"
-            styleClass="p-datatable-sm custom-table h-full"
+            styleClass="p-datatable-sm custom-table"
             [paginator]="true"
             [rowsPerPageOptions]="[5, 10, 15, 20]"
             [showCurrentPageReport]="true"
             currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
             paginatorTemplate="PrevPageLink PageLinks NextPageLink CurrentPageReport RowsPerPageDropdown"
+            [scrollable]="true"
+            scrollHeight="flex"
         >
 
               <ng-template pTemplate="header">
@@ -99,7 +100,7 @@
                       </th>
                       <th style="min-width: 100px">Giới tính</th>
                       <th style="min-width: 120px">Trạng thái</th>
-                      <th class="text-center" style="min-width: 100px">Thao tác</th>
+                      <th class="text-center" style="min-width: 100px" alignFrozen="right" pFrozenColumn [frozen]="true">Thao tác</th>
                   </tr>
               </ng-template>
 
@@ -151,17 +152,17 @@
                           </span>
                       </td>
 
-                      <td class="text-center">
+                      <td class="text-center" alignFrozen="right" pFrozenColumn [frozen]="true">
                           <button pButton icon="pi pi-pencil" class="p-button-text p-button-info p-button-rounded" (click)="editUser(user)"></button>
-                          <button *ngIf="user.isActive" pButton icon="pi pi-trash" class="p-button-text p-button-danger p-button-rounded" (click)="deleteUser(user)" pTooltip="Vô hiệu hóa" tooltipPosition="top"></button>
-                          <button *ngIf="!user.isActive" pButton icon="pi pi-lock" class="p-button-text p-button-secondary p-button-rounded" disabled pTooltip="Đã vô hiệu hóa"></button>
+                          <button *ngIf="user.isActive" pButton icon="pi pi-trash" class="p-button-text p-button-danger p-button-rounded" (click)="deleteUser(user)" pTooltip="Xóa" tooltipPosition="top"></button>
+                          <button *ngIf="!user.isActive" pButton icon="pi pi-lock" class="p-button-text p-button-secondary p-button-rounded" disabled pTooltip="Đã xóa"></button>
                       </td>
                   </tr>
               </ng-template>
 
               <ng-template pTemplate="emptymessage">
                   <tr>
-                      <td colspan="9" class="text-center p-4 text-500">Không tìm thấy dữ liệu.</td>
+                      <td colspan="11" class="text-center p-4 text-500">Không tìm thấy dữ liệu.</td>
                   </tr>
               </ng-template>
           </p-table>

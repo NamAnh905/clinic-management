@@ -4,13 +4,11 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.Map;
 import java.util.StringJoiner;
 import java.util.UUID;
 
-import dh12c3.DangNamAnh.clinic_management.dto.request.auth.AuthenticationRequest;
-import dh12c3.DangNamAnh.clinic_management.dto.request.auth.IntrospectRequest;
-import dh12c3.DangNamAnh.clinic_management.dto.request.auth.LogoutRequest;
-import dh12c3.DangNamAnh.clinic_management.dto.request.auth.RefreshRequest;
+import dh12c3.DangNamAnh.clinic_management.dto.request.auth.*;
 import dh12c3.DangNamAnh.clinic_management.dto.response.auth.AuthenticationResponse;
 import dh12c3.DangNamAnh.clinic_management.dto.response.auth.IntrospectResponse;
 import dh12c3.DangNamAnh.clinic_management.entity.auth.InvalidatedToken;
@@ -19,6 +17,7 @@ import dh12c3.DangNamAnh.clinic_management.exception.AppException;
 import dh12c3.DangNamAnh.clinic_management.exception.ErrorCode;
 import dh12c3.DangNamAnh.clinic_management.repository.auth.InvalidatedTokenRepository;
 import dh12c3.DangNamAnh.clinic_management.repository.user.UserRepository;
+import dh12c3.DangNamAnh.clinic_management.service.EmailService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -45,6 +44,8 @@ import org.springframework.util.CollectionUtils;
 public class AuthenticationService {
     UserRepository userRepository;
     InvalidatedTokenRepository invalidatedTokenRepository;
+    EmailService emailService;
+    Map<String, String> otpStorage = new java.util.concurrent.ConcurrentHashMap<>();
 
     @NonFinal
     @Value("${jwt.signerKey}")
@@ -190,5 +191,35 @@ public class AuthenticationService {
         return AuthenticationResponse.builder().token(token).authenticated(true).build();
     }
 
+    public void sendOtp(ForgotPasswordRequest request) {
+        var user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
+        String otp = String.format("%06d", new java.util.Random().nextInt(999999));
+        otpStorage.put(request.email(), otp);
+
+        // Xóa OTP sau 5 phút
+        new java.util.Timer().schedule(new java.util.TimerTask() {
+            @Override
+            public void run() { otpStorage.remove(request.email()); }
+        }, 300000);
+
+        emailService.sendOtpResetPassword(request.email(), otp);
+    }
+
+    public void resetPassword(ResetPasswordRequest request) {
+        String storedOtp = otpStorage.get(request.email());
+        if (storedOtp == null || !storedOtp.equals(request.otp())) {
+            throw new AppException(ErrorCode.INVALID_KEY); // Bạn có thể định nghĩa ErrorCode.INVALID_OTP riêng
+        }
+
+        var user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+        user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
+
+        otpStorage.remove(request.email());
+    }
 }

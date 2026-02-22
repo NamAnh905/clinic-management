@@ -45,7 +45,7 @@ export class AdminSidebarComponent implements OnInit {
       items: [
         { label: 'Lịch hẹn khám', icon: 'pi pi-calendar-clock', routerLink: '/admin/appointments', roles: ['ADMIN', 'DOCTOR', 'RECEPTIONIST'] },
         { label: 'Hồ sơ bệnh nhân', icon: 'pi pi-users', routerLink: '/admin/patients', roles: ['ADMIN', 'RECEPTIONIST'] },
-        { label: 'Lịch làm việc', icon: 'pi pi-calendar', routerLink: '/admin/schedule', roles: ['ADMIN', 'RECEPTIONIST'] },
+        { label: 'Lịch làm việc', icon: 'pi pi-calendar', routerLink: '/admin/schedule', roles: ['ADMIN', 'DOCTOR', 'RECEPTIONIST'] },
       ]
     },
     {

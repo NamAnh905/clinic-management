@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -105,9 +106,16 @@ public class DoctorService {
         return doctorMapper.toDoctorResponse(doctor);
     }
 
-    public PageResponse<DoctorResponse> findAllDoctors(Long specialtyId, String keyword, int page, int size){
-        Sort sort = Sort.by(Sort.Direction.DESC, "doctorId");
-        Pageable pageable = PageRequest.of(page - 1, size, sort);
+    public PageResponse<DoctorResponse> findAllDoctors(Long specialtyId,
+                                                       String keyword,
+                                                       int page,
+                                                       int size,
+                                                       String sortBy,
+                                                       String sortDir){
+        String sortField = SORT_MAPPING.getOrDefault(sortBy, "employeeCode");
+        Sort.Direction direction = sortDir.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(direction, sortField ));
         Page<Doctor> pageDoctors;
 
         if (specialtyId != null) {
@@ -139,4 +147,9 @@ public class DoctorService {
 
         userService.delete(doctor.getUser().getUserId());
     }
+
+    Map<String, String> SORT_MAPPING = Map.of(
+            "employeeCode", "employeeCode",
+            "doctorName", "user.fullName"
+    );
 }

@@ -50,11 +50,13 @@ public class DoctorController {
 //    @PreAuthorize("hasAuthority('FULL_ACCESS') or hasAuthority('READ_DOCTOR')")
     @GetMapping
     public ApiResponse<PageResponse<DoctorResponse>> getAllDoctors(@RequestParam(required = false) String keyword,
-                                                                       @RequestParam(required = false) Long specialtyId,
-                                                                       @RequestParam(defaultValue = "1") int page,
-                                                                       @RequestParam(defaultValue = "10") int size){
+                                                                   @RequestParam(required = false) Long specialtyId,
+                                                                   @RequestParam(defaultValue = "1") int page,
+                                                                   @RequestParam(defaultValue = "10") int size,
+                                                                   @RequestParam(defaultValue = "employeeCode") String sortBy,
+                                                                   @RequestParam(defaultValue = "asc") String sortDir){
         return ApiResponse.<PageResponse<DoctorResponse>>builder()
-                .result(doctorService.findAllDoctors(specialtyId, keyword, page, size))
+                .result(doctorService.findAllDoctors(specialtyId, keyword, page, size, sortBy, sortDir))
                 .build();
     }
 

@@ -27,8 +27,12 @@
 
                 <ng-template pTemplate="header">
                     <tr>
-                        <th style="min-width: 100px">Mã BS</th>
-                        <th style="min-width: 180px">Họ và tên</th>
+                        <th style="min-width: 100px" pSortableColumn="employeeCode">
+                            Mã BS <p-sortIcon field="employeeCode"></p-sortIcon>
+                        </th>
+                        <th style="min-width: 180px" pSortableColumn="doctorName">
+                            Họ và tên <p-sortIcon field="doctorName"></p-sortIcon>
+                        </th>
                         <th style="min-width: 100px">Giới tính</th>
                         <th style="min-width: 150px">Chuyên khoa</th>
                         <th style="min-width: 150px">Số giấy phép</th>

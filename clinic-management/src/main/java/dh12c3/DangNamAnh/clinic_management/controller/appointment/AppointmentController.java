@@ -72,6 +72,15 @@ public class AppointmentController {
                 .build();
     }
 
+    @PreAuthorize("hasAuthority('FULL_ACCESS') or hasAuthority('READ_OWN_APPOINTMENT')")
+    @PutMapping("/{appointmentId}/cancel")
+    public ApiResponse<String> cancelMyAppointment(@PathVariable Long appointmentId) {
+        appointmentService.cancelMyAppointment(appointmentId);
+        return ApiResponse.<String>builder()
+                .result("Hủy lịch hẹn thành công")
+                .build();
+    }
+
     @PreAuthorize("hasAuthority('FULL_ACCESS') or hasAuthority('UPDATE_APPOINTMENT')")
     @PutMapping("/{appointmentId}")
     public ApiResponse<AppointmentResponse> update(@RequestBody AppointmentUpdationRequest request, @PathVariable long appointmentId){

@@ -89,6 +89,10 @@ export class AppointmentService {
     return this.http.post<ApiResponse<string>>(`${this.baseUrl}/public/cancel`, request);
   }
 
+  cancelMyAppointment(id: number): Observable<ApiResponse<string>> {
+    return this.http.put<ApiResponse<string>>(`${this.baseUrl}/${id}/cancel`, {});
+  }
+
   exportAppointments(): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/export`, {
       responseType: 'blob'

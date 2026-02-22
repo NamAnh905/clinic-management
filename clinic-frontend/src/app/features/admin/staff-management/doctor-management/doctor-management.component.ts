@@ -43,6 +43,9 @@ export class DoctorManagementComponent implements OnInit {
   size: number = 10;
   keyword: string = '';
 
+  sortBy: string = 'employeeCode';
+  sortDir: string = 'asc';
+
   doctorDialog: boolean = false;
   doctorForm: FormGroup;
   submitted: boolean = false;
@@ -76,9 +79,16 @@ export class DoctorManagementComponent implements OnInit {
     if (event) {
       this.page = (event.first / event.rows) + 1;
       this.size = event.rows;
+
+      // BẮT SỰ KIỆN SORT
+      if (event.sortField) {
+        this.sortBy = event.sortField;
+        this.sortDir = event.sortOrder === 1 ? 'asc' : 'desc';
+      }
     }
 
-    this.staffService.getAllDoctors(this.page, this.size, this.keyword).subscribe({
+    // GỌI SERVICE KÈM THEO SORT
+    this.staffService.getAllDoctors(this.page, this.size, this.keyword, this.sortBy, this.sortDir).subscribe({
       next: (res) => {
         this.doctors = res.result?.data || [];
         this.totalRecords = res.result?.totalElements || 0;

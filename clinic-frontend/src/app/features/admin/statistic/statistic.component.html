@@ -127,7 +127,6 @@
                     <tr>
                         <th>Tên sản phẩm</th>
                         <th class="text-right">Doanh thu</th>
-                        <th class="text-right" style="width: 50px"></th>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="body" let-item>
@@ -137,9 +136,6 @@
                         </td>
                         <td class="text-right font-bold text-gray-900">
                             {{ item.value | currency:'VND':'symbol':'1.0-0':'vi-VN' }}
-                        </td>
-                        <td class="text-right">
-                             <i class="pi pi-chevron-right text-gray-300 text-xs"></i>
                         </td>
                     </tr>
                 </ng-template>
@@ -157,25 +153,16 @@
                     <tr>
                         <th>Bác sĩ</th>
                         <th class="text-right">Đóng góp</th>
-                        <th class="text-right" style="width: 50px"></th>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="body" let-item>
                     <tr>
                         <td>
-                            <div class="flex align-items-center">
-                                <div class="w-2rem h-2rem border-circle bg-blue-50 flex align-items-center justify-content-center mr-3">
-                                    <span class="text-blue-600 font-bold text-xs">{{ item.label.charAt(0) }}</span>
-                                </div>
-                                <span class="font-medium text-gray-700">{{ item.label }}</span>
-                            </div>
+                            <span class="font-medium text-gray-700">{{ item.label }}</span>
                         </td>
                         <td class="text-right font-bold text-green-600">
                             {{ item.value | currency:'VND':'symbol':'1.0-0':'vi-VN' }}
                         </td>
-                        <td class="text-right">
-                            <i class="pi pi-chevron-right text-gray-300 text-xs"></i>
-                       </td>
                     </tr>
                 </ng-template>
             </p-table>

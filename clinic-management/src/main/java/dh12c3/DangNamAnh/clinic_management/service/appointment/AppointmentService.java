@@ -432,6 +432,37 @@ public class AppointmentService {
         appointmentRepository.save(appointment);
     }
 
+    @Transactional
+    public void cancelMyAppointment(Long appointmentId) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
+
+        // 1. Kiểm tra xem user đang đăng nhập có đúng là chủ của lịch hẹn này không
+        String currentUsername = securityUtils.getCurrentUserLogin();
+        if (!appointment.getPatient().getUser().getEmail().equals(currentUsername)) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+
+        // 2. Chỉ cho phép hủy nếu đang ở trạng thái PENDING hoặc CONFIRMED
+        if (appointment.getStatus() != AppointmentStatus.PENDING &&
+                appointment.getStatus() != AppointmentStatus.CONFIRMED) {
+            throw new AppException(ErrorCode.STATUS_CHANGE_NOT_ALLOWED);
+        }
+
+        // 3. Ràng buộc thời gian: Không cho phép hủy sát giờ (trước 4 tiếng)
+        LocalDateTime appointmentTime = appointment.getAppointmentTime();
+        LocalDateTime restrictedTime = appointmentTime.minusHours(4);
+        LocalDateTime now = LocalDateTime.now();
+
+        if (now.isAfter(restrictedTime)) {
+            throw new AppException(ErrorCode.CANNOT_CANCEL_LATE);
+        }
+
+        // 4. Thực hiện hủy
+        appointment.setStatus(AppointmentStatus.CANCELLED);
+        appointmentRepository.save(appointment);
+    }
+
     Map<String, String> SORT_MAPPING = Map.of(
         "patientName", "patient.user.fullName",
         "doctorName", "doctor.user.fullName",

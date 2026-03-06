@@ -9,6 +9,7 @@ import dh12c3.DangNamAnh.clinic_management.entity.patient.Patient;
 import dh12c3.DangNamAnh.clinic_management.entity.staff.Doctor;
 import dh12c3.DangNamAnh.clinic_management.entity.user.Role;
 import dh12c3.DangNamAnh.clinic_management.entity.user.User;
+import dh12c3.DangNamAnh.clinic_management.event.VectorSyncEvent;
 import dh12c3.DangNamAnh.clinic_management.exception.AppException;
 import dh12c3.DangNamAnh.clinic_management.exception.ErrorCode;
 import dh12c3.DangNamAnh.clinic_management.helper.AppUtils;
@@ -23,6 +24,7 @@ import dh12c3.DangNamAnh.clinic_management.service.user.UserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -48,6 +50,7 @@ public class DoctorService {
     PatientRepository patientRepository;
     AppointmentRepository appointmentRepository;
     UserService userService;
+    ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public DoctorResponse create(DoctorCreationRequest request){
@@ -92,18 +95,24 @@ public class DoctorService {
         doctor.setLicenseNumber(licenseNumber);
 
         Doctor saved = doctorRepository.save(doctor);
-        return doctorMapper.toDoctorResponse(saved);
+
+        DoctorResponse response = doctorMapper.toDoctorResponse(saved);
+        eventPublisher.publishEvent(new VectorSyncEvent("doctor", "UPDATE", response.getDoctorId(), response));
+
+        return response;
     }
 
     @Transactional
     public DoctorResponse update(DoctorUpdateRequest request, Long doctorId){
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-
         doctorMapper.updateDoctor(request, doctor);
-
         doctorRepository.save(doctor);
-        return doctorMapper.toDoctorResponse(doctor);
+
+        DoctorResponse response = doctorMapper.toDoctorResponse(doctor);
+        eventPublisher.publishEvent(new VectorSyncEvent("doctor", "UPDATE", response.getDoctorId(), response));
+
+        return response;
     }
 
     public PageResponse<DoctorResponse> findAllDoctors(Long specialtyId,
@@ -146,6 +155,8 @@ public class DoctorService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         userService.delete(doctor.getUser().getUserId());
+
+        eventPublisher.publishEvent(new VectorSyncEvent("doctor", "DELETE", doctorId, null));
     }
 
     Map<String, String> SORT_MAPPING = Map.of(

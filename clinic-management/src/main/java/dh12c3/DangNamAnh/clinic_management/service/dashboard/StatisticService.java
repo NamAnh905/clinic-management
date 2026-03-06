@@ -2,15 +2,19 @@ package dh12c3.DangNamAnh.clinic_management.service.dashboard;
 
 import dh12c3.DangNamAnh.clinic_management.dto.response.dashboard.ChartDataResponse;
 import dh12c3.DangNamAnh.clinic_management.dto.response.dashboard.DashboardSummaryResponse;
+import dh12c3.DangNamAnh.clinic_management.dto.response.dashboard.RevenueResponse;
 import dh12c3.DangNamAnh.clinic_management.mapper.dashboard.StatisticMapper;
 import dh12c3.DangNamAnh.clinic_management.repository.billing.InvoiceDetailRepository;
 import dh12c3.DangNamAnh.clinic_management.repository.billing.InvoiceRepository;
+import dh12c3.DangNamAnh.clinic_management.service.ExcelExportService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,6 +30,7 @@ public class StatisticService {
     InvoiceRepository invoiceRepository;
     InvoiceDetailRepository invoiceDetailRepository;
     StatisticMapper statisticMapper;
+    ExcelExportService excelExportService;
 
     public DashboardSummaryResponse getDashboardStats(LocalDate fromDate, LocalDate toDate) {
         // 1. Setup thời gian
@@ -81,5 +86,37 @@ public class StatisticService {
                 topItems,
                 topDocs
         );
+    }
+
+    public ByteArrayInputStream exportRevenueExcel(LocalDate fromDate, LocalDate toDate) throws IOException {
+        // 1. Setup thời gian mặc định nếu không truyền vào
+        if (fromDate == null) fromDate = LocalDate.now().withDayOfMonth(1);
+        if (toDate == null) toDate = LocalDate.now();
+
+        LocalDateTime start = fromDate.atStartOfDay();
+        LocalDateTime end = toDate.atTime(LocalTime.MAX);
+
+        // 2. Lấy dữ liệu chi tiết từ Repository (Gọi hàm mới tạo ở Bước 1)
+        List<Object[]> rawData = invoiceRepository.getDetailedRevenueExportNative(start, end);
+        List<RevenueResponse> exportData = new ArrayList<>();
+
+        for (Object[] row : rawData) {
+            String period = row[0].toString();
+
+            // Ép kiểu an toàn từ Object sang BigDecimal
+            BigDecimal totalRev = row[1] != null ? new BigDecimal(row[1].toString()) : BigDecimal.ZERO;
+            BigDecimal drugRev = row[2] != null ? new BigDecimal(row[2].toString()) : BigDecimal.ZERO;
+            BigDecimal serviceRev = row[3] != null ? new BigDecimal(row[3].toString()) : BigDecimal.ZERO;
+
+            exportData.add(RevenueResponse.builder()
+                    .period(period)
+                    .totalRevenue(totalRev)
+                    .drugRevenue(drugRev)
+                    .serviceRevenue(serviceRev)
+                    .build());
+        }
+
+        // 3. Gọi hàm xuất file Excel dùng chung
+        return excelExportService.exportToExcel(exportData, "Báo cáo doanh thu chi tiết");
     }
 }

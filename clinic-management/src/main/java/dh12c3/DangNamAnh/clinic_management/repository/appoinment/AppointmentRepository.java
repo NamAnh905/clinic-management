@@ -99,6 +99,21 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             @Param("endTime") LocalDateTime endTime
     );
 
+    @Query("""
+        SELECT COUNT(a) > 0
+        FROM Appointment a
+        WHERE a.patient.patientId = :patientId
+        AND a.deleted = false
+        AND a.status IN :statuses
+        AND (a.appointmentTime < :newEndTime AND a.endTime > :newStartTime)
+    """)
+    boolean existsByPatientOverlap(
+            @Param("patientId") Long patientId,
+            @Param("newStartTime") LocalDateTime newStartTime,
+            @Param("newEndTime") LocalDateTime newEndTime,
+            @Param("statuses") List<AppointmentStatus> statuses
+    );
+
     boolean existsByDoctor_DoctorIdAndAppointmentTimeAndStatusNot(
             Long doctorId,
             LocalDateTime appointmentTime,

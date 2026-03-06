@@ -123,6 +123,17 @@ public class AppointmentService {
                 AppointmentStatus.COMPLETED
         );
 
+        boolean isPatientOverlapped = appointmentRepository.existsByPatientOverlap(
+                patient.getPatientId(),
+                appointment.getAppointmentTime(),
+                appointment.getEndTime(),
+                busyStatuses
+        );
+
+        if (isPatientOverlapped) {
+            throw new AppException(ErrorCode.PATIENT_TIME_CONFLICT);
+        }
+
         boolean isOverLapped = appointmentRepository.existsByOverlap(
                 doctor.getDoctorId(),
                 appointment.getAppointmentTime(),
@@ -212,6 +223,25 @@ public class AppointmentService {
             patient = new Patient();
             patient.setUser(newUser);
             patientRepository.save(patient);
+        }
+
+        if (patient.getPatientId() != null) {
+            List<AppointmentStatus> busyStatuses = List.of(
+                    AppointmentStatus.PENDING,
+                    AppointmentStatus.CONFIRMED,
+                    AppointmentStatus.COMPLETED
+            );
+
+            boolean isPatientOverlapped = appointmentRepository.existsByPatientOverlap(
+                    patient.getPatientId(),
+                    request.getAppointmentTime(),
+                    request.getAppointmentTime().plusMinutes(APPOINTMENT_DURATION),
+                    busyStatuses
+            );
+
+            if (isPatientOverlapped) {
+                throw new AppException(ErrorCode.PATIENT_TIME_CONFLICT);
+            }
         }
 
         Appointment appointment = new Appointment();

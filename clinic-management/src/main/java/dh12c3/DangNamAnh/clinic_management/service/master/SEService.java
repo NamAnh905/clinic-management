@@ -6,6 +6,7 @@ import dh12c3.DangNamAnh.clinic_management.dto.response.PageResponse;
 import dh12c3.DangNamAnh.clinic_management.dto.response.master.ServiceEntityResponse;
 import dh12c3.DangNamAnh.clinic_management.entity.master.ServiceEntity;
 import dh12c3.DangNamAnh.clinic_management.enums.ServiceType;
+import dh12c3.DangNamAnh.clinic_management.event.VectorSyncEvent;
 import dh12c3.DangNamAnh.clinic_management.exception.AppException;
 import dh12c3.DangNamAnh.clinic_management.exception.ErrorCode;
 import dh12c3.DangNamAnh.clinic_management.mapper.master.ServiceEntityMapper;
@@ -13,6 +14,7 @@ import dh12c3.DangNamAnh.clinic_management.repository.master.ServiceEntityReposi
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +33,7 @@ import java.util.List;
 public class SEService {
     ServiceEntityMapper serviceEntityMapper;
     ServiceEntityRepository serviceEntityRepository;
+    ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public ServiceEntityResponse create(SECreationRequest request){
@@ -38,7 +41,10 @@ public class SEService {
 
         ServiceEntity saved = serviceEntityRepository.save(serviceEntity);
 
-        return serviceEntityMapper.toResponseEntity(saved);
+        ServiceEntityResponse response = serviceEntityMapper.toResponseEntity(saved);
+        eventPublisher.publishEvent(new VectorSyncEvent("service", "UPDATE", response.getServiceId(), response));
+
+        return response;
     }
 
     @Transactional
@@ -50,7 +56,10 @@ public class SEService {
 
         ServiceEntity saved = serviceEntityRepository.save(serviceEntity);
 
-        return serviceEntityMapper.toResponseEntity(saved);
+        ServiceEntityResponse response = serviceEntityMapper.toResponseEntity(saved);
+        eventPublisher.publishEvent(new VectorSyncEvent("service", "UPDATE", response.getServiceId(), response));
+
+        return response;
     }
 
     public PageResponse<ServiceEntityResponse> findAll(ServiceType type, String keyword, int page, int size){
@@ -76,5 +85,7 @@ public class SEService {
 
         serviceEntity.setDeleted(true);
         serviceEntityRepository.save(serviceEntity);
+
+        eventPublisher.publishEvent(new VectorSyncEvent("service", "DELETE", serviceId, null));
     }
 }

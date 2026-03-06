@@ -52,6 +52,10 @@ public class MedicalRecordService {
             throw new AppException(ErrorCode.STATUS_CHANGE_NOT_ALLOWED);
         }
 
+        if (appointment.getAppointmentTime().isAfter(LocalDateTime.now())) {
+            throw new AppException(ErrorCode.APPOINTMENT_TIME_NOT_ARRIVED);
+        }
+
         MedicalRecord record = medicalRecordMapper.toMedicalRecord(request);
         record.setAppointment(appointment);
 

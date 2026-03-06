@@ -5,13 +5,26 @@
         <span class="text-gray-500 text-sm">Chào mừng trở lại, đây là tình hình kinh doanh hôm nay.</span>
     </div>
 
-    <div class="flex align-items-center bg-white border-round-xl px-3 py-2 shadow-1">
-        <i class="pi pi-calendar text-gray-400 mr-2"></i>
-        <p-calendar [(ngModel)]="rangeDates" selectionMode="range" [readonlyInput]="true"
-                    placeholder="Chọn thời gian" (onClose)="onDateChange()"
-                    dateFormat="dd/mm/yy" styleClass="p-inputtext-sm border-none shadow-none w-15rem">
-        </p-calendar>
-        <i class="pi pi-chevron-down text-gray-400 text-xs ml-2"></i>
+    <div class="flex align-items-center gap-3">
+      <div class="calendar-wrapper">
+          <i class="pi pi-calendar icon-left"></i>
+          <p-calendar [(ngModel)]="rangeDates"
+                      selectionMode="range"
+                      [readonlyInput]="true"
+                      placeholder="Chọn thời gian"
+                      (onClose)="onDateChange()"
+                      dateFormat="dd/mm/yy"
+                      styleClass="dashboard-calendar">
+          </p-calendar>
+          <i class="pi pi-chevron-down icon-right"></i>
+      </div>
+
+      <button class="btn-export"
+              (click)="!isExporting && exportExcel()"
+              [disabled]="isExporting">
+          <i class="pi" [ngClass]="isExporting ? 'pi-spin pi-spinner' : 'pi-file-excel'"></i>
+          <span>{{ isExporting ? 'Đang xử lý...' : 'Xuất báo cáo' }}</span>
+      </button>
     </div>
   </div>
 

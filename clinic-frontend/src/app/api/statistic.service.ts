@@ -27,6 +27,26 @@ export class StatisticService {
     return this.http.get<ApiResponse<DashboardSummary>>(`${this.API_URL}/dashboard`, { params });
   }
 
+  exportRevenueExcel(startDate?: Date, endDate?: Date) {
+  let params = new HttpParams();
+
+  // Format ngày sang chuỗi YYYY-MM-DD để gửi lên backend
+  if (startDate) {
+    const startStr = startDate.toLocaleDateString('en-CA'); // Trả về dạng YYYY-MM-DD
+    params = params.set('startDate', startStr);
+  }
+  if (endDate) {
+    const endStr = endDate.toLocaleDateString('en-CA');
+    params = params.set('endDate', endStr);
+  }
+
+  // Đảm bảo đường dẫn này khớp với Controller ở Backend (/revenue/export)
+  return this.http.get(`${environment.apiUrl}/revenue/export`, {
+    params: params,
+    responseType: 'blob' // Rất quan trọng để tải file Excel
+  });
+}
+
   private formatDate(date: Date): string {
     if (!date) return '';
     const year = date.getFullYear();

@@ -58,4 +58,4 @@ langchain4j:
   qdrant:
     host: ${QDRANT_HOST}
     port: ${QDRANT_PORT}
-    collection-name: "clinic_knowledge_v2"
+    collection-name: "clinic_knowledge"

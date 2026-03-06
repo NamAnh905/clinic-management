@@ -238,7 +238,7 @@
 
         <div class="patient-info">
             <div class="row">
-                <div class="col"><strong>Họ tên:</strong> {{ currentRecord.patientName }}</div>
+                <div class="col"><strong>Họ và tên bệnh nhân:</strong> {{ currentRecord.patientName }}</div>
                 <div class="col"><strong>Ngày khám:</strong> {{ currentRecord.visitDate | date:'dd/MM/yyyy HH:mm' }}</div>
             </div>
             <div class="row">
@@ -253,9 +253,9 @@
             <thead>
                 <tr>
                     <th style="width: 50px">STT</th>
-                    <th>Tên thuốc / Hàm lượng</th>
-                    <th style="width: 80px">ĐVT</th>
-                    <th style="width: 80px">SL</th>
+                    <th>Tên thuốc</th>
+                    <th style="width: 80px">Đơn vị</th>
+                    <th style="width: 80px">Số lượng</th>
                     <th>Cách dùng</th>
                 </tr>
             </thead>
@@ -270,11 +270,10 @@
             </tbody>
         </table>
 
-        <div class="footer-sign">
-            <div class="date">Ngày {{ today | date:'dd' }} tháng {{ today | date:'MM' }} năm {{ today | date:'yyyy' }}</div>
-            <div class="role">Bác sĩ kê đơn</div>
-            <div class="signature-space"></div>
-            <div class="doctor-name">{{ currentPrescription.doctorName }}</div>
+        <div class="footer-sign" style="text-align: right; margin-top: 30px; margin-right: 50px;">
+            <div class="date" style="font-style: italic;">Ngày {{ today | date:'dd' }} tháng {{ today | date:'MM' }} năm {{ today | date:'yyyy' }}</div>
+            <div class="role" style="font-weight: bold; margin-top: 5px;">Bác sĩ kê đơn</div>
+            <div class="sub-role" style="font-style: italic; font-size: 0.9em; margin-bottom: 70px;">(Ký, ghi rõ họ tên)</div>
         </div>
     </div>
 </div>

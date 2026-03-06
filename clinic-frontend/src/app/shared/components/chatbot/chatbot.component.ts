@@ -1,7 +1,7 @@
-import { Component, ElementRef, ViewChild, AfterViewChecked, inject } from '@angular/core';
+import { Component, ElementRef, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ChatbotService } from '../../../api/chatbot.service'; // Import Service vừa tạo
+import { ChatbotService } from '../../../api/chatbot.service';
 
 interface ChatMessage {
   text: string;
@@ -11,14 +11,13 @@ interface ChatMessage {
 @Component({
   selector: 'app-chatbot',
   standalone: true,
-  imports: [CommonModule, FormsModule], // Import FormsModule để dùng ngModel
+  imports: [CommonModule, FormsModule],
   templateUrl: './chatbot.component.html',
   styleUrls: ['./chatbot.component.scss']
 })
-export class ChatbotComponent implements AfterViewChecked {
+export class ChatbotComponent { // BỎ AfterViewChecked ở đây
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
 
-  // Inject Service
   private chatbotService = inject(ChatbotService);
 
   isOpen = false;
@@ -31,9 +30,8 @@ export class ChatbotComponent implements AfterViewChecked {
   ];
 
   ngOnInit() {
-    // Giả lập: Sau 1 giây load trang thì báo có tin nhắn mới
     setTimeout(() => {
-      if (!this.isOpen) { // Chỉ hiện nếu chat đang đóng
+      if (!this.isOpen) {
         this.unreadCount = 1;
       }
     }, 1000);
@@ -41,10 +39,10 @@ export class ChatbotComponent implements AfterViewChecked {
 
   toggleChat() {
     this.isOpen = !this.isOpen;
-
-    // 2. KHI MỞ CHAT -> RESET ĐẾM VỀ 0
     if (this.isOpen) {
       this.unreadCount = 0;
+      // Cuộn xuống nhẹ nhàng khi vừa mở cửa sổ
+      setTimeout(() => this.scrollToBottom(), 50);
     }
   }
 
@@ -52,19 +50,20 @@ export class ChatbotComponent implements AfterViewChecked {
     if (!this.userQuestion.trim() || this.isLoading) return;
 
     const question = this.userQuestion;
-
-    // 1. Hiển thị tin nhắn User
     this.messages.push({ text: question, sender: 'user' });
     this.userQuestion = '';
     this.isLoading = true;
 
-    // 2. Gọi Service
+    // 3. SỬA LỖI TRÔI: Chỉ cuộn xuống ngay lúc bấm Send (để thấy câu hỏi và bong bóng loading)
+    setTimeout(() => this.scrollToBottom(), 50);
+
     this.chatbotService.sendMessage(question).subscribe({
       next: (res) => {
-        // Map dữ liệu từ Backend trả về (Sửa 'result.answer' tùy theo DTO của bạn)
         const botReply = res.result ? res.result.answer : "Tôi không hiểu câu hỏi.";
         this.messages.push({ text: botReply, sender: 'bot' });
         this.isLoading = false;
+        // LƯU Ý KỸ: Ở đây KHÔNG gọi scrollToBottom() nữa.
+        // Khi đoạn text dài hiện ra, màn hình sẽ "đứng im" ngay đầu câu hỏi của user.
       },
       error: (err) => {
         console.error(err);
@@ -74,14 +73,9 @@ export class ChatbotComponent implements AfterViewChecked {
     });
   }
 
-  // Tự động cuộn xuống cuối khi có tin nhắn mới
-  ngAfterViewChecked() {
-    this.scrollToBottom();
-  }
-
   private scrollToBottom(): void {
-    try {
+    if (this.scrollContainer) {
       this.scrollContainer.nativeElement.scrollTop = this.scrollContainer.nativeElement.scrollHeight;
-    } catch(err) { }
+    }
   }
 }

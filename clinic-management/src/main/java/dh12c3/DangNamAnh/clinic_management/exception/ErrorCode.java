@@ -9,68 +9,72 @@ public enum ErrorCode {
     // ========================================================================
     // 1xxx: GLOBAL / SYSTEM ERRORS
     // ========================================================================
-    UNCATEGORIZED_EXCEPTION(9999, "Unknown error.", HttpStatus.INTERNAL_SERVER_ERROR),
-    INVALID_KEY(1001, "Invalid data.", HttpStatus.BAD_REQUEST),
-    MISSING_PARAMETER(1002, "Missing required parameter.", HttpStatus.BAD_REQUEST),
-    DATA_INVALID(1003, "Invalid or duplicate data.", HttpStatus.BAD_REQUEST),
+    UNCATEGORIZED_EXCEPTION(9999, "Đã có lỗi hệ thống xảy ra, vui lòng thử lại sau.", HttpStatus.INTERNAL_SERVER_ERROR),
+    INVALID_KEY(1001, "Dữ liệu không hợp lệ.", HttpStatus.BAD_REQUEST),
+    MISSING_PARAMETER(1002, "Thiếu tham số bắt buộc.", HttpStatus.BAD_REQUEST),
+    DATA_INVALID(1003, "Dữ liệu không hợp lệ hoặc bị trùng lặp.", HttpStatus.BAD_REQUEST),
 
     // ========================================================================
     // 2xxx: AUTHENTICATION & USER
     // ========================================================================
-    UNAUTHENTICATED(2001, "Not logged in or invalid token.", HttpStatus.UNAUTHORIZED),
-    UNAUTHORIZED(2002, "No access permission.", HttpStatus.FORBIDDEN), // Sửa lại status code chuẩn
-    USER_NOT_FOUND(2003, "User not found.", HttpStatus.NOT_FOUND),
-    EXISTED_EMAIL(2004, "Email address already in use.", HttpStatus.CONFLICT),
-    ROLE_NOT_FOUND(2005, "Role not found.", HttpStatus.NOT_FOUND),
-    STAFF_ROLE_CHANGE_DENIED(2006, "Current role cannot be changed to avoid role conflict.",  HttpStatus.CONFLICT),
-    INVALID_PASSWORD(2007, "Invalid password.", HttpStatus.UNAUTHORIZED),
-    USER_LOCKED(2008, "User account has been inactivated.", HttpStatus.FORBIDDEN),
+    UNAUTHENTICATED(2001, "Chưa đăng nhập hoặc phiên đăng nhập đã hết hạn.", HttpStatus.UNAUTHORIZED),
+    UNAUTHORIZED(2002, "Bạn không có quyền truy cập tính năng này.", HttpStatus.FORBIDDEN),
+    USER_NOT_FOUND(2003, "Không tìm thấy thông tin tài khoản.", HttpStatus.NOT_FOUND),
+    EXISTED_EMAIL(2004, "Địa chỉ email này đã được sử dụng, vui lòng chọn email khác.", HttpStatus.CONFLICT),
+    ROLE_NOT_FOUND(2005, "Không tìm thấy vai trò (Role) này trên hệ thống.", HttpStatus.NOT_FOUND),
+    STAFF_ROLE_CHANGE_DENIED(2006, "Không thể thay đổi vai trò hiện tại để tránh xung đột quyền hạn.",  HttpStatus.CONFLICT),
+    INVALID_PASSWORD(2007, "Mật khẩu không chính xác.", HttpStatus.UNAUTHORIZED),
+    USER_LOCKED(2008, "Tài khoản của bạn đã bị khóa hoặc vô hiệu hóa.", HttpStatus.FORBIDDEN),
+    INVALID_INFORMATION(2009, "Sai tên đăng nhập hoặc mật khẩu.", HttpStatus.UNAUTHORIZED),
 
     // ========================================================================
     // 3xxx: CATALOG (SERVICE, SPECIALTY, DRUG)
     // ========================================================================
     // Specialty
-    SPECIALTY_NOT_FOUND(3001, "Specialty not found.", HttpStatus.NOT_FOUND),
+    SPECIALTY_NOT_FOUND(3001, "Không tìm thấy chuyên khoa.", HttpStatus.NOT_FOUND),
 
     // Service
-    SERVICE_NOT_FOUND(3101, "Service not found.", HttpStatus.NOT_FOUND),
+    SERVICE_NOT_FOUND(3101, "Không tìm thấy dịch vụ.", HttpStatus.NOT_FOUND),
 
     // Drug
-    DRUG_NOT_FOUND(3201, "Drug not found.", HttpStatus.NOT_FOUND),
-    DRUG_OOS(3202, "This drug is currently out of stock.", HttpStatus.CONFLICT),
+    DRUG_NOT_FOUND(3201, "Không tìm thấy thông tin thuốc.", HttpStatus.NOT_FOUND),
+    DRUG_OOS(3202, "Loại thuốc này hiện đang tạm hết hàng.", HttpStatus.CONFLICT),
 
     // ========================================================================
     // 4xxx: OPERATIONS (SCHEDULE, APPOINTMENT)
     // ========================================================================
     // Schedule
-    SCHEDULE_NOT_FOUND(4001, "Schedule not found.", HttpStatus.NOT_FOUND),
-    EXISTED_SCHEDULE(4002, "Working schedule existed.", HttpStatus.CONFLICT),
-    DOCTOR_HAS_NO_WORKING_SCHEDULE(4003, "Doctor does not have working schedules today.", HttpStatus.BAD_REQUEST),
-    CANNOT_CHANGE_SCHEDULE(4004, "Cannot change the schedule due to an active appointment.", HttpStatus.CONFLICT),
+    SCHEDULE_NOT_FOUND(4001, "Không tìm thấy lịch làm việc.", HttpStatus.NOT_FOUND),
+    EXISTED_SCHEDULE(4002, "Lịch làm việc này đã tồn tại.", HttpStatus.CONFLICT),
+    DOCTOR_HAS_NO_WORKING_SCHEDULE(4003, "Bác sĩ không có lịch làm việc vào ngày này.", HttpStatus.BAD_REQUEST),
+    CANNOT_CHANGE_SCHEDULE(4004, "Không thể thay đổi lịch làm việc vì bác sĩ đã có lịch hẹn với bệnh nhân.", HttpStatus.CONFLICT),
 
     // Appointment
-    APPOINTMENT_NOT_FOUND(4101, "Appointment not found.", HttpStatus.NOT_FOUND),
-    APPOINTMENT_ALREADY_BOOKED(4102, "The doctor already has an appointment at this time.", HttpStatus.CONFLICT),
-    STATUS_CHANGE_NOT_ALLOWED(4103, "Current appointment status does not allow this transition.", HttpStatus.BAD_REQUEST),
-    CANNOT_CANCEL_LATE(4104, "Appointment cannot be canceled within 24 hours of its scheduled time.", HttpStatus.BAD_REQUEST),
-    PATIENT_HAS_HISTORY(4105, "Cannot upgrade to staff role due to existing records.", HttpStatus.BAD_REQUEST),
+    APPOINTMENT_NOT_FOUND(4101, "Không tìm thấy lịch hẹn.", HttpStatus.NOT_FOUND),
+    APPOINTMENT_ALREADY_BOOKED(4102, "Bác sĩ đã kín lịch vào khung giờ này, vui lòng chọn giờ khác.", HttpStatus.CONFLICT),
+    STATUS_CHANGE_NOT_ALLOWED(4103, "Không thể thay đổi trạng thái của lịch hẹn này.", HttpStatus.BAD_REQUEST),
+    CANNOT_CANCEL_LATE(4104, "Không thể hủy lịch hẹn khi quá sát giờ khám.", HttpStatus.BAD_REQUEST),
+    PATIENT_HAS_HISTORY(4105, "Không thể cấp quyền nhân viên vì tài khoản này đã có lịch sử khám bệnh.", HttpStatus.BAD_REQUEST),
+    PATIENT_TIME_CONFLICT(4106, "Bạn đã có lịch hẹn khác vào thời gian này. Vui lòng chọn khung giờ khác.", HttpStatus.CONFLICT),
+    APPOINTMENT_TIME_NOT_ARRIVED(4107, "Chưa thể tạo bệnh án.", HttpStatus.CONFLICT),
+
     // ========================================================================
     // 5xxx: RESULTS (RECORDS, INVOICE)
     // ========================================================================
     // Medical Records & Prescriptions
-    RECORD_NOT_FOUND(5001, "Record not found.", HttpStatus.NOT_FOUND),
-    PRESCRIPTION_NOT_FOUND(5002, "Prescription not found.", HttpStatus.NOT_FOUND),
-    DETAIL_NOT_FOUND(5003, "Detail not found.", HttpStatus.NOT_FOUND),
-    DRUG_NOT_IN_PRESCRIPTION(5004, "This drug is not included in the prescription.", HttpStatus.BAD_REQUEST),
+    RECORD_NOT_FOUND(5001, "Không tìm thấy hồ sơ bệnh án.", HttpStatus.NOT_FOUND),
+    PRESCRIPTION_NOT_FOUND(5002, "Không tìm thấy đơn thuốc.", HttpStatus.NOT_FOUND),
+    DETAIL_NOT_FOUND(5003, "Không tìm thấy chi tiết thông tin.", HttpStatus.NOT_FOUND),
+    DRUG_NOT_IN_PRESCRIPTION(5004, "Loại thuốc này không có trong đơn thuốc.", HttpStatus.BAD_REQUEST),
 
     // Invoice
-    INVOICE_NOT_FOUND(5101, "Invoice not found.", HttpStatus.NOT_FOUND),
-    INVOICE_ALREADY_EXISTS(5102, "This appointment has already been invoiced.", HttpStatus.CONFLICT),
-    CANNOT_CREATE_INVOICE(5103, "Cannot create invoice for an incomplete appointment.", HttpStatus.BAD_REQUEST),
-    CANNOT_DELETE_PAID_INVOICE(5104, "Cannot delete a paid invoice.", HttpStatus.BAD_REQUEST),
-    INVOICE_ALREADY_PAID(5105, "Invoice has already been paid", HttpStatus.BAD_REQUEST),
-    INVALID_SIGNATURE(5106, "Invalid payment signature", HttpStatus.BAD_REQUEST),
-    PAYMENT_FAILED(5107, "Payment transaction failed or was canceled", HttpStatus.BAD_REQUEST),
+    INVOICE_NOT_FOUND(5101, "Không tìm thấy hóa đơn.", HttpStatus.NOT_FOUND),
+    INVOICE_ALREADY_EXISTS(5102, "Lịch hẹn này đã được xuất hóa đơn.", HttpStatus.CONFLICT),
+    CANNOT_CREATE_INVOICE(5103, "Không thể xuất hóa đơn cho lịch hẹn chưa hoàn thành.", HttpStatus.BAD_REQUEST),
+    CANNOT_DELETE_PAID_INVOICE(5104, "Không thể xóa hóa đơn đã thanh toán thành công.", HttpStatus.BAD_REQUEST),
+    INVOICE_ALREADY_PAID(5105, "Hóa đơn này đã được thanh toán.", HttpStatus.BAD_REQUEST),
+    INVALID_SIGNATURE(5106, "Chữ ký thanh toán không hợp lệ.", HttpStatus.BAD_REQUEST),
+    PAYMENT_FAILED(5107, "Giao dịch thanh toán thất bại hoặc đã bị hủy.", HttpStatus.BAD_REQUEST),
     ;
 
     private final int code;

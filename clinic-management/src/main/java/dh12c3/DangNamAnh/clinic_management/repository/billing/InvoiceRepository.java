@@ -110,4 +110,20 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
         ORDER BY SUM(i.totalAmount) DESC
     """)
     List<dh12c3.DangNamAnh.clinic_management.dto.response.dashboard.ChartDataResponse> getTopDoctors(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    @Query(value = """
+        SELECT 
+            DATE(i.created_at) as stat_date, 
+            SUM(d.quantity * d.unit_price) as total_revenue,
+            SUM(CASE WHEN d.drug_id IS NOT NULL THEN d.quantity * d.unit_price ELSE 0 END) as drug_revenue,
+            SUM(CASE WHEN d.service_id IS NOT NULL THEN d.quantity * d.unit_price ELSE 0 END) as service_revenue
+        FROM invoices i
+        JOIN invoice_details d ON i.invoice_id = d.invoice_id
+        WHERE i.payment_status = 'PAID'
+        AND i.created_at BETWEEN :startDate AND :endDate
+        GROUP BY DATE(i.created_at)
+        ORDER BY DATE(i.created_at) ASC
+    """, nativeQuery = true)
+    List<Object[]> getDetailedRevenueExportNative(@Param("startDate") LocalDateTime startDate,
+                                                  @Param("endDate") LocalDateTime endDate);
 }

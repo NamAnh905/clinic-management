@@ -37,13 +37,18 @@
   </div>
 
   <div class="chat-footer">
-    <input type="text"
-           [(ngModel)]="userQuestion"
-           (keyup.enter)="sendMessage()"
-           placeholder="Nhập câu hỏi..."
-           [disabled]="isLoading">
-    <button class="send-btn" (click)="sendMessage()" [disabled]="!userQuestion.trim()">
-      <i class="pi pi-send"></i>
-    </button>
+    <div class="input-group">
+      <input type="text"
+             [(ngModel)]="userQuestion"
+             (keyup.enter)="sendMessage()"
+             placeholder="Nhập câu hỏi..."
+             [disabled]="isLoading">
+      <button class="send-btn" (click)="sendMessage()" [disabled]="!userQuestion.trim()">
+        <i class="pi pi-send"></i>
+      </button>
+    </div>
+    <div class="ai-disclaimer">
+      AI có thể mắc sai sót. Vui lòng tham khảo ý kiến bác sĩ.
+    </div>
   </div>
 </div>

@@ -22,11 +22,9 @@ public class MedicalRecordCreationRequest {
     @NotNull(message = "AppointmentId cannot be empty.")
     Long appointmentId;
 
-    @NotNull(message = "Height cannot be empty.")
     @Positive(message = "Please enter a non-negative height value.")
     Double height;
 
-    @NotNull(message = "Weight cannot be empty.")
     @Positive(message = "Please enter a non-negative weight value.")
     Double weight;
 
@@ -41,5 +39,4 @@ public class MedicalRecordCreationRequest {
     String symptoms;
     String treatmentPlan;
     String testResults;
-//    List<Long> serviceIds;
 }

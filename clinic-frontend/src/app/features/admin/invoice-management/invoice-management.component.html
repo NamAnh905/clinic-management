@@ -285,7 +285,7 @@
             <div class="info">
                 <h1>PHÒNG KHÁM ĐA KHOA 28CARE</h1>
                 <p>Địa chỉ: Thạch Bàn, Long Biên, Hà Nội</p>
-                <p>Hotline: 0349755252</p>
+                <p>Hotline: 1900 9999</p>
             </div>
         </div>
 
@@ -308,7 +308,7 @@
 
             <div class="row">
                 <div class="col"><strong>Thu ngân:</strong> Admin/Lễ tân</div>
-                <div class="col"><strong>Hình thức:</strong> {{ currentInvoice.paymentMethod || 'Tiền mặt' }}</div>
+                <div class="col"><strong>Hình thức:</strong> {{ currentInvoice.paymentMethod ? getPaymentMethodConfig(currentInvoice.paymentMethod).label : 'Tiền mặt' }}</div>
             </div>
         </div>
 
@@ -341,14 +341,19 @@
             </tfoot>
         </table>
 
+        <div class="date" style="text-align: right;">
+            Hà Nội, ngày {{ (currentInvoice.createdAt || today) | date:'dd' }}
+            tháng {{ (currentInvoice.createdAt || today) | date:'MM' }}
+            năm {{ (currentInvoice.createdAt || today) | date:'yyyy' }}
+        </div>
         <div class="footer-sign">
             <div class="sign-box">
                 <div class="role">NGƯỜI NỘP TIỀN</div>
-                <div class="note">(Ký, họ tên)</div>
+                <div class="note">(Ký, ghi rõ họ tên)</div>
             </div>
             <div class="sign-box">
-                <div class="date">Ngày {{ today | date:'dd' }} tháng {{ today | date:'MM' }} năm {{ today | date:'yyyy' }}</div>
                 <div class="role">NGƯỜI LẬP PHIẾU</div>
+                <div class="note">(Ký, ghi rõ họ tên)</div>
                 <div class="signature-space"></div>
                 <div class="name">Thu Ngân Viên</div>
             </div>

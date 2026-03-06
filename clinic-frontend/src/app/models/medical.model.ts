@@ -3,11 +3,11 @@ export interface MedicalRecordResponse {
   recordId: number;
   appointmentId: number;
   patientName: string;
-  height: number;
-  weight: number;
+  height: number | null;
+  weight: number | null;
   bloodPressure: string;
-  temperature: number;
-  heartRate: number;
+  temperature: number | null;
+  heartRate: number | null;
   diagnosis: string;
   symptoms: string;
   treatmentPlan: string;

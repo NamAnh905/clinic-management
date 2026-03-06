@@ -5,6 +5,7 @@ import dh12c3.DangNamAnh.clinic_management.dto.request.master.DrugUpdateRequest;
 import dh12c3.DangNamAnh.clinic_management.dto.response.PageResponse;
 import dh12c3.DangNamAnh.clinic_management.dto.response.master.DrugResponse;
 import dh12c3.DangNamAnh.clinic_management.entity.master.Drug;
+import dh12c3.DangNamAnh.clinic_management.event.VectorSyncEvent;
 import dh12c3.DangNamAnh.clinic_management.exception.AppException;
 import dh12c3.DangNamAnh.clinic_management.exception.ErrorCode;
 import dh12c3.DangNamAnh.clinic_management.mapper.master.DrugMapper;
@@ -13,6 +14,7 @@ import dh12c3.DangNamAnh.clinic_management.service.ExcelExportService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -35,12 +37,17 @@ public class DrugService {
     DrugRepository drugRepository;
     DrugMapper drugMapper;
     ExcelExportService excelExportService;
+    ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public DrugResponse create(DrugCreationRequest request) {
         Drug drug = drugMapper.toDrug(request);
         Drug saved = drugRepository.save(drug);
-        return drugMapper.toDrugResponse(saved);
+
+        DrugResponse response = drugMapper.toDrugResponse(saved);
+        eventPublisher.publishEvent(new VectorSyncEvent("service", "UPDATE", response.getDrugId(), response));
+
+        return response;
     }
 
     @Transactional
@@ -51,7 +58,11 @@ public class DrugService {
         drugMapper.update(request, drug);
 
         Drug saved = drugRepository.save(drug);
-        return drugMapper.toDrugResponse(saved);
+
+        DrugResponse response = drugMapper.toDrugResponse(saved);
+        eventPublisher.publishEvent(new VectorSyncEvent("service", "UPDATE", response.getDrugId(), response));
+
+        return response;
     }
 
     public PageResponse<DrugResponse> findAll(String keyword, int page, int size, String sortBy, String sortDir) {
@@ -79,6 +90,8 @@ public class DrugService {
 
         drug.setDeleted(true);
         drugRepository.save(drug);
+
+        eventPublisher.publishEvent(new VectorSyncEvent("drug", "DELETE", drugId, null));
     }
 
     public ByteArrayInputStream exportDrugs() throws IOException {

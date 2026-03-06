@@ -26,6 +26,8 @@ export class StatisticComponent implements OnInit {
   pieData: any;
   pieOptions: any;
 
+  isExporting: boolean = false;
+
   private statisticService = inject(StatisticService);
 
   ngOnInit() {
@@ -173,5 +175,45 @@ export class StatisticComponent implements OnInit {
             }
         }
     };
+  }
+
+  exportExcel() {
+    let start: Date | undefined;
+    let end: Date | undefined;
+
+    // Lấy ngày từ p-calendar
+    if (this.rangeDates && this.rangeDates.length > 0) {
+      start = this.rangeDates[0] ? this.rangeDates[0] : undefined;
+      end = this.rangeDates[1] ? this.rangeDates[1] : undefined;
+    }
+
+    this.isExporting = true;
+    this.statisticService.exportRevenueExcel(start, end).subscribe({
+      next: (blob: Blob) => {
+        // Xử lý tạo URL ảo cho file blob
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+
+        // Đặt tên file khi tải về
+        const today = new Date().toLocaleDateString('en-CA');
+        a.download = `DoanhThu_28Care_${today}.xlsx`;
+
+        // Giả lập click để trình duyệt tải file
+        document.body.appendChild(a);
+        a.click();
+
+        // Dọn dẹp
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
+        this.isExporting = false;
+      },
+      error: (err) => {
+        console.error('Lỗi khi xuất file Excel:', err);
+        this.isExporting = false;
+        // Bạn có thể thêm MessageService (Toast) của PrimeNG ở đây để báo lỗi cho user
+      }
+    });
   }
 }

@@ -1,5 +1,6 @@
 package dh12c3.DangNamAnh.clinic_management.dto.response.dashboard;
 
+import dh12c3.DangNamAnh.clinic_management.helper.ExcelColumn;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -12,8 +13,15 @@ import java.math.BigDecimal;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 
 public class RevenueResponse {
-    private String period;
-    private BigDecimal totalRevenue;
-    private BigDecimal drugRevenue;
-    private BigDecimal serviceRevenue;
+    @ExcelColumn(name = "Thời gian", width = 6000)
+    String period;
+
+    @ExcelColumn(name = "Tổng doanh thu (VNĐ)", width = 6000)
+    BigDecimal totalRevenue;
+
+    @ExcelColumn(name = "Doanh thu thuốc (VNĐ)", width = 6000)
+    BigDecimal drugRevenue;
+
+    @ExcelColumn(name = "Doanh thu dịch vụ (VNĐ)", width = 6000)
+    BigDecimal serviceRevenue;
 }

@@ -5,6 +5,7 @@ import dh12c3.DangNamAnh.clinic_management.dto.request.master.SpecialtyUpdateReq
 import dh12c3.DangNamAnh.clinic_management.dto.response.PageResponse;
 import dh12c3.DangNamAnh.clinic_management.dto.response.master.SpecialtyResponse;
 import dh12c3.DangNamAnh.clinic_management.entity.master.Specialty;
+import dh12c3.DangNamAnh.clinic_management.event.VectorSyncEvent;
 import dh12c3.DangNamAnh.clinic_management.exception.AppException;
 import dh12c3.DangNamAnh.clinic_management.exception.ErrorCode;
 import dh12c3.DangNamAnh.clinic_management.mapper.master.SpecialtyMapper;
@@ -13,6 +14,7 @@ import dh12c3.DangNamAnh.clinic_management.repository.staff.DoctorRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +35,7 @@ public class SpecialtyService {
     SpecialtyMapper specialtyMapper;
     SpecialtyRepository  specialtyRepository;
     DoctorRepository doctorRepository;
+    ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public SpecialtyResponse create(SpecialtyCreationRequest request) {
@@ -44,8 +47,12 @@ public class SpecialtyService {
             specialty.setDoctors(new HashSet<>());
         }
 
-        specialtyRepository.save(specialty);
-        return specialtyMapper.toSpecialtyResponse(specialty);
+        Specialty saved = specialtyRepository.save(specialty);
+
+        SpecialtyResponse response = specialtyMapper.toSpecialtyResponse(specialty);
+        eventPublisher.publishEvent(new VectorSyncEvent("specialty", "UPDATE", response.getSpecialtyId(), response));
+
+        return response;
     }
 
     @Transactional
@@ -60,7 +67,12 @@ public class SpecialtyService {
             specialty.setDoctors(new HashSet<>(doctors));
         }
 
-        return specialtyMapper.toSpecialtyResponse(specialtyRepository.save(specialty));
+        Specialty saved = specialtyRepository.save(specialty);
+
+        SpecialtyResponse response = specialtyMapper.toSpecialtyResponse(specialty);
+        eventPublisher.publishEvent(new VectorSyncEvent("specialty", "UPDATE", response.getSpecialtyId(), response));
+
+        return response;
 
     }
 
@@ -86,5 +98,7 @@ public class SpecialtyService {
 
         specialty.setDeleted(true);
         specialtyRepository.save(specialty);
+
+        eventPublisher.publishEvent(new VectorSyncEvent("specialty", "DELETE", specialtyId, null));
     }
 }

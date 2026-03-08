@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-import java.util.Collections;
 import java.util.Optional;
 
 @Slf4j
@@ -33,11 +32,8 @@ public class VectorSyncService {
 
     EmbeddingStore<TextSegment> embeddingStore;
     EmbeddingModel embeddingModel;
-
-    // TIÊM REPOSITORY VÀO ĐÂY
     VectorMappingRepository vectorMappingRepository;
 
-    // Cho RagDataIngestor gọi để lưu xuống DB
     @Transactional
     public void saveVectorId(String type, Long id, String qdrantId) {
         vectorMappingRepository.save(VectorMapping.builder()
@@ -73,14 +69,25 @@ public class VectorSyncService {
 
     private void deleteVector(String type, Long id) {
         try {
-            // Lấy ID Qdrant từ CSDL MySQL ra
             Optional<VectorMapping> mappingOpt = vectorMappingRepository.findByEntityTypeAndEntityId(type, id);
 
             if (mappingOpt.isPresent()) {
                 String qdrantId = mappingOpt.get().getQdrantId();
-                // 1. Xóa trong Qdrant
-                embeddingStore.removeAll(Collections.singletonList(qdrantId));
-                // 2. Xóa vết trong MySQL
+                try {
+                    org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+                    String qdrantApiUrl = "http://localhost:6333/collections/clinic_knowledge/points/delete";
+
+                    org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+                    headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
+
+                    String jsonBody = "{ \"points\": [\"" + qdrantId + "\"] }";
+                    org.springframework.http.HttpEntity<String> request = new org.springframework.http.HttpEntity<>(jsonBody, headers);
+
+                    restTemplate.postForObject(qdrantApiUrl, request, String.class);
+                    log.info("🔥 Bắn API Qdrant xóa thành công ID: {}", qdrantId);
+                } catch (Exception ex) {
+                    log.error("⚠️ Lỗi khi gọi API xóa Qdrant: {}", ex.getMessage());
+                }
                 vectorMappingRepository.deleteByEntityTypeAndEntityId(type, id);
                 log.info("🗑️ Đã xóa Vector [{}] ID: {}", type, id);
             } else {
@@ -123,13 +130,8 @@ public class VectorSyncService {
         Metadata metadata = Metadata.from("type", type).add("id", String.valueOf(id));
         TextSegment segment = TextSegment.from(text, metadata);
         dev.langchain4j.data.embedding.Embedding embedding = embeddingModel.embed(segment).content();
-
-        // 1. Thêm vào Qdrant
         String qdrantId = embeddingStore.add(embedding, segment);
-
-        // 2. Lưu VĨNH VIỄN xuống MySQL thay vì dùng RAM
         saveVectorId(type, id, qdrantId);
-
         log.info("✅ Qdrant Sync Thành công: {} [{}]", type.toUpperCase(), entityName);
     }
 }

@@ -56,7 +56,8 @@ public enum ErrorCode {
     CANNOT_CANCEL_LATE(4104, "Không thể hủy lịch hẹn khi quá sát giờ khám.", HttpStatus.BAD_REQUEST),
     PATIENT_HAS_HISTORY(4105, "Không thể cấp quyền nhân viên vì tài khoản này đã có lịch sử khám bệnh.", HttpStatus.BAD_REQUEST),
     PATIENT_TIME_CONFLICT(4106, "Bạn đã có lịch hẹn khác vào thời gian này. Vui lòng chọn khung giờ khác.", HttpStatus.CONFLICT),
-    APPOINTMENT_TIME_NOT_ARRIVED(4107, "Chưa thể tạo bệnh án.", HttpStatus.CONFLICT),
+    APPOINTMENT_TIME_NOT_ARRIVED(4107, "Không thể tạo bệnh án.", HttpStatus.CONFLICT),
+    INVALID_TIME(4108, "Thời gian đặt lịch không hợp lệ. Vui lòng chọn thời gian cách hiện tại ít nhất 15 phút.", HttpStatus.BAD_REQUEST),
 
     // ========================================================================
     // 5xxx: RESULTS (RECORDS, INVOICE)

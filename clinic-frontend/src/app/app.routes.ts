@@ -126,85 +126,99 @@ export const routes: Routes = [
       },
       {
         path: 'revenue',
-        data: { breadcrumb: 'Quản lý doanh thu', roles: ['ADMIN'] },
+        data: { breadcrumb: 'Thống kê doanh thu', roles: ['ADMIN'] },
         loadComponent: () => import('./features/admin/statistic/statistic.component').then(m => m.StatisticComponent),
+        title: "Thống kê doanh thu - 28Care",
         canActivate: [RoleGuard]
       },
       {
         path: 'users',
-        data: { breadcrumb: 'Quản lý người dùng', roles: ['ADMIN'] },
+        data: { breadcrumb: 'Tài khoản người dùng', roles: ['ADMIN'] },
         loadComponent: () => import('./features/admin/user-management/user-management.component').then(m => m.UserManagementComponent),
+        title: "Tài khoản người dùng - 28Care",
         canActivate: [RoleGuard]
       },
       {
         path: 'staff',
-        data: { breadcrumb: 'Quản lý nhân viên', roles: ['ADMIN'] },
+        data: { breadcrumb: 'Nhân sự', roles: ['ADMIN'] },
         canActivate: [RoleGuard],
+        title: "Nhân sự - 28Care",
         children: [
           {
             path: 'doctors',
             data: { breadcrumb: 'Bác sĩ' },
+            title: "Bác sĩ - 28Care",
             loadComponent: () => import('./features/admin/staff-management/doctor-management/doctor-management.component').then(m => m.DoctorManagementComponent)
           },
           {
             path: 'receptionists',
             data: { breadcrumb: 'Lễ tân' },
+            title: "Lễ tân - 28Care",
             loadComponent: () => import('./features/admin/staff-management/receptionist-management/receptionist-management.component').then(m => m.ReceptionistManagementComponent)
           }
         ]
       },
       {
         path: 'patients',
-        data: { breadcrumb: 'Quản lý bệnh nhân', roles: ['ADMIN', 'DOCTOR', 'RECEPTIONIST'] },
+        data: { breadcrumb: 'Hồ sơ bệnh nhân', roles: ['ADMIN', 'DOCTOR', 'RECEPTIONIST'] },
         loadComponent: () => import('./features/admin/patient-management/patient-management.component').then(m => m.PatientManagementComponent),
+        title: "Hồ sơ bệnh nhân - 28Care",
         canActivate: [RoleGuard]
       },
       {
         path: 'records',
-        data: { breadcrumb: 'Hồ sơ bệnh án', roles: ['ADMIN', 'DOCTOR'] },
+        data: { breadcrumb: 'Bệnh án điện tử', roles: ['ADMIN', 'DOCTOR'] },
         loadComponent: () => import('./features/admin/medical-management/medical-record.component').then(m => m.MedicalRecordComponent),
+        title: "Bệnh án điện tử - 28Care",
         canActivate: [RoleGuard]
       },
       {
         path: 'specialties',
-        data: { breadcrumb: 'Quản lý chuyên khoa', roles: ['ADMIN', 'RECEPTIONIST', 'DOCTOR'] },
+        data: { breadcrumb: 'Chuyên khoa', roles: ['ADMIN', 'RECEPTIONIST', 'DOCTOR'] },
         loadComponent: () => import('./features/admin/master-data-management/specialty-management/specialty-management.component').then(m => m.SpecialtyManagementComponent),
+        title: "Chuyên khoa - 28Care",
         canActivate: [RoleGuard]
       },
       {
         path: 'schedule',
         data: { breadcrumb: 'Lịch làm việc', roles: ['ADMIN', 'DOCTOR', 'RECEPTIONIST'] },
         loadComponent: () => import('./features/admin/schedule-management/schedule-management.component').then(m => m.ScheduleManagementComponent),
+        title: "Lịch làm việc - 28Care",
         canActivate: [RoleGuard]
       },
       {
         path: 'appointments',
-        data: { breadcrumb: 'Lịch hẹn', roles: ['ADMIN', 'DOCTOR', 'RECEPTIONIST'] },
+        data: { breadcrumb: 'Lịch hẹn khám', roles: ['ADMIN', 'DOCTOR', 'RECEPTIONIST'] },
         loadComponent: () => import('./features/admin/appointment-management/appointment-management.component').then(m => m.AppointmentManagementComponent),
+        title: "Lịch hẹn khám - 28Care",
         canActivate: [RoleGuard]
       },
       {
         path: 'services',
-        data: { breadcrumb: 'Quản lý dịch vụ', roles: ['ADMIN', 'DOCTOR', 'RECEPTIONIST'] },
+        data: { breadcrumb: 'Danh mục dịch vụ', roles: ['ADMIN', 'DOCTOR', 'RECEPTIONIST'] },
         loadComponent: () => import('./features/admin/master-data-management/service-management/service-management.component').then(m => m.ServiceManagementComponent),
+        title: "Danh mục dịch vụ - 28Care",
         canActivate: [RoleGuard]
       },
       {
         path: 'drugs',
-        data: { breadcrumb: 'Quản lý thuốc', roles: ['ADMIN', 'DOCTOR', 'RECEPTIONIST'] },
+        data: { breadcrumb: 'Kho dược', roles: ['ADMIN', 'DOCTOR', 'RECEPTIONIST'] },
         loadComponent: () => import('./features/admin/master-data-management/drug-management/drug-management.component').then(m => m.DrugManagementComponent),
+        title: "Kho dược - 28Care",
         canActivate: [RoleGuard]
       },
       {
         path: 'prescriptions',
-        data: { breadcrumb: 'Quản lý đơn thuốc', roles: ['ADMIN', 'DOCTOR'] },
+        data: { breadcrumb: 'Kê đơn thuốc', roles: ['ADMIN', 'DOCTOR'] },
         loadComponent: () => import('./features/admin/prescription-management/prescription-management.component').then(m => m.PrescriptionComponent),
+        title: "Kê đơn thuốc - 28Care",
         canActivate: [RoleGuard]
       },
       {
         path: 'invoices',
         data: { breadcrumb: 'Quản lý hóa đơn', roles: ['ADMIN', 'RECEPTIONIST'] },
         loadComponent: () => import('./features/admin/invoice-management/invoice-management.component').then(m => m.InvoiceManagementComponent),
+        title: "Quản lý hóa đơn - 28Care",
         canActivate: [RoleGuard]
       }
     ]

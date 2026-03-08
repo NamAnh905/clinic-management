@@ -157,7 +157,6 @@ public class AppointmentService {
             String patientName = patient.getUser().getFullName();
             String patientEmail = patient.getUser().getEmail();
 
-            // Gọi hàm gửi mail notification (đã có sẵn trong EmailService)
             emailService.sendBookingNotification(
                     patientEmail,
                     patientName,
@@ -171,11 +170,32 @@ public class AppointmentService {
 
     @Transactional
     public AppointmentResponse createPublicAppointment(PublicAppointmentRequest request) {
-        Doctor doctor = doctorRepository.findById(request.getDoctorId())
+        Doctor doctor = doctorRepository.findByUserIdWithLock(request.getDoctorId())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        if (appointmentRepository.existsByDoctor_DoctorIdAndAppointmentTimeAndStatusNot(
-                request.getDoctorId(), request.getAppointmentTime(), AppointmentStatus.CANCELLED)) {
+        LocalDateTime startTime = request.getAppointmentTime();
+        LocalDateTime endTime = startTime.plusMinutes(APPOINTMENT_DURATION);
+
+        if (startTime.isBefore(LocalDateTime.now().plusMinutes(15))) {
+            throw new AppException(ErrorCode.INVALID_TIME);
+        }
+
+        // 3. Danh sách các trạng thái lịch đang bận
+        List<AppointmentStatus> busyStatuses = List.of(
+                AppointmentStatus.PENDING,
+                AppointmentStatus.CONFIRMED,
+                AppointmentStatus.COMPLETED
+        );
+
+        // 4. Kiểm tra trùng lịch bác sĩ (Overlap)
+        boolean isOverLapped = appointmentRepository.existsByOverlap(
+                doctor.getDoctorId(),
+                startTime,
+                endTime,
+                busyStatuses
+        );
+
+        if (isOverLapped) {
             throw new AppException(ErrorCode.APPOINTMENT_ALREADY_BOOKED);
         }
 
@@ -185,6 +205,7 @@ public class AppointmentService {
         String rawPassword = null;
         boolean isNewUser = false;
 
+        // 5. Xử lý thông tin Patient/User
         if (existingUser.isPresent()) {
             patient = patientRepository.findByUser_UserId(existingUser.get().getUserId())
                     .orElseGet(() -> {
@@ -225,17 +246,12 @@ public class AppointmentService {
             patientRepository.save(patient);
         }
 
+        // 6. Kiểm tra trùng lịch của chính Bệnh nhân
         if (patient.getPatientId() != null) {
-            List<AppointmentStatus> busyStatuses = List.of(
-                    AppointmentStatus.PENDING,
-                    AppointmentStatus.CONFIRMED,
-                    AppointmentStatus.COMPLETED
-            );
-
             boolean isPatientOverlapped = appointmentRepository.existsByPatientOverlap(
                     patient.getPatientId(),
-                    request.getAppointmentTime(),
-                    request.getAppointmentTime().plusMinutes(APPOINTMENT_DURATION),
+                    startTime,
+                    endTime,
                     busyStatuses
             );
 
@@ -244,19 +260,21 @@ public class AppointmentService {
             }
         }
 
+        // 7. Tạo lịch hẹn mới
         Appointment appointment = new Appointment();
         appointment.setDoctor(doctor);
         appointment.setPatient(patient);
-        appointment.setAppointmentTime(request.getAppointmentTime());
-        appointment.setEndTime(request.getAppointmentTime().plusMinutes(APPOINTMENT_DURATION));
+        appointment.setAppointmentTime(startTime);
+        appointment.setEndTime(endTime);
         appointment.setStatus(AppointmentStatus.PENDING);
         appointment.setReason(request.getReason());
         appointment.setDeleted(false);
 
         Appointment saved = appointmentRepository.save(appointment);
 
+        // 8. Gửi Email thông báo (Nên chuyển sang chạy @Async trong tương lai để tối ưu)
         if (request.getEmail() != null && !request.getEmail().isEmpty()) {
-            String timeStr = request.getAppointmentTime().format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"));
+            String timeStr = startTime.format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"));
             String docName = doctor.getUser().getFullName();
 
             if (isNewUser && rawPassword != null) {
@@ -277,6 +295,7 @@ public class AppointmentService {
                 );
             }
         }
+
         return appointmentMapper.toAppointmentResponse(saved);
     }
 

@@ -15,7 +15,7 @@ interface ChatMessage {
   templateUrl: './chatbot.component.html',
   styleUrls: ['./chatbot.component.scss']
 })
-export class ChatbotComponent { // BỎ AfterViewChecked ở đây
+export class ChatbotComponent {
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
 
   private chatbotService = inject(ChatbotService);
@@ -41,7 +41,6 @@ export class ChatbotComponent { // BỎ AfterViewChecked ở đây
     this.isOpen = !this.isOpen;
     if (this.isOpen) {
       this.unreadCount = 0;
-      // Cuộn xuống nhẹ nhàng khi vừa mở cửa sổ
       setTimeout(() => this.scrollToBottom(), 50);
     }
   }
@@ -54,7 +53,7 @@ export class ChatbotComponent { // BỎ AfterViewChecked ở đây
     this.userQuestion = '';
     this.isLoading = true;
 
-    // 3. SỬA LỖI TRÔI: Chỉ cuộn xuống ngay lúc bấm Send (để thấy câu hỏi và bong bóng loading)
+    // Vẫn cuộn xuống đáy khi user vừa gửi tin nhắn (để thấy hiệu ứng loading)
     setTimeout(() => this.scrollToBottom(), 50);
 
     this.chatbotService.sendMessage(question).subscribe({
@@ -62,13 +61,17 @@ export class ChatbotComponent { // BỎ AfterViewChecked ở đây
         const botReply = res.result ? res.result.answer : "Tôi không hiểu câu hỏi.";
         this.messages.push({ text: botReply, sender: 'bot' });
         this.isLoading = false;
-        // LƯU Ý KỸ: Ở đây KHÔNG gọi scrollToBottom() nữa.
-        // Khi đoạn text dài hiện ra, màn hình sẽ "đứng im" ngay đầu câu hỏi của user.
+
+        // Gọi hàm cuộn đến câu hỏi của user sau khi bot trả lời
+        setTimeout(() => this.scrollToLastUserMessage(), 50);
       },
       error: (err) => {
         console.error(err);
         this.messages.push({ text: 'Hệ thống đang bảo trì, vui lòng thử lại sau.', sender: 'bot' });
         this.isLoading = false;
+
+        // Cả khi lỗi cũng cuộn lên cho đồng bộ trải nghiệm
+        setTimeout(() => this.scrollToLastUserMessage(), 50);
       }
     });
   }
@@ -76,6 +79,23 @@ export class ChatbotComponent { // BỎ AfterViewChecked ở đây
   private scrollToBottom(): void {
     if (this.scrollContainer) {
       this.scrollContainer.nativeElement.scrollTop = this.scrollContainer.nativeElement.scrollHeight;
+    }
+  }
+
+  // THÊM HÀM MỚI: Định vị và cuộn đến câu hỏi cuối cùng của user
+  private scrollToLastUserMessage(): void {
+    if (!this.scrollContainer) return;
+
+    const container = this.scrollContainer.nativeElement;
+    // Tìm tất cả các tin nhắn được gửi từ user trong DOM
+    const userMessages = container.querySelectorAll('.message-wrapper.user');
+
+    if (userMessages.length > 0) {
+      // Lấy phần tử câu hỏi cuối cùng (chính là câu vừa hỏi)
+      const lastUserMessage = userMessages[userMessages.length - 1];
+
+      // Cuộn mượt mà sao cho khối tin nhắn này nằm sát mép trên (start) của container
+      lastUserMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }
 }

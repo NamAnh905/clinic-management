@@ -16,7 +16,7 @@ import java.time.Duration;
 @Configuration
 public class RagConfiguration {
 
-    @Value("${gemini.api.key}")
+    @Value("${GEMINI_API_KEY}")
     private String geminiApiKey;
 
     @Value("${langchain4j.gemini.embedding-model}")

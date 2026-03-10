@@ -7,8 +7,8 @@ COPY src ./src
 # Build ứng dụng, bỏ qua test để tăng tốc độ deploy
 RUN mvn clean package -DskipTests
 
-# Stage 2: Chạy ứng dụng với môi trường Java 21 siêu nhẹ
-FROM eclipse-temurin:21-jdk-slim
+# Stage 2: Chạy ứng dụng với môi trường Java 21 JRE Jammy (nhẹ và ổn định)
+FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 # Copy file .jar đã build từ Stage 1 sang Stage 2
 COPY --from=build /app/target/*.jar app.jar

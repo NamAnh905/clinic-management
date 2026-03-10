@@ -53,4 +53,5 @@ langchain4j:
   qdrant:
     host: ${QDRANT_HOST}
     port: ${QDRANT_PORT}
+    api-key: ${QDRANT_API_KEY}
     collection-name: "clinic_knowledge"

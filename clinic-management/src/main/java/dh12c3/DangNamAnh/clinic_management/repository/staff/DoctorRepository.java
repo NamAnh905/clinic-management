@@ -53,6 +53,10 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     @Query("SELECT d FROM Doctor d WHERE d.user.isActive = true AND d.user.userId = :userId")
     Optional<Doctor> findByUserIdWithLock(@Param("userId") Long userId);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT d FROM Doctor d WHERE d.user.isActive = true AND d.doctorId = :doctorId")
+    Optional<Doctor> findByIdWithLock(@Param("doctorId") Long doctorId);
+
     boolean existsByEmployeeCode(String employeeCode);
     boolean existsByLicenseNumber(String licenseNumber);
 }

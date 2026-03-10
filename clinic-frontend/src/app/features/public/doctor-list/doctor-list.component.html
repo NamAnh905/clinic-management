@@ -4,7 +4,7 @@
     <div class="container">
       <div class="hero-content">
         <h1>Đội ngũ Bác sĩ Chuyên gia<br>Tận tâm & Giàu kinh nghiệm</h1>
-        <p>Tìm kiếm và đặt lịch khám dễ dàng với các bác sĩ hàng đầu. Xem hồ sơ chi tiết, đánh giá và chọn bác sĩ phù hợp nhất với bạn.</p>
+        <p>Tìm kiếm và đặt lịch khám dễ dàng với các bác sĩ hàng đầu. Xem hồ sơ chi tiết và chọn bác sĩ phù hợp nhất với bạn.</p>
       </div>
     </div>
 
@@ -56,7 +56,6 @@
       <div class="doctor-card" *ngFor="let doc of doctors">
 
         <div class="card-header-gradient">
-           <button class="btn-wishlist"><i class="pi pi-heart"></i></button>
         </div>
 
         <div class="avatar-wrapper shadow-3">
@@ -72,28 +71,17 @@
 
           <div class="info-row">
              <div class="info-item">
-                <i class="pi pi-star-fill text-yellow-500"></i>
-                <span>4.9 (150+)</span>
-             </div>
-             <div class="divider-vertical"></div>
-             <div class="info-item">
                 <i class="pi pi-briefcase text-primary"></i>
-                <span>{{ (doc.doctorId % 10) + 5 }} năm KN</span>
+                <span>{{ (doc.doctorId % 10) + 5 }} năm kinh nghiệm</span>
              </div>
           </div>
 
-          <div class="location-text">
+          <div class="location-text pb-4">
              <i class="pi pi-map-marker"></i> Phòng khám 28Care
           </div>
         </div>
 
-        <div class="card-footer">
-          <button class="btn-book-doc">
-             Đặt lịch ngay <i class="pi pi-arrow-right ml-2"></i>
-          </button>
         </div>
-
-      </div>
     </div>
 
     <div *ngIf="doctors.length === 0" class="empty-state">

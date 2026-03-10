@@ -9,6 +9,7 @@ import dh12c3.DangNamAnh.clinic_management.dto.response.PageResponse;
 import dh12c3.DangNamAnh.clinic_management.dto.response.appointment.AppointmentResponse;
 import dh12c3.DangNamAnh.clinic_management.entity.appointment.Appointment;
 import dh12c3.DangNamAnh.clinic_management.entity.patient.Patient;
+import dh12c3.DangNamAnh.clinic_management.entity.schedule.WorkingSchedule;
 import dh12c3.DangNamAnh.clinic_management.entity.staff.Doctor;
 import dh12c3.DangNamAnh.clinic_management.entity.user.Role;
 import dh12c3.DangNamAnh.clinic_management.entity.user.User;
@@ -67,7 +68,7 @@ public class AppointmentService {
 
     @Transactional
     public AppointmentResponse create(AppointmentCreationRequest request){
-        Doctor doctor = doctorRepository.findByUserIdWithLock(request.getDoctorId())
+        Doctor doctor = doctorRepository.findByIdWithLock(request.getDoctorId())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         String currentUsername = securityUtils.getCurrentUserLogin();
@@ -170,7 +171,7 @@ public class AppointmentService {
 
     @Transactional
     public AppointmentResponse createPublicAppointment(PublicAppointmentRequest request) {
-        Doctor doctor = doctorRepository.findByUserIdWithLock(request.getDoctorId())
+        Doctor doctor = doctorRepository.findByIdWithLock(request.getDoctorId())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         LocalDateTime startTime = request.getAppointmentTime();
@@ -431,17 +432,26 @@ public class AppointmentService {
         var doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        var schedules = doctor.getWorkingSchedules().stream()
+        List<WorkingSchedule> dailySchedules = doctor.getWorkingSchedules().stream()
                 .filter(s -> s.getWorkDate().equals(date) && !s.isDeleted())
-                .findFirst()
-                .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_HAS_NO_WORKING_SCHEDULE));
+                .toList();
+
+        if (dailySchedules.isEmpty()) {
+            throw new AppException(ErrorCode.DOCTOR_HAS_NO_WORKING_SCHEDULE);
+        }
 
         List<LocalTime> allSlots = new ArrayList<>();
-        LocalTime current = schedules.getStartTime();
-        while (current.isBefore(schedules.getEndTime())) {
-            allSlots.add(current);
-            current = current.plusMinutes(APPOINTMENT_DURATION);
+        for (var schedule : dailySchedules) {
+            LocalTime current = schedule.getStartTime();
+            while (current.isBefore(schedule.getEndTime())) {
+                if (!allSlots.contains(current)) {
+                    allSlots.add(current);
+                }
+                current = current.plusMinutes(APPOINTMENT_DURATION);
+            }
         }
+
+        Collections.sort(allSlots);
 
         LocalDateTime startOfDay = date.atStartOfDay();
         LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
@@ -450,6 +460,7 @@ public class AppointmentService {
         List<LocalTime> bookedTimes = bookedApps.stream()
                 .map(a -> a.getAppointmentTime().toLocalTime())
                 .toList();
+
         allSlots.removeAll(bookedTimes);
         return allSlots.stream().map(LocalTime::toString).toList();
     }

@@ -244,13 +244,6 @@ $card-radius: 20px;
     transform: translateY(-8px);
     box-shadow: 0 20px 50px rgba(15, 76, 117, 0.12);
     border-color: rgba(50, 130, 184, 0.2);
-
-    .btn-book-doc {
-      background: $primary-gradient;
-      color: white;
-      border-color: transparent;
-      transform: scale(1.02);
-    }
   }
 
   // Header Gradient
@@ -258,15 +251,6 @@ $card-radius: 20px;
     height: 100px;
     background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
     position: relative;
-
-    .btn-wishlist {
-      position: absolute; top: 15px; right: 15px;
-      width: 35px; height: 35px;
-      border-radius: 50%; border: none; background: white;
-      color: #94a3b8; cursor: pointer; display: flex; align-items: center; justify-content: center;
-      transition: all 0.2s;
-      &:hover { color: #ef4444; transform: scale(1.1); }
-    }
   }
 
   // Avatar Wrapper
@@ -321,38 +305,12 @@ $card-radius: 20px;
          font-size: 0.9rem; font-weight: 500; color: #475569;
          i { font-size: 1rem; }
       }
-
-      .divider-vertical {
-         width: 1px; height: 15px; background: #e2e8f0;
-      }
     }
 
     .location-text {
        color: #94a3b8; font-size: 0.85rem;
        display: flex; align-items: center; justify-content: center; gap: 5px;
        margin-bottom: 15px;
-    }
-  }
-
-  // Footer & Button
-  .card-footer {
-    padding: 0 25px 25px;
-
-    .btn-book-doc {
-      width: 100%;
-      padding: 12px;
-      border-radius: 50px;
-      border: 1px solid #0f4c75;
-      background: transparent;
-      color: #0f4c75;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: all 0.3s ease;
-      font-size: 0.95rem;
-
-      i { font-size: 0.9rem; transition: transform 0.3s; }
-      &:hover i { transform: translateX(5px); }
     }
   }
 }

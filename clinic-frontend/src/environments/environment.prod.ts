@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://api-28care.koyeb.app' // Ví dụ link backend thật sau này
+  apiUrl: 'https://clinic-management-9b77.onrender.com/api'
 };

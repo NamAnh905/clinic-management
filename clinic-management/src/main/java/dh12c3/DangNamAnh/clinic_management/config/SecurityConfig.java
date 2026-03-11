@@ -57,6 +57,7 @@ public class SecurityConfig {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.addAllowedOrigin("http://localhost:4200");
         corsConfiguration.addAllowedOrigin("https://clinic-frontend-tau.vercel.app");
+        corsConfiguration.setAllowedOriginPatterns(Arrays.asList("https://*.vercel.app"));
         corsConfiguration.setAllowCredentials(true);
         corsConfiguration.addAllowedHeader("*");
         corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));

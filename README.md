@@ -2,11 +2,14 @@
 
 Dự án Hệ thống quản lý phòng khám (Clinic Management System), phục vụ đồ án tốt nghiệp.
 
-##Link demo: 
-https://clinic-frontend-43k7jjz71-nam-anhs-projects-224564cd.vercel.app/
+## Link demo: https://clinic-frontend-43k7jjz71-nam-anhs-projects-224564cd.vercel.app/
 
 ## Một số hình ảnh giao diện web
+* **Trang chủ:**
 ![alt text](image.png)
+
+* **Trang quản trị:**
+![alt text](image-1.png)
 
 ## Công nghệ sử dụng
 * **Backend:** Spring Boot (Java)

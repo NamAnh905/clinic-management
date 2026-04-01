@@ -210,7 +210,7 @@ public class AuthenticationService {
     public void resetPassword(ResetPasswordRequest request) {
         String storedOtp = otpStorage.get(request.email());
         if (storedOtp == null || !storedOtp.equals(request.otp())) {
-            throw new AppException(ErrorCode.INVALID_KEY); // Bạn có thể định nghĩa ErrorCode.INVALID_OTP riêng
+            throw new AppException(ErrorCode.INVALID_KEY);
         }
 
         var user = userRepository.findByEmail(request.email())

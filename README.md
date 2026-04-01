@@ -2,17 +2,18 @@
 
 Dự án Hệ thống quản lý phòng khám (Clinic Management System), phục vụ đồ án tốt nghiệp.
 
-## Link demo: https://clinic-frontend-43k7jjz71-nam-anhs-projects-224564cd.vercel.app/
+## Link demo: 
+* https://clinic-frontend-43k7jjz71-nam-anhs-projects-224564cd.vercel.app/
 
 ## Công nghệ sử dụng
 * **Backend:** Spring Boot (Java)
 * **Frontend:** Angular
-* **Database:** MySQL (dự kiến)
+* **Database:** MySQL
 
 ## Cấu trúc dự án
 Dự án được tổ chức theo mô hình Monorepo:
-* `backend/`: Chứa source code Spring Boot API.
-* `frontend/`: Chứa source code giao diện Angular.
+* `clinic-management/`: Chứa source code Spring Boot API.
+* `clinic-frontend/`: Chứa source code giao diện Angular.
 
 ## Hướng dẫn cài đặt (Cơ bản)
 

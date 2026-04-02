@@ -27,7 +27,7 @@ Dự án được tổ chức theo mô hình Monorepo:
 2.  Cài đặt thư viện: `npm install`
 3.  Chạy ứng dụng: `npm start`
 
-## Tài khoản Demo (Mật khẩu: 123456)
+## Tài khoản Demo (Mật khẩu: thanghoi)
 | Role | Email |
 | :--- | :--- |
 | **Admin** | `admin@clinic.com` |

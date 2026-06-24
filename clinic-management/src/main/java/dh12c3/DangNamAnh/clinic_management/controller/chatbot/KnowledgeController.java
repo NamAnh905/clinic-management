@@ -16,15 +16,13 @@ public class KnowledgeController {
 
     @PostMapping("/add")
     public ResponseEntity<?> addKnowledge(@RequestBody KnowledgeRequest request) {
-        // Cho phép Admin tự điền type (ví dụ: "medicine", "promotion", "facility"...)
-        // Nếu không điền thì mặc định là "knowledge"
         String type = (request.getType() != null && !request.getType().isEmpty())
                 ? request.getType() : "knowledge";
 
         KnowledgeBase kb = knowledgeService.addKnowledge(
                 request.getQuestion(),
                 request.getAnswer(),
-                type // <--- Truyền type động vào đây
+                type
         );
         return ResponseEntity.ok("✅ Đã nạp kiến thức loại: " + type);
     }

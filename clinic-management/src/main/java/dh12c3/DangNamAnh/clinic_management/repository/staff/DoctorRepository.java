@@ -49,11 +49,11 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
 
     Optional<Doctor> findByUser_UserId(Long userId);
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Lock(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
     @Query("SELECT d FROM Doctor d WHERE d.user.isActive = true AND d.user.userId = :userId")
     Optional<Doctor> findByUserIdWithLock(@Param("userId") Long userId);
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Lock(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
     @Query("SELECT d FROM Doctor d WHERE d.user.isActive = true AND d.doctorId = :doctorId")
     Optional<Doctor> findByIdWithLock(@Param("doctorId") Long doctorId);
 

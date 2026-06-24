@@ -22,9 +22,13 @@ export class AuthService {
   public currentDoctorIdSubject = new BehaviorSubject<number | null>(null);
   public currentDoctorId$ = this.currentDoctorIdSubject.asObservable();
 
-  // 3. (MỚI) Biến lưu ID Lễ tân (Nếu là Receptionist)
+  // 3. Biến lưu ID Lễ tân (Nếu là Receptionist)
   public currentReceptionistIdSubject = new BehaviorSubject<number | null>(null);
   public currentReceptionistId$ = this.currentReceptionistIdSubject.asObservable();
+
+  // 4. Biến lưu ID Bệnh nhân (Nếu là Patient)
+  public currentPatientIdSubject = new BehaviorSubject<number | null>(null);
+  public currentPatientId$ = this.currentPatientIdSubject.asObservable();
 
   constructor(
     private http: HttpClient,
@@ -35,6 +39,7 @@ export class AuthService {
   get isAdmin(): boolean { return this.hasRole(['ADMIN']); }
   get isDoctor(): boolean { return this.hasRole(['DOCTOR']); }
   get isReceptionist(): boolean { return this.hasRole(['RECEPTIONIST']); }
+  get isPatient(): boolean { return this.hasRole(['PATIENT']); }
 
   // --- LOGIN LOGIC ---
   login(request: AuthenticationRequest): Observable<ApiResponse<AuthenticationResponse>> {
@@ -96,11 +101,18 @@ export class AuthService {
         this.currentDoctorIdSubject.next(null);
       }
 
-      // 2. (MỚI) Tự động lấy ID Lễ tân
+      // 2. Tự động lấy ID Lễ tân
       if (this.isReceptionist) {
         this.fetchReceptionistId(user.userId);
       } else {
         this.currentReceptionistIdSubject.next(null);
+      }
+
+      // 3. Tự động lấy ID Bệnh nhân
+      if (this.isPatient) {
+        this.fetchPatientId(user.userId);
+      } else {
+        this.currentPatientIdSubject.next(null);
       }
     }
   }
@@ -116,15 +128,25 @@ export class AuthService {
       });
   }
 
-  // (MỚI) API lấy thông tin Lễ tân
+  // API lấy thông tin Lễ tân
   private fetchReceptionistId(userId: number) {
-    // Lưu ý: Bạn cần đảm bảo Backend đã có API này (tương tự Doctor)
     this.http.get<any>(`${environment.apiUrl}/receptionists/find-by-user/${userId}`)
       .subscribe({
         next: (res) => {
           if (res.result) this.currentReceptionistIdSubject.next(res.result.receptionistId);
         },
         error: () => console.warn('Không thể lấy thông tin lễ tân')
+      });
+  }
+
+  // API lấy thông tin Bệnh nhân
+  private fetchPatientId(userId: number) {
+    this.http.get<any>(`${environment.apiUrl}/patients/find-by-user/${userId}`)
+      .subscribe({
+        next: (res) => {
+          if (res.result) this.currentPatientIdSubject.next(res.result.patientId);
+        },
+        error: () => console.warn('Không thể lấy thông tin bệnh nhân')
       });
   }
 
@@ -151,8 +173,9 @@ export class AuthService {
     localStorage.removeItem('user_roles');
 
     this.currentUserSubject.next(null);
-    this.currentDoctorIdSubject.next(null);      // Reset ID Bác sĩ
-    this.currentReceptionistIdSubject.next(null); // Reset ID Lễ tân
+    this.currentDoctorIdSubject.next(null);
+    this.currentReceptionistIdSubject.next(null);
+    this.currentPatientIdSubject.next(null);
 
     return this.http.post<ApiResponse<void>>(`${this.authUrl}/logout`, { token });
   }

@@ -2,6 +2,7 @@ package dh12c3.DangNamAnh.clinic_management.exception;
 
 import dh12c3.DangNamAnh.clinic_management.dto.response.ApiResponse;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -81,6 +82,12 @@ public class GlobalExceptionHandler {
         ErrorCode errorCode = ErrorCode.DATA_INVALID;
 
         return buildResponse(errorCode, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<ApiResponse<Object>> handleOptimisticLockingFailure(ObjectOptimisticLockingFailureException e) {
+        ErrorCode errorCode = ErrorCode.APPOINTMENT_ALREADY_BOOKED;
+        return buildResponse(errorCode, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(RuntimeException.class)

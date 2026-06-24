@@ -29,6 +29,7 @@ public interface AppointmentMapper {
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "patient", ignore = true)
     @Mapping(target = "doctor", ignore = true)
+    @Mapping(target = "endTime", ignore = true)
     void update(AppointmentUpdationRequest request, @MappingTarget Appointment appointment);
 
     default PageResponse<AppointmentResponse> toPageResponse(Page<Appointment> page) {

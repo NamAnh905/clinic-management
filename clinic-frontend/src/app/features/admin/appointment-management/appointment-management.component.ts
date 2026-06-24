@@ -9,6 +9,7 @@ import { BillingService } from '../../../api/billing.service';
 import { AuthService } from '../../../api/auth.service';
 import { InvoiceResponse, InvoiceDetailResponse, InvoiceDetailCreationRequest } from '../../../models/billing.model';
 import { MasterDataService } from '../../../api/master-data.service'; // [NEW] Import MasterData
+import { environment } from '../../../../environments/environment';
 
 // PrimeNG Modules
 import { TableModule } from 'primeng/table';
@@ -378,7 +379,7 @@ export class AppointmentManagementComponent implements OnInit {
                       // Nếu danh sách chi tiết RỖNG (nghĩa là backend không tự cộng tiền khám do đã trả cọc)
                       // Hoặc bạn có thể check chính xác hơn nếu muốn
                       if (realDetails.length === 0) {
-                          const consultationPrice = 200000; // Giá khám (Cấu hình hoặc lấy từ DB)
+                          const consultationPrice = environment.consultationPrice; // Giá khám lấy từ cấu hình
 
                           const depositLine = {
                               detailId: -1, // ID âm để nhận biết là dòng ảo

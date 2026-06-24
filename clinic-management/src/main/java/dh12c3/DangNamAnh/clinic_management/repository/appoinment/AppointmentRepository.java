@@ -13,115 +13,129 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
-   @Query(value = """
-           SELECT a
-           FROM Appointment a
-           JOIN FETCH a.doctor d
-           JOIN FETCH d.user du
-           JOIN FETCH a.patient p
-           JOIN FETCH p.user pu
-           WHERE (:doctorId IS NULL OR du.userId = :doctorId)
-           AND (:patientId IS NULL OR p.patientId = :patientId)
-           AND (:status IS NULL OR a.status = :status)
-           AND (:startDate IS NULL OR a.appointmentTime >= :startDate)
-           AND (:endDate IS NULL OR a.appointmentTime <= :endDate)
-           AND (:keyword IS NULL OR :keyword = ''
-                OR LOWER(du.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-                OR LOWER(pu.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')))
-           """,
-   countQuery = """
-           SELECT COUNT(a)
-           FROM Appointment a
-           JOIN a.doctor d
-           JOIN d.user du
-           JOIN a.patient p
-           JOIN p.user pu
-           WHERE (:doctorId IS NULL OR du.userId = :doctorId)
-           AND (:patientId IS NULL OR p.patientId = :patientId)
-           AND (:status IS NULL OR a.status = :status)
-           AND (:startDate IS NULL OR a.appointmentTime >= :startDate)
-           AND (:endDate IS NULL OR a.appointmentTime <= :endDate)
-           AND (:keyword IS NULL OR :keyword = ''
-                OR LOWER(du.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-                OR LOWER(pu.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')))
-           """)
-   Page<Appointment> searchAppointments(@Param("doctorId") Long doctorId,
-                                        @Param("patientId") Long patientId,
-                                        @Param("status") AppointmentStatus status,
-                                        @Param("startDate") LocalDateTime startDate,
-                                        @Param("endDate") LocalDateTime endDate,
-                                        @Param("keyword") String keyword,
-                                        Pageable pageable);
+        @Query(value = """
+                        SELECT a
+                        FROM Appointment a
+                        JOIN FETCH a.doctor d
+                        JOIN FETCH d.user du
+                        JOIN FETCH a.patient p
+                        JOIN FETCH p.user pu
+                        WHERE (:doctorId IS NULL OR du.userId = :doctorId)
+                        AND (:patientId IS NULL OR p.patientId = :patientId)
+                        AND (:status IS NULL OR a.status = :status)
+                        AND (:startDate IS NULL OR a.appointmentTime >= :startDate)
+                        AND (:endDate IS NULL OR a.appointmentTime <= :endDate)
+                        AND (:keyword IS NULL OR :keyword = ''
+                             OR LOWER(du.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                             OR LOWER(pu.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')))
+                        AND a.deleted = false
+                        """, countQuery = """
+                        SELECT COUNT(a)
+                        FROM Appointment a
+                        JOIN a.doctor d
+                        JOIN d.user du
+                        JOIN a.patient p
+                        JOIN p.user pu
+                        WHERE (:doctorId IS NULL OR du.userId = :doctorId)
+                        AND (:patientId IS NULL OR p.patientId = :patientId)
+                        AND (:status IS NULL OR a.status = :status)
+                        AND (:startDate IS NULL OR a.appointmentTime >= :startDate)
+                        AND (:endDate IS NULL OR a.appointmentTime <= :endDate)
+                        AND (:keyword IS NULL OR :keyword = ''
+                             OR LOWER(du.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                             OR LOWER(pu.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')))
+                        AND a.deleted = false
+                        """)
+        Page<Appointment> searchAppointments(@Param("doctorId") Long doctorId,
+                        @Param("patientId") Long patientId,
+                        @Param("status") AppointmentStatus status,
+                        @Param("startDate") LocalDateTime startDate,
+                        @Param("endDate") LocalDateTime endDate,
+                        @Param("keyword") String keyword,
+                        Pageable pageable);
 
-    @Query("""
-        SELECT COUNT(a) > 0
-        FROM Appointment a
-        WHERE a.doctor.doctorId = :doctorId
-        AND a.deleted = false
-        AND a.status IN :statuses
-        AND (a.appointmentTime < :newEndTime AND a.endTime > :newStartTime)
-    """)
-    boolean existsByOverlap(
-            @Param("doctorId") Long doctorId,
-            @Param("newStartTime") LocalDateTime newStartTime,
-            @Param("newEndTime") LocalDateTime newEndTime,
-            @Param("statuses") List<AppointmentStatus> statuses
-    );
+        @Query("""
+                            SELECT COUNT(a) > 0
+                            FROM Appointment a
+                            WHERE a.doctor.doctorId = :doctorId
+                            AND a.deleted = false
+                            AND a.status IN :statuses
+                            AND (a.appointmentTime < :newEndTime AND a.endTime > :newStartTime)
+                        """)
+        boolean existsByOverlap(
+                        @Param("doctorId") Long doctorId,
+                        @Param("newStartTime") LocalDateTime newStartTime,
+                        @Param("newEndTime") LocalDateTime newEndTime,
+                        @Param("statuses") List<AppointmentStatus> statuses);
 
-    boolean existsByPatient_PatientId(Long patientId);
+        boolean existsByPatient_PatientId(Long patientId);
 
-    @Query("""
-        SELECT COUNT(a) > 0
-        FROM Appointment a
-        WHERE a.doctor.doctorId = :doctorId
-        AND a.appointmentTime >= :startTime
-        AND a.appointmentTime < :endTime
-        AND a.status IN :statuses
-    """)
-    boolean existsActiveAppointment(
-            @Param("doctorId") Long doctorId,
-            @Param("startTime") LocalDateTime startTime,
-            @Param("endTime") LocalDateTime endTime,
-            @Param("statuses") List<AppointmentStatus> statuses
-    );
+        @Query("""
+                            SELECT COUNT(a) > 0
+                            FROM Appointment a
+                            WHERE a.doctor.doctorId = :doctorId
+                            AND a.appointmentTime >= :startTime
+                            AND a.appointmentTime < :endTime
+                            AND a.status IN :statuses
+                        """)
+        boolean existsActiveAppointment(
+                        @Param("doctorId") Long doctorId,
+                        @Param("startTime") LocalDateTime startTime,
+                        @Param("endTime") LocalDateTime endTime,
+                        @Param("statuses") List<AppointmentStatus> statuses);
 
-    @Query("""
-        SELECT a 
-        FROM Appointment a 
-        WHERE a.doctor.doctorId = :doctorId 
-        AND a.appointmentTime >= :startTime 
-        AND a.appointmentTime < :endTime
-        AND a.status != 'CANCELLED'
-    """)
-    List<Appointment> findBookedAppointments(
-            @Param("doctorId") Long doctorId,
-            @Param("startTime") LocalDateTime startTime,
-            @Param("endTime") LocalDateTime endTime
-    );
+        @Query("""
+                            SELECT a
+                            FROM Appointment a
+                            WHERE a.doctor.doctorId = :doctorId
+                            AND a.appointmentTime >= :startTime
+                            AND a.appointmentTime < :endTime
+                            AND a.status IN ('PENDING', 'CONFIRMED', 'CHECKED_IN', 'IN_PROGRESS')
+                            AND a.deleted = false
+                        """)
+        List<Appointment> findBookedAppointments(
+                        @Param("doctorId") Long doctorId,
+                        @Param("startTime") LocalDateTime startTime,
+                        @Param("endTime") LocalDateTime endTime);
 
-    @Query("""
-        SELECT COUNT(a) > 0
-        FROM Appointment a
-        WHERE a.patient.patientId = :patientId
-        AND a.deleted = false
-        AND a.status IN :statuses
-        AND (a.appointmentTime < :newEndTime AND a.endTime > :newStartTime)
-    """)
-    boolean existsByPatientOverlap(
-            @Param("patientId") Long patientId,
-            @Param("newStartTime") LocalDateTime newStartTime,
-            @Param("newEndTime") LocalDateTime newEndTime,
-            @Param("statuses") List<AppointmentStatus> statuses
-    );
+        @Query("""
+                            SELECT COUNT(a) > 0
+                            FROM Appointment a
+                            WHERE a.patient.patientId = :patientId
+                            AND a.deleted = false
+                            AND a.status IN :statuses
+                            AND (a.appointmentTime < :newEndTime AND a.endTime > :newStartTime)
+                        """)
+        boolean existsByPatientOverlap(
+                        @Param("patientId") Long patientId,
+                        @Param("newStartTime") LocalDateTime newStartTime,
+                        @Param("newEndTime") LocalDateTime newEndTime,
+                        @Param("statuses") List<AppointmentStatus> statuses);
 
-    boolean existsByDoctor_DoctorIdAndAppointmentTimeAndStatusNot(
-            Long doctorId,
-            LocalDateTime appointmentTime,
-            AppointmentStatus status
-    );
+        boolean existsByDoctor_DoctorIdAndAppointmentTimeAndStatusNot(
+                        Long doctorId,
+                        LocalDateTime appointmentTime,
+                        AppointmentStatus status);
 
-    List<Appointment> findByStatusInAndAppointmentTimeBefore(
-            List<AppointmentStatus> statuses,
-            LocalDateTime time
-    );
+        List<Appointment> findByStatusInAndAppointmentTimeBefore(
+                        List<AppointmentStatus> statuses,
+                        LocalDateTime time);
+
+        @Query("""
+                            SELECT COUNT(a) > 0
+                            FROM Appointment a
+                            JOIN a.doctor d
+                            WHERE a.patient.patientId = :patientId
+                            AND d.specialty.specialtyId = :specialtyId
+                            AND a.deleted = false
+                            AND a.status IN :statuses
+                            AND a.appointmentTime >= :dayStart
+                            AND a.appointmentTime < :dayEnd
+                        """)
+        boolean existsByPatientAndSpecialtySameDay(
+                        @Param("patientId") Long patientId,
+                        @Param("specialtyId") Long specialtyId,
+                        @Param("dayStart") LocalDateTime dayStart,
+                        @Param("dayEnd") LocalDateTime dayEnd,
+                        @Param("statuses") List<AppointmentStatus> statuses);
 }

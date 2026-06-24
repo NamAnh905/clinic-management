@@ -14,7 +14,11 @@ export class ChatbotService {
 
   constructor(private http: HttpClient) { }
 
-  sendMessage(question: string): Observable<any> {
-    return this.http.post<any>(this.apiUrl, { question: question });
+  sendMessage(question: string, patientId: number | null = null): Observable<any> {
+    const body: any = { question };
+    if (patientId) {
+      body.patientId = patientId;
+    }
+    return this.http.post<any>(this.apiUrl, body);
   }
 }

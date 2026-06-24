@@ -33,6 +33,7 @@ public class ChatService {
     EmbeddingStore<TextSegment> embeddingStore;
     EmbeddingModel embeddingModel;
     ChatLanguageModel chatLanguageModel;
+    PatientContextService patientContextService;
 
     Map<String, ChatMemory> chatMemories = new ConcurrentHashMap<>();
 
@@ -65,7 +66,7 @@ public class ChatService {
     }
 
     // --- HÀM 2: LUỒNG CHAT CHÍNH ---
-    public String chatWithRAG(String sessionId, String userMessage) {
+    public String chatWithRAG(String sessionId, String userMessage, Long patientId) {
         log.info("Session: {} | User Question: {}", sessionId, userMessage);
 
         // Giảm số lượng tin nhắn nhớ xuống 6 để tối ưu tốc độ và chi phí
@@ -110,13 +111,22 @@ public class ChatService {
 
         String context = contextBuilder.toString();
 
-        if (context.isEmpty()) {
+        // 4. Truy xuất lịch sử khám bệnh nhân (nếu có patientId)
+        String patientContext = patientContextService.buildPatientContext(patientId);
+
+        if (context.isEmpty() && patientContext == null) {
             log.info("RAG Miss -> Từ chối trả lời câu hỏi ngoài luồng");
             return "Xin lỗi bạn, tôi là trợ lý ảo của phòng khám 28Care. Tôi chỉ có thể hỗ trợ giải đáp các thông tin liên quan đến dịch vụ y tế, chuyên khoa, bác sĩ, và quy trình khám chữa bệnh tại đây.";
         }
 
-        // 4. Gọi AI
-        String finalPrompt = String.format(ChatPromptUtils.PROMPT_TEMPLATE, context, userMessage);
+        // 5. Gọi AI - chọn prompt phù hợp
+        String finalPrompt;
+        if (patientContext != null) {
+            finalPrompt = String.format(ChatPromptUtils.PERSONALIZED_PROMPT_TEMPLATE, patientContext, context, userMessage);
+            log.info("🧑‍⚕️ Sử dụng Personalized Prompt cho bệnh nhân (patientId={})", patientId);
+        } else {
+            finalPrompt = String.format(ChatPromptUtils.PROMPT_TEMPLATE, context, userMessage);
+        }
 
         // TẠO BẢN SAO BỘ NHỚ TẠM THỜI ĐỂ TRÁNH LỖI TOKEN BLOAT
         List<ChatMessage> tempMessages = new ArrayList<>(chatMemory.messages());

@@ -55,3 +55,7 @@ langchain4j:
     port: ${QDRANT_PORT}
     api-key: ${QDRANT_API_KEY}
     collection-name: "clinic_knowledge"
+
+clinic:
+  appointment-duration: 30
+  consultation-price: 200000

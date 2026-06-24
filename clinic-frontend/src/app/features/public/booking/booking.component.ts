@@ -57,6 +57,10 @@ export class BookingComponent implements OnInit {
   doctors: any[] = [];
   availableSlots: string[] = [];
 
+  // IMP-4: Cache specialties & doctors (chỉ gọi API 1 lần)
+  private cachedSpecialties: any[] | null = null;
+  private cachedAllDoctors: any[] | null = null;
+
   // Selection
   selectedService: any = null;
   selectedDoctor: any = null;
@@ -244,61 +248,67 @@ export class BookingComponent implements OnInit {
   findAvailableDoctorForService(dateStr: string) {
       if (!this.selectedService) return;
 
-      this.masterDataService.getAllSpecialties(1, 100).subscribe((specRes: any) => {
+      // IMP-4: Sử dụng cache, chỉ gọi API nếu chưa có dữ liệu
+      const specObs = this.cachedSpecialties
+          ? of({ result: { data: this.cachedSpecialties } })
+          : this.masterDataService.getAllSpecialties(1, 100);
+
+      const docObs = this.cachedAllDoctors
+          ? of({ result: { data: this.cachedAllDoctors } })
+          : this.staffService.getAllDoctors(1, 100);
+
+      forkJoin([specObs, docObs]).subscribe(([specRes, docRes]: any[]) => {
           const specialties = specRes.result?.data || [];
+          const allDocs = docRes.result?.data || [];
+
+          // Cache lại cho lần sau
+          if (!this.cachedSpecialties) this.cachedSpecialties = specialties;
+          if (!this.cachedAllDoctors) this.cachedAllDoctors = allDocs;
+
           const targetSpec = specialties.find((s: any) => s.defaultServiceId == this.selectedService.serviceId);
 
-          if (targetSpec) {
-              this.staffService.getAllDoctors(1, 100).subscribe((res: any) => {
-                  const docs = res.result?.data || [];
-                  const availableDocs = docs.filter((d: any) => d.specialtyId == targetSpec.specialtyId);
-
-                  if (availableDocs.length > 0) {
-                      this.doctors = availableDocs;
-                      this.selectedDoctor = null; // Chưa chọn bác sĩ vội ở bước này
-
-                      // Tạo mảng các request lấy lịch của TẤT CẢ bác sĩ hợp lệ
-                      const slotRequests: Observable<any>[] = availableDocs.map((doc: any) =>
-                          this.appointmentService.getAvailableSlots(doc.doctorId, dateStr).pipe(
-                              catchError(() => of({ result: [] }))
-                          )
-                      );
-
-                      // Chạy tất cả request cùng lúc
-                        forkJoin(slotRequests).subscribe((responses: any[]) => {
-                            const aggregatedSlots = new Set<string>(); // Dùng Set để tránh trùng lặp khung giờ
-                            this.slotToDoctorMap = {}; // Reset map
-
-                          responses.forEach((res, index) => {
-                              const docId = availableDocs[index].doctorId;
-                              let slots: string[] = res.result || [];
-
-                              // Lọc bỏ các giờ đã qua nếu là ngày hôm nay
-                              slots = this.filterValidSlots(slots);
-
-                              slots.forEach(slot => {
-                                  aggregatedSlots.add(slot); // Thêm giờ vào danh sách hiển thị
-
-                                  // Map giờ này với ID của bác sĩ
-                                  if (!this.slotToDoctorMap[slot]) {
-                                      this.slotToDoctorMap[slot] = [];
-                                  }
-                                  this.slotToDoctorMap[slot].push(docId);
-                              });
-                          });
-
-                          // Cập nhật UI: Sắp xếp các khung giờ từ sớm đến muộn
-                          this.availableSlots = Array.from(aggregatedSlots).sort();
-                      });
-
-                  } else {
-                      this.availableSlots = [];
-                      this.selectedDoctor = null;
-                  }
-              });
-          } else {
+          if (!targetSpec) {
               this.availableSlots = [];
+              return;
           }
+
+          const availableDocs = allDocs.filter((d: any) => d.specialtyId == targetSpec.specialtyId);
+
+          if (availableDocs.length === 0) {
+              this.availableSlots = [];
+              this.selectedDoctor = null;
+              return;
+          }
+
+          this.doctors = availableDocs;
+          this.selectedDoctor = null;
+
+          const slotRequests: Observable<any>[] = availableDocs.map((doc: any) =>
+              this.appointmentService.getAvailableSlots(doc.doctorId, dateStr).pipe(
+                  catchError(() => of({ result: [] }))
+              )
+          );
+
+          forkJoin(slotRequests).subscribe((responses: any[]) => {
+              const aggregatedSlots = new Set<string>();
+              this.slotToDoctorMap = {};
+
+              responses.forEach((res, index) => {
+                  const docId = availableDocs[index].doctorId;
+                  let slots: string[] = res.result || [];
+                  slots = this.filterValidSlots(slots);
+
+                  slots.forEach(slot => {
+                      aggregatedSlots.add(slot);
+                      if (!this.slotToDoctorMap[slot]) {
+                          this.slotToDoctorMap[slot] = [];
+                      }
+                      this.slotToDoctorMap[slot].push(docId);
+                  });
+              });
+
+              this.availableSlots = Array.from(aggregatedSlots).sort();
+          });
       });
   }
 
@@ -479,11 +489,23 @@ export class BookingComponent implements OnInit {
   }
 
   loadDoctors(serviceId?: number) {
-    this.staffService.getAllDoctors(1, 100).subscribe((res: any) => {
+    // IMP-4: Sử dụng cache
+    const docObs = this.cachedAllDoctors
+        ? of({ result: { data: this.cachedAllDoctors } })
+        : this.staffService.getAllDoctors(1, 100);
+
+    docObs.subscribe((res: any) => {
       let allDoctors = res.result?.data || [];
+      if (!this.cachedAllDoctors) this.cachedAllDoctors = allDoctors;
+
       if (serviceId) {
-        this.masterDataService.getAllSpecialties(1, 100).subscribe((specRes: any) => {
+        const specObs = this.cachedSpecialties
+            ? of({ result: { data: this.cachedSpecialties } })
+            : this.masterDataService.getAllSpecialties(1, 100);
+
+        specObs.subscribe((specRes: any) => {
           const specialties = specRes.result?.data || [];
+          if (!this.cachedSpecialties) this.cachedSpecialties = specialties;
           const targetSpec = specialties.find((s: any) => s.defaultServiceId == serviceId);
           this.doctors = targetSpec ? allDoctors.filter((d: any) => d.specialtyId == targetSpec.specialtyId) : [];
         });

@@ -1,4 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://clinic-management-9b77.onrender.com/api'
+  apiUrl: 'https://clinic-management-9b77.onrender.com/api',
+  consultationPrice: 200000
 };

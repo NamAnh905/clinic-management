@@ -10,4 +10,5 @@ import lombok.experimental.FieldDefaults;
 public class ChatRequest {
     String sessionId;
     String question;
+    Long patientId;
 }

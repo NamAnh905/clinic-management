@@ -61,9 +61,9 @@ public class InvoiceService {
     InvoiceMapper invoiceMapper;
     PatientRepository patientRepository;
     InvoiceDetailRepository invoiceDetailRepository;
-    ServiceEntityRepository  serviceEntityRepository;
+    ServiceEntityRepository serviceEntityRepository;
     PrescriptionRepository prescriptionRepository;
-    PresDetailRepository  presDetailRepository;
+    PresDetailRepository presDetailRepository;
     DrugRepository drugRepository;
     VnPayService vnPayService;
 
@@ -146,8 +146,7 @@ public class InvoiceService {
 
         // --- LOGIC MỚI: KIỂM TRA ĐÃ THANH TOÁN PHÍ KHÁM TRƯỚC CHƯA ---
         boolean hasPaidBooking = invoiceRepository.existsByAppointment_AppointmentIdAndTypeAndPaymentStatus(
-                request.getAppointmentId(), InvoiceType.BOOKING, PaymentStatus.PAID
-        );
+                request.getAppointmentId(), InvoiceType.BOOKING, PaymentStatus.PAID);
 
         Specialty specialty = appointment.getDoctor().getSpecialty();
         ServiceEntity consultationService = specialty.getDefaultService();
@@ -168,7 +167,8 @@ public class InvoiceService {
             List<ServiceEntity> services = serviceEntityRepository.findAllById(request.getServiceIds());
             for (ServiceEntity service : services) {
                 // Skip nếu trùng dịch vụ khám (đã xử lý ở trên)
-                if (consultationService != null && service.getServiceId().equals(consultationService.getServiceId())) continue;
+                if (consultationService != null && service.getServiceId().equals(consultationService.getServiceId()))
+                    continue;
 
                 InvoiceDetail serviceDetail = new InvoiceDetail();
                 serviceDetail.setInvoice(savedInvoice);
@@ -181,9 +181,11 @@ public class InvoiceService {
         }
 
         // Cộng tiền thuốc
-        Prescription prescription = prescriptionRepository.findByMedicalRecord_Appointment_AppointmentId(request.getAppointmentId()).orElse(null);
+        Prescription prescription = prescriptionRepository
+                .findByMedicalRecord_Appointment_AppointmentId(request.getAppointmentId()).orElse(null);
         if (prescription != null) {
-            List<PrescriptionDetail> presDetails = presDetailRepository.findByPrescription_PrescriptionId(prescription.getPrescriptionId());
+            List<PrescriptionDetail> presDetails = presDetailRepository
+                    .findByPrescription_PrescriptionId(prescription.getPrescriptionId());
             for (PrescriptionDetail pd : presDetails) {
                 Drug drug = pd.getDrug();
                 InvoiceDetail drugDetail = new InvoiceDetail();
@@ -236,19 +238,18 @@ public class InvoiceService {
     }
 
     public PageResponse<InvoiceResponse> findAll(PaymentStatus paymentStatus,
-                                                 PaymentMethod paymentMethod,
-                                                 LocalDateTime startDate,
-                                                 LocalDateTime endDate,
-                                                 String keyword,
-                                                 int page,
-                                                 int size,
-                                                 String sortBy,
-                                                 String sortDir
-    ) {
+            PaymentMethod paymentMethod,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            String keyword,
+            int page,
+            int size,
+            String sortBy,
+            String sortDir) {
         String sortField = SORT_MAPPING.getOrDefault(sortBy, "createdAt");
         Sort.Direction direction = sortDir.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
 
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(direction, sortField ));
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(direction, sortField));
 
         String currentUsername = securityUtils.getCurrentUserLogin();
         boolean isAdminOrReceptionist = securityUtils.hasRole("READ_INVOICE");
@@ -257,15 +258,14 @@ public class InvoiceService {
         Page<Invoice> pageData;
 
         if (isAdminOrReceptionist) {
-            pageData = invoiceRepository.getAllInvoiceDetails(paymentStatus, paymentMethod, startDate, endDate, keyword, pageable);
-        }
-        else if (isPatient) {
+            pageData = invoiceRepository.getAllInvoiceDetails(paymentStatus, paymentMethod, startDate, endDate, keyword,
+                    pageable);
+        } else if (isPatient) {
             Patient patient = patientRepository.findByUser_Email(currentUsername)
                     .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
             pageData = invoiceRepository.findByAppointment_Patient_PatientId(patient.getPatientId(), pageable);
-        }
-        else {
+        } else {
             pageData = Page.empty();
         }
 
@@ -315,10 +315,10 @@ public class InvoiceService {
             throw new AppException(ErrorCode.CANNOT_DELETE_PAID_INVOICE);
         }
 
-//        Appointment appointment = invoice.getAppointment();
-//        if (appointment != null) {
-//            appointment.setInvoice(null);
-//        }
+        // Appointment appointment = invoice.getAppointment();
+        // if (appointment != null) {
+        // appointment.setInvoice(null);
+        // }
         invoiceRepository.delete(invoice);
     }
 
@@ -334,8 +334,7 @@ public class InvoiceService {
         return vnPayService.createPaymentUrl(
                 invoice.getTotalAmount().longValue(),
                 invoice.getTransactionCode(),
-                request
-        );
+                request);
     }
 
     @Transactional
@@ -397,8 +396,7 @@ public class InvoiceService {
         if (invoice.getType() == InvoiceType.FINAL) {
             Optional<Invoice> bookingInvoice = invoiceRepository.findByAppointment_AppointmentIdAndType(
                     invoice.getAppointment().getAppointmentId(),
-                    InvoiceType.BOOKING
-            );
+                    InvoiceType.BOOKING);
 
             if (bookingInvoice.isPresent()) {
                 response.setDepositAmount(bookingInvoice.get().getTotalAmount());
@@ -420,6 +418,5 @@ public class InvoiceService {
     Map<String, String> SORT_MAPPING = Map.of(
             "patientName", "appointment.patient.user.fullName",
             "totalAmount", "totalAmount",
-            "createdAt", "createdAt"
-    );
+            "createdAt", "createdAt");
 }

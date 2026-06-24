@@ -87,6 +87,13 @@ public class PatientService {
         return patientMapper.toPatientResponse(patient);
     }
 
+    public PatientResponse findByUserId(Long userId) {
+        Patient patient = patientRepository.findByUser_UserId(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        return patientMapper.toPatientResponse(patient);
+    }
+
     @Transactional
     public void delete(Long patientId) {
         Patient patient = patientRepository.findById(patientId)

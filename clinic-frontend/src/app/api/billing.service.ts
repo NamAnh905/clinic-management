@@ -64,11 +64,11 @@ export class BillingService {
   }
 
   getInvoiceByAppointment(appointmentId: number): Observable<ApiResponse<InvoiceResponse>> {
-      return this.http.get<ApiResponse<InvoiceResponse>>(`${this.invoiceUrl}/by-appointment/${appointmentId}`);
+    return this.http.get<ApiResponse<InvoiceResponse>>(`${this.invoiceUrl}/by-appointment/${appointmentId}`);
   }
 
   getInvoiceById(invoiceId: number): Observable<ApiResponse<InvoiceResponse>> {
-      return this.http.get<ApiResponse<InvoiceResponse>>(`${this.invoiceUrl}/${invoiceId}`);
+    return this.http.get<ApiResponse<InvoiceResponse>>(`${this.invoiceUrl}/${invoiceId}`);
   }
 
   createInvoice(request: InvoiceCreationRequest): Observable<ApiResponse<InvoiceResponse>> {
@@ -76,7 +76,7 @@ export class BillingService {
   }
 
   createBookingInvoice(appointmentId: number): Observable<ApiResponse<InvoiceResponse>> {
-      return this.http.post<ApiResponse<InvoiceResponse>>(`${this.invoiceUrl}/booking/${appointmentId}`, {});
+    return this.http.post<ApiResponse<InvoiceResponse>>(`${this.invoiceUrl}/booking/${appointmentId}`, {});
   }
 
   updateInvoice(invoiceId: number, request: InvoiceUpdateRequest): Observable<ApiResponse<InvoiceResponse>> {
@@ -84,7 +84,7 @@ export class BillingService {
   }
 
   deleteInvoice(id: number): Observable<ApiResponse<void>> {
-      return this.http.delete<ApiResponse<void>>(`${this.invoiceUrl}/${id}`);
+    return this.http.delete<ApiResponse<void>>(`${this.invoiceUrl}/${id}`);
   }
 
   // ================== CHI TIẾT DỊCH VỤ TRONG HÓA ĐƠN ==================
@@ -94,26 +94,26 @@ export class BillingService {
   }
 
   getDetailsByInvoice(invoiceId: number): Observable<ApiResponse<InvoiceDetailResponse[]>> {
-      return this.http.get<ApiResponse<InvoiceDetailResponse[]>>(`${this.detailUrl}/by-invoice/${invoiceId}`);
+    return this.http.get<ApiResponse<InvoiceDetailResponse[]>>(`${this.detailUrl}/by-invoice/${invoiceId}`);
   }
 
   deleteInvoiceDetail(detailId: number): Observable<ApiResponse<void>> {
-      return this.http.delete<ApiResponse<void>>(`${this.detailUrl}/${detailId}`);
+    return this.http.delete<ApiResponse<void>>(`${this.detailUrl}/${detailId}`);
   }
 
   // ================== THANH TOÁN & THỐNG KÊ ==================
 
   initiateVnPayPayment(invoiceId: number): Observable<ApiResponse<string>> {
-      return this.http.get<ApiResponse<string>>(`${environment.apiUrl}/payment/vnpay/${invoiceId}`);
+    return this.http.get<ApiResponse<string>>(`${environment.apiUrl}/payment/vnpay/${invoiceId}`);
   }
 
   processVnPayReturn(params: any): Observable<ApiResponse<InvoiceResponse>> {
-      return this.http.get<ApiResponse<InvoiceResponse>>(`${this.paymentUrl}/vnpay-return`, { params });
+    return this.http.get<ApiResponse<InvoiceResponse>>(`${this.paymentUrl}/vnpay-return`, { params });
   }
 
   getRevenueStatistics(year: number, month?: number): Observable<ApiResponse<any>> {
-      let url = `${this.invoiceUrl}/statistics/revenue?year=${year}`;
-      if(month) url += `&month=${month}`;
-      return this.http.get<ApiResponse<any>>(url);
+    let url = `${this.invoiceUrl}/statistics/revenue?year=${year}`;
+    if (month) url += `&month=${month}`;
+    return this.http.get<ApiResponse<any>>(url);
   }
 }

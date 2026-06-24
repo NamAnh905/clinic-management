@@ -24,6 +24,11 @@ public class Doctor {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long doctorId;
 
+    @Version
+    @Column(columnDefinition = "bigint default 0")
+    @Builder.Default
+    Long version = 0L;
+
     @OneToOne
     @JoinColumn(name = "userId", nullable = false, unique = true)
     User user;

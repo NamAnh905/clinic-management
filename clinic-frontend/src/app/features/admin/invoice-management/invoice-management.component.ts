@@ -21,6 +21,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { QRCodeComponent } from 'angularx-qrcode';
 
 @Component({
   selector: 'app-invoice-management',
@@ -29,7 +30,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
     CommonModule, FormsModule, ReactiveFormsModule,
     TableModule, ButtonModule, InputTextModule, CalendarModule,
     DialogModule, TooltipModule, ToastModule, TagModule, DropdownModule,
-    ConfirmDialogModule, RadioButtonModule, InputNumberModule
+    ConfirmDialogModule, RadioButtonModule, InputNumberModule, QRCodeComponent
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './invoice-management.component.html',
@@ -57,8 +58,8 @@ export class InvoiceManagementComponent implements OnInit {
   // Lọc Loại hóa đơn
   selectedType: string | null = null;
   typeOptions = [
-      { label: 'Phí đặt lịch (Cọc)', value: 'BOOKING' },
-      { label: 'Tất toán (Cuối)', value: 'FINAL' }
+    { label: 'Phí đặt lịch (Cọc)', value: 'BOOKING' },
+    { label: 'Tất toán (Cuối)', value: 'FINAL' }
   ];
 
   statusOptions = [
@@ -71,6 +72,8 @@ export class InvoiceManagementComponent implements OnInit {
   // Dialog & Detail Variables
   invoiceDialog: boolean = false;
   currentInvoice: InvoiceResponse | null = null;
+  qrDialog: boolean = false;
+  qrCodeUrl: string = '';
 
   invoiceDetails: InvoiceDetailResponse[] = []; // Dữ liệu hiển thị trong bảng
   selectedInvoiceItems: InvoiceDetailResponse[] = []; // Dữ liệu dùng để IN ẤN
@@ -137,7 +140,7 @@ export class InvoiceManagementComponent implements OnInit {
 
         // Lọc Client-side cho loại hóa đơn (nếu Backend chưa hỗ trợ)
         if (this.selectedType) {
-            data = data.filter((i: any) => i.type === this.selectedType);
+          data = data.filter((i: any) => i.type === this.selectedType);
         }
 
         this.invoices = data;
@@ -153,23 +156,23 @@ export class InvoiceManagementComponent implements OnInit {
 
   // Tải danh sách Dịch vụ & Thuốc cho Dropdown
   loadMasterData() {
-      this.masterDataService.getAllServices(1, 1000).subscribe({
-          next: (res) => {
-              this.servicesList = res.result?.data.map((s: any) => ({
-                  label: `${s.name} (${this.formatCurrency(s.price)})`,
-                  value: s.serviceId
-              })) || [];
-          }
-      });
+    this.masterDataService.getAllServices(1, 1000).subscribe({
+      next: (res) => {
+        this.servicesList = res.result?.data.map((s: any) => ({
+          label: `${s.name} (${this.formatCurrency(s.price)})`,
+          value: s.serviceId
+        })) || [];
+      }
+    });
 
-      this.masterDataService.getDrugs(1, 1000).subscribe({
-          next: (res) => {
-              this.drugsList = res.result?.data.map((d: any) => ({
-                  label: `${d.name} (${d.unit}) - ${this.formatCurrency(d.price)}`,
-                  value: d.drugId
-              })) || [];
-          }
-      });
+    this.masterDataService.getDrugs(1, 1000).subscribe({
+      next: (res) => {
+        this.drugsList = res.result?.data.map((d: any) => ({
+          label: `${d.name} (${d.unit}) - ${this.formatCurrency(d.price)}`,
+          value: d.drugId
+        })) || [];
+      }
+    });
   }
 
   onGlobalFilter(event: any) {
@@ -181,7 +184,7 @@ export class InvoiceManagementComponent implements OnInit {
   }
 
   onStatusChange() {
-      this.loadInvoices();
+    this.loadInvoices();
   }
 
   // --- 2. XEM CHI TIẾT & LOGIC DÒNG ẢO ---
@@ -202,83 +205,83 @@ export class InvoiceManagementComponent implements OnInit {
     // 2. Chuẩn bị API lấy chi tiết hóa đơn cọc (BOOKING) - Nếu có ID
     let bookingDetails$ = of({ result: [] }); // Mặc định là rỗng nếu không có cọc
     if (invoice.type === 'FINAL' && invoice.bookingInvoiceId) {
-        // Gọi API lấy chi tiết của hóa đơn cọc
-        bookingDetails$ = this.billingService.getDetailsByInvoice(invoice.bookingInvoiceId) as any;
+      // Gọi API lấy chi tiết của hóa đơn cọc
+      bookingDetails$ = this.billingService.getDetailsByInvoice(invoice.bookingInvoiceId) as any;
     }
 
     // 3. Chạy song song cả 2 API
     forkJoin([currentDetails$, bookingDetails$]).subscribe({
-        next: ([currentRes, bookingRes]: [any, any]) => {
-            let finalDetails = currentRes.result || [];
-            const bookingDetails = bookingRes.result || [];
+      next: ([currentRes, bookingRes]: [any, any]) => {
+        let finalDetails = currentRes.result || [];
+        const bookingDetails = bookingRes.result || [];
 
-            // --- LOGIC GỘP DÒNG CỌC VÀO HÓA ĐƠN CUỐI ---
-            if (invoice.type === 'FINAL' && bookingDetails.length > 0) {
-                const depositTotal = invoice.depositAmount || 0;
+        // --- LOGIC GỘP DÒNG CỌC VÀO HÓA ĐƠN CUỐI ---
+        if (invoice.type === 'FINAL' && bookingDetails.length > 0) {
+          const depositTotal = invoice.depositAmount || 0;
 
-                // A. Biến đổi chi tiết cọc: Đánh dấu để hiển thị màu khác
-                const mappedBookingDetails = bookingDetails.map((d: any) => ({
-                    ...d,
-                    detailId: -d.detailId, // Đổi sang ID âm để không bị trùng ID với DB và chặn xóa
-                    serviceName: `(Đã cọc) ${d.serviceName || d.drugName || 'Phí đặt lịch'}`,
-                    isPrePaid: true // Flag để tô màu vàng ở giao diện (nếu muốn)
-                }));
+          // A. Biến đổi chi tiết cọc: Đánh dấu để hiển thị màu khác
+          const mappedBookingDetails = bookingDetails.map((d: any) => ({
+            ...d,
+            detailId: -d.detailId, // Đổi sang ID âm để không bị trùng ID với DB và chặn xóa
+            serviceName: `(Đã cọc) ${d.serviceName || d.drugName || 'Phí đặt lịch'}`,
+            isPrePaid: true // Flag để tô màu vàng ở giao diện (nếu muốn)
+          }));
 
-                // B. Tạo dòng "Khấu trừ cọc" (Dòng ảo để trừ tiền)
-                const deductionLine = {
-                    detailId: -9999, // ID đặc biệt
-                    serviceName: 'Khấu trừ cọc đã đóng',
-                    quantity: 1,
-                    unitPrice: -depositTotal, // Giá trị ÂM để trừ tiền
-                    drugName: null,
-                    isDeduction: true // Flag để tô màu đỏ
-                };
+          // B. Tạo dòng "Khấu trừ cọc" (Dòng ảo để trừ tiền)
+          const deductionLine = {
+            detailId: -9999, // ID đặc biệt
+            serviceName: 'Khấu trừ cọc đã đóng',
+            quantity: 1,
+            unitPrice: -depositTotal, // Giá trị ÂM để trừ tiền
+            drugName: null,
+            isDeduction: true // Flag để tô màu đỏ
+          };
 
-                // C. Gộp tất cả lại: [Chi tiết cọc] + [Dòng khấu trừ] + [Chi tiết phát sinh thực tế]
-                finalDetails = [...mappedBookingDetails, deductionLine, ...finalDetails];
-            }
-
-            this.invoiceDetails = finalDetails;
-
-            // Mặc định chọn tất cả để in
-            this.selectedInvoiceItems = [...finalDetails];
-
-            this.calculateTotal();
-            this.loadingDetails = false;
-        },
-        error: (err) => {
-            this.loadingDetails = false;
-            this.showError(err);
+          // C. Gộp tất cả lại: [Chi tiết cọc] + [Dòng khấu trừ] + [Chi tiết phát sinh thực tế]
+          finalDetails = [...mappedBookingDetails, deductionLine, ...finalDetails];
         }
+
+        this.invoiceDetails = finalDetails;
+
+        // Mặc định chọn tất cả để in
+        this.selectedInvoiceItems = [...finalDetails];
+
+        this.calculateTotal();
+        this.loadingDetails = false;
+      },
+      error: (err) => {
+        this.loadingDetails = false;
+        this.showError(err);
+      }
     });
-}
+  }
 
   // --- 3. THÊM / XÓA CHI TIẾT ---
   addItemToInvoice() {
-      if (!this.currentInvoice || !this.selectedItemId) return;
+    if (!this.currentInvoice || !this.selectedItemId) return;
 
-      const request: InvoiceDetailCreationRequest = {
-          invoiceId: this.currentInvoice.invoiceId,
-          quantity: this.addItemQuantity,
-          serviceId: this.addItemType === 'SERVICE' ? this.selectedItemId : undefined,
-          drugId: this.addItemType === 'DRUG' ? this.selectedItemId : undefined
-      };
+    const request: InvoiceDetailCreationRequest = {
+      invoiceId: this.currentInvoice.invoiceId,
+      quantity: this.addItemQuantity,
+      serviceId: this.addItemType === 'SERVICE' ? this.selectedItemId : undefined,
+      drugId: this.addItemType === 'DRUG' ? this.selectedItemId : undefined
+    };
 
-      this.billingService.addInvoiceDetail(request).subscribe({
-          next: () => {
-              this.messageService.add({ severity: 'success', summary: 'Thành công', detail: 'Đã thêm vào hóa đơn' });
-              this.selectedItemId = null;
-              this.addItemQuantity = 1;
-              if (this.currentInvoice) this.openInvoiceDetail(this.currentInvoice);
-          },
-          error: (err) => this.showError(err)
-      });
+    this.billingService.addInvoiceDetail(request).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Thành công', detail: 'Đã thêm vào hóa đơn' });
+        this.selectedItemId = null;
+        this.addItemQuantity = 1;
+        if (this.currentInvoice) this.openInvoiceDetail(this.currentInvoice);
+      },
+      error: (err) => this.showError(err)
+    });
   }
 
   deleteInvoiceDetail(detailId: number) {
     if (detailId < 0) {
-        this.messageService.add({severity: 'warn', summary: 'Không thể xóa', detail: 'Đây là dòng thông tin cọc.'});
-        return;
+      this.messageService.add({ severity: 'warn', summary: 'Không thể xóa', detail: 'Đây là dòng thông tin cọc.' });
+      return;
     }
 
     this.confirmationService.confirm({
@@ -302,79 +305,101 @@ export class InvoiceManagementComponent implements OnInit {
 
   // --- 4. THANH TOÁN ---
   confirmPayment() {
-      if (!this.currentInvoice) return;
+    if (!this.currentInvoice) return;
 
-      this.confirmationService.confirm({
-        message: `Xác nhận thu tiền mặt: <b>${this.formatCurrency(this.currentInvoice.totalAmount)}</b>?`,
-        header: 'Xác nhận thanh toán',
-        icon: 'pi pi-wallet',
-        acceptLabel: 'Đồng ý',
-        rejectLabel: 'Hủy',
-        acceptButtonStyleClass: 'p-button-success',
-        accept: () => {
-          // Gọi API update trạng thái hóa đơn (Cần đảm bảo API hỗ trợ)
-          const request: any = { paymentStatus: 'PAID', paymentMethod: 'CASH' };
+    this.confirmationService.confirm({
+      message: `Xác nhận thu tiền mặt: <b>${this.formatCurrency(this.currentInvoice.totalAmount)}</b>?`,
+      header: 'Xác nhận thanh toán',
+      icon: 'pi pi-wallet',
+      acceptLabel: 'Đồng ý',
+      rejectLabel: 'Hủy',
+      acceptButtonStyleClass: 'p-button-success',
+      accept: () => {
+        // Gọi API update trạng thái hóa đơn (Cần đảm bảo API hỗ trợ)
+        const request: any = { paymentStatus: 'PAID', paymentMethod: 'CASH' };
 
-          // Giả sử service có hàm updateInvoice, nếu không thì cần bổ sung vào service
-          // Ở đây tôi dùng tạm hàm create hoặc endpoint update nếu có
-           // *Lưu ý: Nếu BillingService chưa có hàm updateInvoice, bạn cần thêm vào nhé.*
-           // Tạm thời gọi API mẫu:
-           this.billingService.updateInvoice(this.currentInvoice!.invoiceId, request).subscribe({
-               next: () => {
-                   this.messageService.add({ severity: 'success', summary: 'Thành công', detail: 'Thanh toán hoàn tất!' });
-                   this.invoiceDialog = false;
-                   this.loadInvoices();
-               },
-               error: (err) => this.showError(err)
-           });
-        }
-      });
+        // Giả sử service có hàm updateInvoice, nếu không thì cần bổ sung vào service
+        // Ở đây tôi dùng tạm hàm create hoặc endpoint update nếu có
+        // *Lưu ý: Nếu BillingService chưa có hàm updateInvoice, bạn cần thêm vào nhé.*
+        // Tạm thời gọi API mẫu:
+        this.billingService.updateInvoice(this.currentInvoice!.invoiceId, request).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Thành công', detail: 'Thanh toán hoàn tất!' });
+            this.invoiceDialog = false;
+            this.loadInvoices();
+          },
+          error: (err) => this.showError(err)
+        });
+      }
+    });
   }
 
   payWithVnPay() {
-      if (!this.currentInvoice) return;
-      this.loadingDetails = true;
-      this.billingService.initiateVnPayPayment(this.currentInvoice.invoiceId).subscribe({
-          next: (res) => {
-              if (res.result) {
-                  window.location.href = res.result;
-              } else {
-                  this.showError({error: {message: 'Không lấy được link thanh toán'}});
-              }
-              this.loadingDetails = false;
-          },
-          error: (err) => {
-              this.showError(err);
-              this.loadingDetails = false;
-          }
-      });
+    if (!this.currentInvoice) return;
+    this.loadingDetails = true;
+    this.billingService.initiateVnPayPayment(this.currentInvoice.invoiceId).subscribe({
+      next: (res) => {
+        if (res.result) {
+          this.qrCodeUrl = res.result;
+          this.qrDialog = true;
+          this.invoiceDialog = false;
+        } else {
+          this.showError({ error: { message: 'Không lấy được link thanh toán' } });
+        }
+        this.loadingDetails = false;
+      },
+      error: (err) => {
+        this.showError(err);
+        this.loadingDetails = false;
+      }
+    });
+  }
+
+  openQrModal(invoice: InvoiceResponse) {
+    this.currentInvoice = invoice;
+    this.loading = true;
+    this.billingService.initiateVnPayPayment(invoice.invoiceId).subscribe({
+      next: (res) => {
+        if (res.result) {
+          this.qrCodeUrl = res.result;
+          this.qrDialog = true;
+        } else {
+          this.showError({ error: { message: 'Không lấy được link thanh toán' } });
+        }
+        this.loading = false;
+      },
+      error: (err) => {
+        this.showError(err);
+        this.loading = false;
+      }
+    });
   }
 
   // --- 5. XÓA HÓA ĐƠN ---
   deleteInvoice(invoice: InvoiceResponse) {
-      this.confirmationService.confirm({
-          message: `Bạn có chắc muốn hủy hóa đơn <b>${invoice.transactionCode || invoice.invoiceId}</b>?`,
-          header: 'Xác nhận hủy',
-          icon: 'pi pi-exclamation-triangle',
-          acceptLabel: 'Hủy hóa đơn',
-          acceptButtonStyleClass: 'p-button-danger',
-          rejectLabel: 'Quay lại',
-          accept: () => {
-              this.billingService.deleteInvoice(invoice.invoiceId).subscribe({
-                  next: () => {
-                      this.messageService.add({ severity: 'success', summary: 'Đã hủy', detail: 'Hóa đơn đã được xóa.' });
-                      this.loadInvoices();
-                  },
-                  error: (err) => this.showError(err)
-              });
-          }
-      });
+    this.confirmationService.confirm({
+      message: `Bạn có chắc muốn hủy hóa đơn <b>${invoice.transactionCode || invoice.invoiceId}</b>?`,
+      header: 'Xác nhận hủy',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Hủy hóa đơn',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectLabel: 'Quay lại',
+      accept: () => {
+        this.billingService.deleteInvoice(invoice.invoiceId).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Đã hủy', detail: 'Hóa đơn đã được xóa.' });
+            this.loadInvoices();
+          },
+          error: (err) => this.showError(err)
+        });
+      }
+    });
   }
 
   // --- HELPER FUNCTIONS ---
   calculateTotal() {
     this.selectedTotalAmount = this.invoiceDetails.reduce((sum, item) => {
-        return sum + (item.quantity * item.unitPrice);
+      return sum + (item.quantity * item.unitPrice);
     }, 0);
   }
 
@@ -392,37 +417,37 @@ export class InvoiceManagementComponent implements OnInit {
   }
 
   getStatusClass(status: string): string {
-      switch (status) {
-          case 'PAID': return 'status-paid';
-          case 'PENDING': return 'status-pending';
-          case 'FAILED': return 'status-failed';
-          default: return '';
-      }
+    switch (status) {
+      case 'PAID': return 'status-paid';
+      case 'PENDING': return 'status-pending';
+      case 'FAILED': return 'status-failed';
+      default: return '';
+    }
   }
 
   getStatusLabel(status: string): string {
-      switch (status) {
-          case 'PAID': return 'Đã thanh toán';
-          case 'PENDING': return 'Chờ thanh toán';
-          case 'FAILED': return 'Đã hủy';
-          default: return status;
-      }
+    switch (status) {
+      case 'PAID': return 'Đã thanh toán';
+      case 'PENDING': return 'Chờ thanh toán';
+      case 'FAILED': return 'Đã hủy';
+      default: return status;
+    }
   }
 
   getPaymentMethodConfig(method: string): any {
     switch (method) {
-        case 'VNPAY': return { label: 'VNPAY', class: 'method-vnpay', icon: 'pi pi-qrcode' };
-        case 'CASH': return { label: 'Tiền mặt', class: 'method-cash', icon: 'pi pi-wallet' };
-        default: return { label: method || '---', class: 'surface-200 text-600', icon: 'pi pi-info-circle' };
+      case 'VNPAY': return { label: 'VNPAY', class: 'method-vnpay', icon: 'pi pi-qrcode' };
+      case 'CASH': return { label: 'Tiền mặt', class: 'method-cash', icon: 'pi pi-wallet' };
+      default: return { label: method || '---', class: 'surface-200 text-600', icon: 'pi pi-info-circle' };
     }
   }
 
   getInvoiceTypeConfig(type: string): any {
-      switch (type) {
-          case 'BOOKING': return { label: 'Phí đặt lịch', severity: 'warning', icon: 'pi pi-clock' };
-          case 'FINAL': return { label: 'Tất toán', severity: 'success', icon: 'pi pi-check-circle' };
-          default: return { label: type, severity: 'info', icon: 'pi pi-info-circle' };
-      }
+    switch (type) {
+      case 'BOOKING': return { label: 'Phí đặt lịch', severity: 'warning', icon: 'pi pi-clock' };
+      case 'FINAL': return { label: 'Tất toán', severity: 'success', icon: 'pi pi-check-circle' };
+      default: return { label: type, severity: 'info', icon: 'pi pi-info-circle' };
+    }
   }
 
   printInvoice() {

@@ -55,4 +55,11 @@ public class PatientController {
     public void delete(@PathVariable Long patientId) {
         patientService.delete(patientId);
     }
+
+    @GetMapping("/find-by-user/{userId}")
+    public ApiResponse<PatientResponse> findByUserId(@PathVariable Long userId) {
+        return ApiResponse.<PatientResponse>builder()
+                .result(patientService.findByUserId(userId))
+                .build();
+    }
 }

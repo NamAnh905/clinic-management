@@ -2,6 +2,7 @@ import { Component, ElementRef, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChatbotService } from '../../../api/chatbot.service';
+import { AuthService } from '../../../api/auth.service';
 
 interface ChatMessage {
   text: string;
@@ -19,17 +20,24 @@ export class ChatbotComponent {
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
 
   private chatbotService = inject(ChatbotService);
+  private authService = inject(AuthService);
 
   isOpen = false;
   isLoading = false;
   userQuestion = '';
   unreadCount = 0;
+  private patientId: number | null = null;
 
   messages: ChatMessage[] = [
     { text: 'Xin chào! Tôi là trợ lý ảo AI của 28Care. Bạn cần hỗ trợ gì?', sender: 'bot' }
   ];
 
   ngOnInit() {
+    // Lấy patientId khi user đã đăng nhập
+    this.authService.currentPatientId$.subscribe(id => {
+      this.patientId = id;
+    });
+
     setTimeout(() => {
       if (!this.isOpen) {
         this.unreadCount = 1;
@@ -56,7 +64,7 @@ export class ChatbotComponent {
     // Vẫn cuộn xuống đáy khi user vừa gửi tin nhắn (để thấy hiệu ứng loading)
     setTimeout(() => this.scrollToBottom(), 50);
 
-    this.chatbotService.sendMessage(question).subscribe({
+    this.chatbotService.sendMessage(question, this.patientId).subscribe({
       next: (res) => {
         const botReply = res.result ? res.result.answer : "Tôi không hiểu câu hỏi.";
         this.messages.push({ text: botReply, sender: 'bot' });

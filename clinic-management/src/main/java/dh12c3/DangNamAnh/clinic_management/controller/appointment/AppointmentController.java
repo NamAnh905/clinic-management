@@ -109,6 +109,7 @@ public class AppointmentController {
                 .build();
     }
 
+    @PreAuthorize("hasAuthority('FULL_ACCESS') or hasAuthority('READ_APPOINTMENT') or hasAuthority('READ_OWN_APPOINTMENT')")
     @GetMapping("/{appointmentId}")
     public ApiResponse<AppointmentResponse> findById(@PathVariable Long appointmentId){
         return ApiResponse.<AppointmentResponse>builder()
@@ -116,6 +117,7 @@ public class AppointmentController {
                 .build();
     }
 
+    @PreAuthorize("hasAuthority('FULL_ACCESS')")
     @DeleteMapping("/{appointmentId}")
     public void delete(@PathVariable Long appointmentId){
         appointmentService.delete(appointmentId);

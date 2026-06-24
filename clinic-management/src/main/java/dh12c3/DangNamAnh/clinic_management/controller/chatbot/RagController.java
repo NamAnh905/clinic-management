@@ -28,7 +28,7 @@ public class RagController {
     @PostMapping("/ask")
     public ApiResponse<ChatResponse> ask(@RequestBody ChatRequest request) {
         String sessionId = request.getSessionId() != null ? request.getSessionId() : "default_user";
-        String aiAnswer = chatService.chatWithRAG(sessionId, request.getQuestion());
+        String aiAnswer = chatService.chatWithRAG(sessionId, request.getQuestion(), request.getPatientId());
 
         return ApiResponse.<ChatResponse>builder()
                 .result(ChatResponse.builder()

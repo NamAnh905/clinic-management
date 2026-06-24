@@ -29,12 +29,15 @@ import dh12c3.DangNamAnh.clinic_management.service.ExcelExportService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayInputStream;
@@ -47,7 +50,7 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE,  makeFinal = true)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Transactional(readOnly = true)
 
 public class AppointmentService {
@@ -64,10 +67,12 @@ public class AppointmentService {
 
     SecurityUtils securityUtils;
 
-    int APPOINTMENT_DURATION = 30;
+    @NonFinal
+    @Value("${clinic.appointment-duration:30}")
+    int APPOINTMENT_DURATION;
 
     @Transactional
-    public AppointmentResponse create(AppointmentCreationRequest request){
+    public AppointmentResponse create(AppointmentCreationRequest request) {
         Doctor doctor = doctorRepository.findByIdWithLock(request.getDoctorId())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
@@ -77,11 +82,10 @@ public class AppointmentService {
 
         Patient patient;
 
-        if (isAdminOrStaff){
+        if (isAdminOrStaff) {
             patient = patientRepository.findByUser_UserId(request.getPatientId())
                     .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-        }
-        else {
+        } else {
             patient = patientRepository.findByUser_Email(currentUsername)
                     .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
@@ -92,6 +96,15 @@ public class AppointmentService {
 
         LocalDateTime startTime = request.getAppointmentTime();
         LocalDateTime endTime = startTime.plusMinutes(APPOINTMENT_DURATION);
+
+        // IMP-2: Validate slot 30 phút
+        if (startTime.getMinute() % 30 != 0 || startTime.getSecond() != 0) {
+            throw new AppException(ErrorCode.INVALID_APPOINTMENT_SLOT);
+        }
+
+        if (startTime.isBefore(LocalDateTime.now().plusMinutes(15))) {
+            throw new AppException(ErrorCode.INVALID_TIME);
+        }
 
         var schedules = doctor.getWorkingSchedules();
         if (schedules == null || schedules.isEmpty()) {
@@ -108,10 +121,9 @@ public class AppointmentService {
                             !endTime.toLocalTime().isAfter(schedule.getEndTime());
 
                     return isDateMatch && isTimeMatch;
-                    }
-                );
+                });
 
-        if  (!isValidSchedule) {
+        if (!isValidSchedule) {
             throw new AppException(ErrorCode.DOCTOR_HAS_NO_WORKING_SCHEDULE);
         }
 
@@ -121,26 +133,37 @@ public class AppointmentService {
         List<AppointmentStatus> busyStatuses = List.of(
                 AppointmentStatus.PENDING,
                 AppointmentStatus.CONFIRMED,
-                AppointmentStatus.COMPLETED
-        );
+                AppointmentStatus.CHECKED_IN,
+                AppointmentStatus.IN_PROGRESS);
 
         boolean isPatientOverlapped = appointmentRepository.existsByPatientOverlap(
                 patient.getPatientId(),
                 appointment.getAppointmentTime(),
                 appointment.getEndTime(),
-                busyStatuses
-        );
+                busyStatuses);
 
         if (isPatientOverlapped) {
             throw new AppException(ErrorCode.PATIENT_TIME_CONFLICT);
+        }
+
+        LocalDate appointmentDate = startTime.toLocalDate();
+        LocalDateTime dayStart = appointmentDate.atStartOfDay();
+        LocalDateTime dayEnd = appointmentDate.plusDays(1).atStartOfDay();
+        boolean isDuplicateSpecialty = appointmentRepository.existsByPatientAndSpecialtySameDay(
+                patient.getPatientId(),
+                doctor.getSpecialty().getSpecialtyId(),
+                dayStart,
+                dayEnd,
+                busyStatuses);
+        if (isDuplicateSpecialty) {
+            throw new AppException(ErrorCode.DUPLICATE_SPECIALTY_SAME_DAY);
         }
 
         boolean isOverLapped = appointmentRepository.existsByOverlap(
                 doctor.getDoctorId(),
                 appointment.getAppointmentTime(),
                 appointment.getEndTime(),
-                busyStatuses
-        );
+                busyStatuses);
 
         if (isOverLapped) {
             throw new AppException(ErrorCode.APPOINTMENT_ALREADY_BOOKED);
@@ -157,13 +180,17 @@ public class AppointmentService {
             String docName = doctor.getUser().getFullName();
             String patientName = patient.getUser().getFullName();
             String patientEmail = patient.getUser().getEmail();
+            String specialtyName = doctor.getSpecialty().getName();
+            String reason = (saved.getReason() != null && !saved.getReason().isEmpty()) ? saved.getReason()
+                    : "Không có";
 
             emailService.sendBookingNotification(
                     patientEmail,
                     patientName,
                     timeStr,
-                    docName
-            );
+                    docName,
+                    specialtyName,
+                    reason);
         }
 
         return appointmentMapper.toAppointmentResponse(saved);
@@ -177,6 +204,11 @@ public class AppointmentService {
         LocalDateTime startTime = request.getAppointmentTime();
         LocalDateTime endTime = startTime.plusMinutes(APPOINTMENT_DURATION);
 
+        // IMP-2: Validate slot 30 phút
+        if (startTime.getMinute() % 30 != 0 || startTime.getSecond() != 0) {
+            throw new AppException(ErrorCode.INVALID_APPOINTMENT_SLOT);
+        }
+
         if (startTime.isBefore(LocalDateTime.now().plusMinutes(15))) {
             throw new AppException(ErrorCode.INVALID_TIME);
         }
@@ -185,16 +217,15 @@ public class AppointmentService {
         List<AppointmentStatus> busyStatuses = List.of(
                 AppointmentStatus.PENDING,
                 AppointmentStatus.CONFIRMED,
-                AppointmentStatus.COMPLETED
-        );
+                AppointmentStatus.CHECKED_IN,
+                AppointmentStatus.IN_PROGRESS);
 
         // 4. Kiểm tra trùng lịch bác sĩ (Overlap)
         boolean isOverLapped = appointmentRepository.existsByOverlap(
                 doctor.getDoctorId(),
                 startTime,
                 endTime,
-                busyStatuses
-        );
+                busyStatuses);
 
         if (isOverLapped) {
             throw new AppException(ErrorCode.APPOINTMENT_ALREADY_BOOKED);
@@ -237,14 +268,30 @@ public class AppointmentService {
             }
 
             Role patientRole = roleRepository.findById("PATIENT").orElse(null);
-            if(patientRole != null) newUser.setRoles(Set.of(patientRole));
+            if (patientRole != null)
+                newUser.setRoles(Set.of(patientRole));
 
-            userRepository.save(newUser);
-            isNewUser = true;
+            // IMP-1: Handle race condition - 2 request cùng SĐT tạo User trùng
+            try {
+                userRepository.save(newUser);
+                isNewUser = true;
 
-            patient = new Patient();
-            patient.setUser(newUser);
-            patientRepository.save(patient);
+                patient = new Patient();
+                patient.setUser(newUser);
+                patientRepository.save(patient);
+            } catch (DataIntegrityViolationException ex) {
+                // User đã được tạo bởi request khác -> retry bằng cách load lại
+                User retryUser = userRepository.findByPhoneNumber(request.getPhoneNumber())
+                        .orElseThrow(() -> new AppException(ErrorCode.DATA_INVALID));
+                rawPassword = null;
+                isNewUser = false;
+                patient = patientRepository.findByUser_UserId(retryUser.getUserId())
+                        .orElseGet(() -> {
+                            Patient p = new Patient();
+                            p.setUser(retryUser);
+                            return patientRepository.save(p);
+                        });
+            }
         }
 
         // 6. Kiểm tra trùng lịch của chính Bệnh nhân
@@ -253,11 +300,23 @@ public class AppointmentService {
                     patient.getPatientId(),
                     startTime,
                     endTime,
-                    busyStatuses
-            );
+                    busyStatuses);
 
             if (isPatientOverlapped) {
                 throw new AppException(ErrorCode.PATIENT_TIME_CONFLICT);
+            }
+
+            LocalDate appointmentDate = startTime.toLocalDate();
+            LocalDateTime dayStart = appointmentDate.atStartOfDay();
+            LocalDateTime dayEnd = appointmentDate.plusDays(1).atStartOfDay();
+            boolean isDuplicateSpecialty = appointmentRepository.existsByPatientAndSpecialtySameDay(
+                    patient.getPatientId(),
+                    doctor.getSpecialty().getSpecialtyId(),
+                    dayStart,
+                    dayEnd,
+                    busyStatuses);
+            if (isDuplicateSpecialty) {
+                throw new AppException(ErrorCode.DUPLICATE_SPECIALTY_SAME_DAY);
             }
         }
 
@@ -273,10 +332,14 @@ public class AppointmentService {
 
         Appointment saved = appointmentRepository.save(appointment);
 
-        // 8. Gửi Email thông báo (Nên chuyển sang chạy @Async trong tương lai để tối ưu)
+        // 8. Gửi Email thông báo (Nên chuyển sang chạy @Async trong tương lai để tối
+        // ưu)
         if (request.getEmail() != null && !request.getEmail().isEmpty()) {
             String timeStr = startTime.format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"));
             String docName = doctor.getUser().getFullName();
+            String specialtyName = doctor.getSpecialty().getName();
+            String reason = (saved.getReason() != null && !saved.getReason().isEmpty()) ? saved.getReason()
+                    : "Không có";
 
             if (isNewUser && rawPassword != null) {
                 emailService.sendBookingConfirmation(
@@ -284,16 +347,18 @@ public class AppointmentService {
                         request.getFullName(),
                         timeStr,
                         docName,
+                        specialtyName,
+                        reason,
                         request.getEmail(),
-                        rawPassword
-                );
+                        rawPassword);
             } else {
                 emailService.sendBookingNotification(
                         request.getEmail(),
                         request.getFullName(),
                         timeStr,
-                        docName
-                );
+                        docName,
+                        specialtyName,
+                        reason);
             }
         }
 
@@ -301,7 +366,7 @@ public class AppointmentService {
     }
 
     @Transactional
-    public AppointmentResponse update(AppointmentUpdationRequest request, Long appointmentId){
+    public AppointmentResponse update(AppointmentUpdationRequest request, Long appointmentId) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
 
@@ -310,9 +375,9 @@ public class AppointmentService {
 
         if (newStatus != null && !oldStatus.equals(newStatus)) {
             if (oldStatus == AppointmentStatus.COMPLETED ||
-                oldStatus == AppointmentStatus.CANCELLED||
-                oldStatus == AppointmentStatus.NO_SHOW) {
-                    throw new AppException(ErrorCode.STATUS_CHANGE_NOT_ALLOWED);
+                    oldStatus == AppointmentStatus.CANCELLED ||
+                    oldStatus == AppointmentStatus.NO_SHOW) {
+                throw new AppException(ErrorCode.STATUS_CHANGE_NOT_ALLOWED);
             }
 
             if (oldStatus == AppointmentStatus.CONFIRMED || oldStatus == AppointmentStatus.PENDING) {
@@ -322,7 +387,7 @@ public class AppointmentService {
                     LocalDateTime restrictedTime = appointmentTime.minusHours(4);
                     LocalDateTime now = LocalDateTime.now();
 
-                    if(now.isAfter(restrictedTime)) {
+                    if (now.isAfter(restrictedTime)) {
                         throw new AppException(ErrorCode.CANNOT_CANCEL_LATE);
                     }
                 }
@@ -341,23 +406,28 @@ public class AppointmentService {
             appointment.setStatus(newStatus);
         }
 
-        appointmentMapper.update(request,appointment);
+        appointmentMapper.update(request, appointment);
 
         Appointment updated = appointmentRepository.save(appointment);
+
+        // IMP-7: Gửi email thông báo hủy nếu status chuyển sang CANCELLED
+        if (newStatus == AppointmentStatus.CANCELLED) {
+            sendCancellationEmail(updated);
+        }
+
         return appointmentMapper.toAppointmentResponse(updated);
     }
 
     public PageResponse<AppointmentResponse> findAll(Long doctorId,
-                                                     Long patientId,
-                                                     AppointmentStatus status,
-                                                     LocalDateTime startDate,
-                                                     LocalDateTime endDate,
-                                                     String keyword,
-                                                     int page,
-                                                     int size,
-                                                     String sortBy,
-                                                     String sortDir
-    ) {
+            Long patientId,
+            AppointmentStatus status,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            String keyword,
+            int page,
+            int size,
+            String sortBy,
+            String sortDir) {
         String sortField = SORT_MAPPING.getOrDefault(sortBy, "appointmentTime");
         Sort.Direction direction = sortDir.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(direction, sortField));
@@ -369,28 +439,27 @@ public class AppointmentService {
         boolean isPatient = securityUtils.hasRole("READ_OWN_APPOINTMENT");
         boolean isAdminOrReceptionist = securityUtils.hasRole("READ_APPOINTMENT");
 
-        if (isAdminOrReceptionist) {}
-        else if (isDoctor) {
+        if (isAdminOrReceptionist) {
+        } else if (isDoctor) {
             Doctor doctor = doctorRepository.findByUser_Email(currentUsername)
                     .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
             doctorId = doctor.getUser().getUserId();
-        }
-        else if (isPatient) {
+        } else if (isPatient) {
             Patient patient = patientRepository.findByUser_Email(currentUsername)
                     .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
             patientId = patient.getPatientId();
             doctorId = null;
-        }
-        else {
+        } else {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
 
-        pageData = appointmentRepository.searchAppointments(doctorId, patientId, status, startDate, endDate, keyword, pageable);
+        pageData = appointmentRepository.searchAppointments(doctorId, patientId, status, startDate, endDate, keyword,
+                pageable);
         return appointmentMapper.toPageResponse(pageData);
     }
 
-    public AppointmentResponse findById(Long appointmentId){
+    public AppointmentResponse findById(Long appointmentId) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
 
@@ -398,8 +467,7 @@ public class AppointmentService {
         boolean isAdminOrReceptionist = securityUtils.hasRole("READ_APPOINTMENT");
 
         if (!isAdminOrReceptionist) {
-            boolean isMyAppointment =
-                    appointment.getPatient().getUser().getEmail().equals(currentUsername) ||
+            boolean isMyAppointment = appointment.getPatient().getUser().getEmail().equals(currentUsername) ||
                     appointment.getDoctor().getUser().getEmail().equals(currentUsername);
 
             if (!isMyAppointment) {
@@ -411,7 +479,7 @@ public class AppointmentService {
     }
 
     @Transactional
-    public void delete(Long appointmentId){
+    public void delete(Long appointmentId) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
         appointment.setDeleted(true);
@@ -462,6 +530,13 @@ public class AppointmentService {
                 .toList();
 
         allSlots.removeAll(bookedTimes);
+
+        // IMP-6: Loại bỏ các slot đã qua nếu date = today (buffer 15 phút)
+        if (date.equals(LocalDate.now())) {
+            LocalTime cutoff = LocalTime.now().plusMinutes(15);
+            allSlots.removeIf(slot -> slot.isBefore(cutoff));
+        }
+
         return allSlots.stream().map(LocalTime::toString).toList();
     }
 
@@ -490,6 +565,9 @@ public class AppointmentService {
 
         appointment.setStatus(AppointmentStatus.CANCELLED);
         appointmentRepository.save(appointment);
+
+        // IMP-7: Gửi email thông báo hủy
+        sendCancellationEmail(appointment);
     }
 
     @Transactional
@@ -521,11 +599,24 @@ public class AppointmentService {
         // 4. Thực hiện hủy
         appointment.setStatus(AppointmentStatus.CANCELLED);
         appointmentRepository.save(appointment);
+
+        // IMP-7: Gửi email thông báo hủy
+        sendCancellationEmail(appointment);
+    }
+
+    // IMP-7: Helper gửi email hủy lịch
+    private void sendCancellationEmail(Appointment appointment) {
+        String patientEmail = appointment.getPatient().getUser().getEmail();
+        if (patientEmail != null && !patientEmail.isEmpty() && !patientEmail.endsWith("@guest.clinic.local")) {
+            String timeStr = appointment.getAppointmentTime().format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"));
+            String patientName = appointment.getPatient().getUser().getFullName();
+            String doctorName = appointment.getDoctor().getUser().getFullName();
+            emailService.sendCancellationNotification(patientEmail, patientName, timeStr, doctorName);
+        }
     }
 
     Map<String, String> SORT_MAPPING = Map.of(
-        "patientName", "patient.user.fullName",
-        "doctorName", "doctor.user.fullName",
-        "appointmentTime", "appointmentTime"
-    );
+            "patientName", "patient.user.fullName",
+            "doctorName", "doctor.user.fullName",
+            "appointmentTime", "appointmentTime");
 }

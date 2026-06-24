@@ -7,35 +7,41 @@
     </div>
 
     <div class="surface-card shadow-1 border-round-xl flex flex-column bg-white overflow-hidden"
-         style="height: calc(100vh - 180px);">
+        style="height: calc(100vh - 180px);">
 
-        <div class="flex flex-column xl:flex-row justify-content-between align-items-center p-3 border-bottom-1 surface-border flex-none gap-3">
+        <div
+            class="flex flex-column xl:flex-row justify-content-between align-items-center p-3 border-bottom-1 surface-border flex-none gap-3">
             <div class="flex flex-column sm:flex-row gap-2 w-full xl:w-auto">
                 <span class="p-input-icon-left w-full sm:w-auto">
                     <i class="pi pi-search text-500"></i>
-                    <input pInputText type="text" (input)="onGlobalFilter($event)" placeholder="Mã GD, Tên BN..." class="w-full sm:w-16rem pl-5" />
+                    <input pInputText type="text" (input)="onGlobalFilter($event)" placeholder="Mã GD, Tên BN..."
+                        class="w-full sm:w-16rem pl-5" />
                 </span>
-                <p-calendar [(ngModel)]="rangeDates" selectionMode="range" [readonlyInput]="true" placeholder="Lọc theo ngày" dateFormat="dd/mm/yy" [showIcon]="true" styleClass="w-full sm:w-16rem" (onClose)="loadInvoices()"></p-calendar>
-                <p-dropdown [options]="statusOptions" [(ngModel)]="selectedStatus" (onChange)="onStatusChange()" placeholder="Trạng thái" styleClass="w-full sm:w-12rem"></p-dropdown>
+                <p-calendar [(ngModel)]="rangeDates" selectionMode="range" [readonlyInput]="true"
+                    placeholder="Lọc theo ngày" dateFormat="dd/mm/yy" [showIcon]="true" styleClass="w-full sm:w-16rem"
+                    (onClose)="loadInvoices()"></p-calendar>
+                <p-dropdown [options]="statusOptions" [(ngModel)]="selectedStatus" (onChange)="onStatusChange()"
+                    placeholder="Trạng thái" styleClass="w-full sm:w-12rem"></p-dropdown>
             </div>
             <div class="flex flex-column sm:flex-row gap-2 w-full xl:w-auto">
-                <button pButton icon="pi pi-refresh" class="p-button-outlined p-button-rounded" (click)="loadInvoices()" pTooltip="Tải lại"></button>
+                <button pButton icon="pi pi-refresh" class="p-button-outlined p-button-rounded" (click)="loadInvoices()"
+                    pTooltip="Tải lại"></button>
             </div>
         </div>
 
         <div class="flex-1 min-h-0 w-full relative">
             <p-table #dt [value]="invoices" [lazy]="true" (onLazyLoad)="loadInvoices($event)"
-             [totalRecords]="totalRecords" [rows]="size" [loading]="loading" [rowHover]="true"
-             styleClass="p-datatable-sm custom-table h-full" [paginator]="true"
-             [rowsPerPageOptions]="[10, 15, 20]" [showCurrentPageReport]="true"
-             currentPageReportTemplate="Hiển thị {first} - {last} trên tổng {totalRecords}"
-             paginatorTemplate="PrevPageLink PageLinks NextPageLink CurrentPageReport RowsPerPageDropdown">
+                [totalRecords]="totalRecords" [rows]="size" [loading]="loading" [rowHover]="true"
+                styleClass="p-datatable-sm custom-table h-full" [paginator]="true" [rowsPerPageOptions]="[10, 15, 20]"
+                [showCurrentPageReport]="true"
+                currentPageReportTemplate="Hiển thị {first} - {last} trên tổng {totalRecords}"
+                paginatorTemplate="PrevPageLink PageLinks NextPageLink CurrentPageReport RowsPerPageDropdown">
 
                 <ng-template pTemplate="header">
                     <tr>
                         <th style="width: 80px">ID</th>
                         <th style="width: 150px">Mã GD</th>
-                        <th style="min-width: 180px" pSortableColumn="patientName">
+                        <th style="min-width: 170px" pSortableColumn="patientName">
                             Bệnh nhân <p-sortIcon field="patientName"></p-sortIcon>
                         </th>
 
@@ -48,8 +54,8 @@
                         <th style="min-width: 150px" pSortableColumn="createdAt">
                             Ngày tạo <p-sortIcon field="createdAt"></p-sortIcon>
                         </th>
-                        <th style="min-width: 150px">Phương thức</th>
-                        <th class="text-center" style="width: 140px">Thao tác</th>
+                        <th style="min-width: 130px">Phương thức</th>
+                        <th class="text-center" style="width: 160px">Thao tác</th>
                     </tr>
                 </ng-template>
 
@@ -67,13 +73,15 @@
 
                         <td class="text-center">
                             <p-tag [value]="getInvoiceTypeConfig(inv.type).label"
-                                   [severity]="getInvoiceTypeConfig(inv.type).severity"
-                                   [icon]="getInvoiceTypeConfig(inv.type).icon">
+                                [severity]="getInvoiceTypeConfig(inv.type).severity"
+                                [icon]="getInvoiceTypeConfig(inv.type).icon">
                             </p-tag>
                         </td>
 
-                        <td><span class="font-bold text-primary text-lg">{{ formatCurrency(inv.totalAmount) }}</span></td>
-                        <td><span [class]="'status-badge ' + getStatusClass(inv.paymentStatus)">{{ getStatusLabel(inv.paymentStatus) }}</span></td>
+                        <td><span class="font-bold text-primary text-lg">{{ formatCurrency(inv.totalAmount) }}</span>
+                        </td>
+                        <td><span [class]="'status-badge ' + getStatusClass(inv.paymentStatus)">{{
+                                getStatusLabel(inv.paymentStatus) }}</span></td>
                         <td>
                             <span class="text-700">{{ inv.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
                         </td>
@@ -84,32 +92,37 @@
                             </div>
                         </td>
                         <td class="text-center">
-                            <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-primary" (click)="openInvoiceDetail(inv)" pTooltip="Xem chi tiết"></button>
-                            <button *ngIf="inv.paymentStatus !== 'PAID'"
-                                    pButton icon="pi pi-trash"
-                                    class="p-button-rounded p-button-text p-button-danger"
-                                    (click)="deleteInvoice(inv)"
-                                    pTooltip="Hủy hóa đơn">
+                            <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-primary"
+                                (click)="openInvoiceDetail(inv)" pTooltip="Xem chi tiết"></button>
+                            <button *ngIf="inv.paymentStatus !== 'PAID'" pButton icon="pi pi-qrcode"
+                                class="p-button-rounded p-button-text p-button-help" (click)="openQrModal(inv)"
+                                pTooltip="Tạo QR thanh toán">
+                            </button>
+                            <button *ngIf="inv.paymentStatus !== 'PAID'" pButton icon="pi pi-trash"
+                                class="p-button-rounded p-button-text p-button-danger" (click)="deleteInvoice(inv)"
+                                pTooltip="Hủy hóa đơn">
                             </button>
                         </td>
                     </tr>
                 </ng-template>
 
                 <ng-template pTemplate="emptymessage">
-                    <tr><td colspan="9" class="text-center p-4 text-500">Không tìm thấy hóa đơn nào.</td></tr>
+                    <tr>
+                        <td colspan="9" class="text-center p-4 text-500">Không tìm thấy hóa đơn nào.</td>
+                    </tr>
                 </ng-template>
             </p-table>
         </div>
     </div>
 </div>
 
-<p-dialog [(visible)]="invoiceDialog" [style]="{width: '900px'}"
-          [header]="'Chi tiết Hóa đơn'"
-          [modal]="true" styleClass="p-fluid" [draggable]="false" [resizable]="false">
+<p-dialog [(visible)]="invoiceDialog" [style]="{width: '900px'}" [header]="'Chi tiết Hóa đơn'" [modal]="true"
+    styleClass="p-fluid" [draggable]="false" [resizable]="false">
 
     <ng-template pTemplate="content">
         <div *ngIf="currentInvoice">
-            <div class="flex justify-content-between align-items-center mb-4 p-3 surface-50 border-round-xl border-1 surface-border">
+            <div
+                class="flex justify-content-between align-items-center mb-4 p-3 surface-50 border-round-xl border-1 surface-border">
                 <div>
                     <div class="text-500 text-sm mb-1">Mã Giao Dịch</div>
                     <div class="font-bold text-xl text-900">{{ currentInvoice.transactionCode || '---' }}</div>
@@ -121,7 +134,7 @@
                 <div class="text-center">
                     <div class="text-500 text-sm mb-1">Loại phiếu</div>
                     <p-tag [value]="getInvoiceTypeConfig(currentInvoice.type).label"
-                           [severity]="getInvoiceTypeConfig(currentInvoice.type).severity">
+                        [severity]="getInvoiceTypeConfig(currentInvoice.type).severity">
                     </p-tag>
                 </div>
                 <div class="text-right">
@@ -133,7 +146,7 @@
             </div>
 
             <div *ngIf="currentInvoice.paymentStatus !== 'PAID' && currentInvoice.type === 'FINAL'"
-                 class="p-3 surface-50 border-round-xl border-1 surface-border mb-4">
+                class="p-3 surface-50 border-round-xl border-1 surface-border mb-4">
                 <div class="font-bold text-900 mb-3 flex align-items-center">
                     <i class="pi pi-plus-circle text-primary mr-2"></i>Thêm Dịch vụ / Thuốc phát sinh
                 </div>
@@ -141,57 +154,54 @@
                 <div class="formgrid grid align-items-end">
                     <div class="field col-12 md:col-3 mb-0 flex gap-3 align-items-center h-full pb-2">
                         <div class="flex align-items-center">
-                            <p-radioButton name="groupType" value="SERVICE" [(ngModel)]="addItemType" inputId="typeService"></p-radioButton>
+                            <p-radioButton name="groupType" value="SERVICE" [(ngModel)]="addItemType"
+                                inputId="typeService"></p-radioButton>
                             <label for="typeService" class="ml-2 cursor-pointer font-medium">Dịch vụ</label>
                         </div>
                         <div class="flex align-items-center">
-                            <p-radioButton name="groupType" value="DRUG" [(ngModel)]="addItemType" inputId="typeDrug"></p-radioButton>
+                            <p-radioButton name="groupType" value="DRUG" [(ngModel)]="addItemType"
+                                inputId="typeDrug"></p-radioButton>
                             <label for="typeDrug" class="ml-2 cursor-pointer font-medium">Thuốc</label>
                         </div>
                     </div>
 
-                    <div class="field col-12 md:col-5 mb-0">  <label class="font-bold text-sm">Tên {{ addItemType === 'SERVICE' ? 'Dịch vụ' : 'Thuốc' }}</label>
+                    <div class="field col-12 md:col-5 mb-0"> <label class="font-bold text-sm">Tên {{ addItemType ===
+                            'SERVICE' ? 'Dịch vụ' : 'Thuốc' }}</label>
                         <p-dropdown [options]="addItemType === 'SERVICE' ? servicesList : drugsList"
-                                    [(ngModel)]="selectedItemId"
-                                    placeholder="Tìm kiếm và chọn..."
-                                    [filter]="true" filterBy="label"
-                                    [virtualScroll]="true" [itemSize]="38"
-                                    appendTo="body" styleClass="w-full">
+                            [(ngModel)]="selectedItemId" placeholder="Tìm kiếm và chọn..." [filter]="true"
+                            filterBy="label" [virtualScroll]="true" [itemSize]="38" appendTo="body" styleClass="w-full">
                         </p-dropdown>
                     </div>
 
-                    <div class="field col-6 md:col-2 mb-0">   <label class="font-bold text-sm">Số lượng</label>
+                    <div class="field col-6 md:col-2 mb-0"> <label class="font-bold text-sm">Số lượng</label>
                         <p-inputNumber [(ngModel)]="addItemQuantity" [min]="1" [showButtons]="true"
-                                      buttonLayout="horizontal" inputStyleClass="text-center w-full"
-                                      decrementButtonClass="p-button-secondary" incrementButtonClass="p-button-secondary">
+                            buttonLayout="horizontal" inputStyleClass="text-center w-full"
+                            decrementButtonClass="p-button-secondary" incrementButtonClass="p-button-secondary">
                         </p-inputNumber>
                     </div>
 
                     <div class="field col-6 md:col-2 mb-0">
-                        <button pButton label="Thêm" icon="pi pi-check"
-                                class="p-button-primary w-full"
-                                (click)="addItemToInvoice()"
-                                [disabled]="!selectedItemId">
+                        <button pButton label="Thêm" icon="pi pi-check" class="p-button-primary w-full"
+                            (click)="addItemToInvoice()" [disabled]="!selectedItemId">
                         </button>
                     </div>
                 </div>
             </div>
 
             <div *ngIf="currentInvoice.type === 'BOOKING' && currentInvoice.paymentStatus !== 'PAID'"
-                 class="mb-3 p-3 bg-yellow-50 border-round border-1 border-yellow-200 flex align-items-center text-yellow-800">
+                class="mb-3 p-3 bg-yellow-50 border-round border-1 border-yellow-200 flex align-items-center text-yellow-800">
                 <i class="pi pi-info-circle text-xl mr-3"></i>
                 <div>
-                    <span class="font-bold">Lưu ý:</span> Đây là hóa đơn <span class="font-bold">Đặt cọc / Phí khám trước</span>.
-                    Không thể thêm thuốc hay dịch vụ vào hóa đơn này. Các chi phí phát sinh sẽ được tính vào hóa đơn tất toán sau.
+                    <span class="font-bold">Lưu ý:</span> Đây là hóa đơn <span class="font-bold">Đặt cọc / Phí khám
+                        trước</span>.
+                    Không thể thêm thuốc hay dịch vụ vào hóa đơn này. Các chi phí phát sinh sẽ được tính vào hóa đơn tất
+                    toán sau.
                 </div>
             </div>
 
-            <p-table [value]="invoiceDetails"
-                     [loading]="loadingDetails"
-                     [(selection)]="selectedInvoiceItems"
-                     dataKey="detailId"
-                     styleClass="p-datatable-sm border-1 surface-border border-round mb-4"
-                     [rowHover]="true">
+            <p-table [value]="invoiceDetails" [loading]="loadingDetails" [(selection)]="selectedInvoiceItems"
+                dataKey="detailId" styleClass="p-datatable-sm border-1 surface-border border-round mb-4"
+                [rowHover]="true">
 
                 <ng-template pTemplate="header">
                     <tr class="surface-100">
@@ -203,7 +213,8 @@
                         <th style="width: 100px" class="text-center">Số lượng</th>
                         <th style="width: 130px" class="text-right">Đơn giá</th>
                         <th style="width: 130px" class="text-right">Thành tiền</th>
-                        <th style="width: 60px" *ngIf="currentInvoice.paymentStatus !== 'PAID' && currentInvoice.type === 'FINAL'"></th>
+                        <th style="width: 60px"
+                            *ngIf="currentInvoice.paymentStatus !== 'PAID' && currentInvoice.type === 'FINAL'"></th>
                     </tr>
                 </ng-template>
 
@@ -215,10 +226,12 @@
                         </td>
                         <td class="text-center">{{i + 1}}</td>
                         <td>
-                            <div class="font-medium text-900" [ngClass]="{'text-red-500 font-italic': item.isDeduction}">
+                            <div class="font-medium text-900"
+                                [ngClass]="{'text-red-500 font-italic': item.isDeduction}">
                                 {{ getItemName(item) }}
                             </div>
-                            <div class="text-xs text-500" *ngIf="item.serviceName && !item.isDeduction && !item.isPrePaid">Dịch vụ khám</div>
+                            <div class="text-xs text-500"
+                                *ngIf="item.serviceName && !item.isDeduction && !item.isPrePaid">Dịch vụ khám</div>
                             <div class="text-xs text-500" *ngIf="item.drugName">Thuốc</div>
                         </td>
                         <td class="text-center font-bold">{{ item.quantity }}</td>
@@ -226,12 +239,11 @@
                         <td class="text-right font-bold text-900" [ngClass]="{'text-red-500': item.isDeduction}">
                             {{ formatCurrency(item.quantity * item.unitPrice) }}
                         </td>
-                        <td class="text-center" *ngIf="currentInvoice.paymentStatus !== 'PAID' && currentInvoice.type === 'FINAL'">
-                            <button *ngIf="item.detailId > 0"
-                                    pButton icon="pi pi-trash"
-                                    class="p-button-text p-button-danger p-button-sm p-0"
-                                    (click)="deleteInvoiceDetail(item.detailId)"
-                                    pTooltip="Xóa dòng này">
+                        <td class="text-center"
+                            *ngIf="currentInvoice.paymentStatus !== 'PAID' && currentInvoice.type === 'FINAL'">
+                            <button *ngIf="item.detailId > 0" pButton icon="pi pi-trash"
+                                class="p-button-text p-button-danger p-button-sm p-0"
+                                (click)="deleteInvoiceDetail(item.detailId)" pTooltip="Xóa dòng này">
                             </button>
                         </td>
                     </tr>
@@ -248,7 +260,9 @@
                 </ng-template>
 
                 <ng-template pTemplate="emptymessage">
-                    <tr><td colspan="7" class="text-center p-4 text-500">Không có chi tiết nào.</td></tr>
+                    <tr>
+                        <td colspan="7" class="text-center p-4 text-500">Không có chi tiết nào.</td>
+                    </tr>
                 </ng-template>
             </p-table>
         </div>
@@ -256,24 +270,72 @@
 
     <ng-template pTemplate="footer">
         <button pButton label="Đóng" icon="pi pi-times" class="p-button-text" (click)="invoiceDialog = false"></button>
-        <button pButton label="In Hóa đơn" icon="pi pi-print" class="p-button-outlined" (click)="printInvoice()"></button>
+        <button pButton label="In Hóa đơn" icon="pi pi-print" class="p-button-outlined"
+            (click)="printInvoice()"></button>
 
-        <button *ngIf="currentInvoice?.paymentStatus === 'PENDING'"
-            pButton
-            label="Tiền mặt"
-            icon="pi pi-wallet"
-            class="p-button-success border-round-3xl px-4"
-            (click)="confirmPayment()">
+        <button *ngIf="currentInvoice?.paymentStatus === 'PENDING'" pButton label="Tiền mặt" icon="pi pi-wallet"
+            class="p-button-success border-round-3xl px-4" (click)="confirmPayment()">
         </button>
 
-        <button *ngIf="currentInvoice?.paymentStatus === 'PENDING'"
-            pButton
-            label="VNPay"
-            icon="pi pi-credit-card"
-            class="p-button-info border-round-3xl px-4 ml-2"
-            (click)="payWithVnPay()">
+        <button *ngIf="currentInvoice?.paymentStatus === 'PENDING'" pButton label="VNPay" icon="pi pi-credit-card"
+            class="p-button-info border-round-3xl px-4 ml-2" (click)="payWithVnPay()">
         </button>
     </ng-template>
+</p-dialog>
+
+<!-- Dialog hiển thị mã QR Thanh toán VNPay (Modern) -->
+<p-dialog [(visible)]="qrDialog" [style]="{width: '420px'}" [modal]="true" [showHeader]="false"
+    styleClass="p-fluid overflow-hidden border-round-2xl" [contentStyle]="{'padding': '0'}" [draggable]="false"
+    [resizable]="false" [dismissableMask]="true">
+
+    <!-- Header VNPAY Styling -->
+    <div class="relative text-white p-4 text-center"
+        style="background: linear-gradient(135deg, #005bea 0%, #00c6fb 100%);">
+        <button pButton icon="pi pi-times" class="p-button-rounded p-button-text text-white absolute top-0 right-0 m-2"
+            (click)="qrDialog = false" pTooltip="Đóng" tooltipPosition="left"></button>
+
+        <!-- Icon nổi bật -->
+        <i class="pi pi-qrcode text-white mb-2 mt-2" style="font-size: 3.5rem;"></i>
+
+        <h2 class="m-0 font-bold text-2xl" style="text-shadow: 0 2px 4px rgba(0,0,0,0.1);">Thanh toán VNPAY</h2>
+        <p class="mt-2 mb-0 text-blue-100 text-sm font-medium">Quét mã QR bằng ứng dụng ngân hàng</p>
+    </div>
+
+    <!-- Body -->
+    <div class="p-4 flex flex-column align-items-center bg-white">
+        <!-- Thông tin đơn hàng -->
+        <div
+            class="w-full bg-blue-50 border-round-lg p-3 mb-4 flex justify-content-between align-items-center border-1 border-blue-100 shadow-1">
+            <div class="flex flex-column text-left">
+                <span class="text-500 text-xs font-semibold mb-1 uppercase">Mã giao dịch</span>
+                <span class="font-bold text-700 font-mono text-lg">{{ currentInvoice?.transactionCode ||
+                    currentInvoice?.invoiceId }}</span>
+            </div>
+            <div class="flex flex-column text-right">
+                <span class="text-500 text-xs font-semibold mb-1 uppercase">Tổng tiền</span>
+                <span class="font-bold text-blue-600 text-xl">{{ currentInvoice?.totalAmount ?
+                    formatCurrency(currentInvoice!.totalAmount) : '0 ₫' }}</span>
+            </div>
+        </div>
+
+        <!-- Vùng hiển thị QR Code -->
+        <div class="bg-white p-3 border-round-xl shadow-3 border-2 surface-border mb-4 flex justify-content-center align-items-center"
+            style="width: 250px; height: 250px; border-color: #00c6fb !important;">
+            <qrcode *ngIf="qrCodeUrl" [qrdata]="qrCodeUrl" [width]="220" [errorCorrectionLevel]="'M'" [margin]="0">
+            </qrcode>
+        </div>
+
+        <div
+            class="flex align-items-center text-600 mb-4 bg-gray-50 px-4 py-2 border-round-3xl border-1 surface-border">
+            <i class="pi pi-spin pi-spinner text-blue-500 mr-2 text-lg"></i>
+            <span class="text-sm font-medium">Đang chờ bạn quét mã...</span>
+        </div>
+
+        <!-- Footer Button -->
+        <button pButton label="Hoàn tất / Đóng" icon="pi pi-check"
+            class="p-button-outlined p-button-secondary w-full border-round-3xl font-bold p-3"
+            (click)="qrDialog = false"></button>
+    </div>
 </p-dialog>
 
 <div id="print-section" *ngIf="currentInvoice">
@@ -302,13 +364,15 @@
 
         <div class="customer-info">
             <div class="row">
-                <div class="col"><strong>Mã GD:</strong> #{{ currentInvoice.transactionCode || currentInvoice.invoiceId }}</div>
+                <div class="col"><strong>Mã GD:</strong> #{{ currentInvoice.transactionCode || currentInvoice.invoiceId
+                    }}</div>
                 <div class="col"><strong>Khách hàng:</strong> {{ currentInvoice.patientName }}</div>
             </div>
 
             <div class="row">
                 <div class="col"><strong>Thu ngân:</strong> Admin/Lễ tân</div>
-                <div class="col"><strong>Hình thức:</strong> {{ currentInvoice.paymentMethod ? getPaymentMethodConfig(currentInvoice.paymentMethod).label : 'Tiền mặt' }}</div>
+                <div class="col"><strong>Hình thức:</strong> {{ currentInvoice.paymentMethod ?
+                    getPaymentMethodConfig(currentInvoice.paymentMethod).label : 'Tiền mặt' }}</div>
             </div>
         </div>
 

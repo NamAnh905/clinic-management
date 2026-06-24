@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 
 public class AppointmentUpdationRequest {
     LocalDateTime appointmentTime;
-    LocalDateTime endTime;
     String reason;
     AppointmentStatus status;
 }
